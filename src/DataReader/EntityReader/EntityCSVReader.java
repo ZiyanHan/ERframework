@@ -135,6 +135,12 @@ public class EntityCSVReader extends AbstractEntityReader {
             entityId = currentLine[idIndex];
         }
         
+        System.out.println(currentLine[0]);;
+//        for (int i = 0; i < currentLine.length-1; i++) {
+//            System.out.print(currentLine[i]+"\t\t");
+//        }
+//        System.out.println(currentLine[currentLine.length-1]);
+        
         EntityProfile newProfile = new EntityProfile(entityId);
         for (int i = 0; i < currentLine.length; i++) {
             if (attributesToExclude.contains(i)) {

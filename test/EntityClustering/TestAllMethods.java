@@ -43,25 +43,26 @@ public class TestAllMethods {
     public static void main(String[] args) {
         BlockBuildingMethod blockingWorkflow = BlockBuildingMethod.STANDARD_BLOCKING;
 
-        String[] datasetProfiles = {"E:\\Data\\profiles\\restaurantProfiles",
-            "E:\\Data\\profiles\\censusProfiles",
-            "E:\\Data\\profiles\\coraProfiles",
-            "E:\\Data\\profiles\\cddbProfiles",
-            "E:\\Data\\DERdata\\abt-buy\\dataset",
-            "E:\\Data\\DERdata\\amazon-gp\\dataset",
-            "E:\\Data\\DERdata\\dblp-acm\\dataset",
-            "E:\\Data\\DERdata\\dblp-scholar\\dataset",
-            "E:\\Data\\DERdata\\movies\\dataset"
+        String[] datasetProfiles = {"E:\\Data\\csvProfiles\\restaurantProfiles",
+            "E:\\Data\\csvProfiles\\censusProfiles",
+            "E:\\Data\\csvProfiles\\coraProfiles",
+            "E:\\Data\\csvProfiles\\cddbProfiles",
+            "E:\\Data\\csvProfiles\\abtBuyProfiles",
+            "E:\\Data\\csvProfiles\\amazonGpProfiles",
+            "E:\\Data\\csvProfiles\\dblpAcmProfiles",
+            "E:\\Data\\csvProfiles\\dblpScholarProfiles",
+            "E:\\Data\\csvProfiles\\moviesProfiles"
         };
-        String[] datasetGroundtruth = {"E:\\Data\\groundtruth\\restaurantIdDuplicates",
-            "E:\\Data\\groundtruth\\censusIdDuplicates",
-            "E:\\Data\\groundtruth\\coraIdDuplicates",
-            "E:\\Data\\groundtruth\\cddbIdDuplicates",
-            "E:\\Data\\DERdata\\abt-buy\\groundtruth",
-            "E:\\Data\\DERdata\\amazon-gp\\groundtruth",
-            "E:\\Data\\DERdata\\dblp-acm\\groundtruth",
-            "E:\\Data\\DERdata\\dblp-scholar\\groundtruth",
-            "E:\\Data\\DERdata\\movies\\groundtruth"
+        
+        String[] datasetGroundtruth = {"E:\\Data\\csvProfiles\\restaurantIdDuplicates",
+            "E:\\Data\\csvProfiles\\censusIdDuplicates",
+            "E:\\Data\\csvProfiles\\coraIdDuplicates",
+            "E:\\Data\\csvProfiles\\cddbIdDuplicates",
+            "E:\\Data\\csvProfiles\\abtBuyIdDuplicates",
+            "E:\\Data\\csvProfiles\\amazonGpIdDuplicates",
+            "E:\\Data\\csvProfiles\\dblpAcmIdDuplicates",
+            "E:\\Data\\csvProfiles\\dblpScholarIdDuplicates",
+            "E:\\Data\\csvProfiles\\moviesIdDuplicates"
         };
 
         for (int datasetId = 0; datasetId < datasetProfiles.length; datasetId++) {
@@ -97,7 +98,7 @@ public class TestAllMethods {
                 IEntityMatching em = new ProfileMatcher(repModel);
                 SimilarityPairs simPairs = em.executeComparisons(blocks, profiles);
 
-                IEntityClustering ec = new ConnectedComponentsClustering();
+                IEntityClustering ec = new CenterClustering();//new ConnectedComponentsClustering();
                 List<EquivalenceCluster> entityClusters = ec.getDuplicates(simPairs);
 
                 ClustersPerformance clp = new ClustersPerformance(entityClusters, duplicatePropagation);

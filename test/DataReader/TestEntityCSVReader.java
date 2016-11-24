@@ -1,6 +1,5 @@
 package DataReader;
 
-import DataModel.Attribute;
 import DataModel.EntityProfile;
 import DataReader.EntityReader.EntityCSVReader;
 import java.util.List;

@@ -12,17 +12,18 @@ import java.util.List;
 
 public class TestRdfReader {
     public static void main(String[] args) {
-        String filePath = "/home/ethanos/Downloads/JEDAIfiles/im-identity/oaei2014_identity_b.owl";
+        String filePath = "/media/C8A81E01A81DEF26/ProgramData/MATCHING_DATASETS/dblpSAMPLE.nt";
         EntityRDFReader n3reader = new EntityRDFReader(filePath);
-        n3reader.setAttributesToExclude(new String[]{"http://www.w3.org/2000/01/rdf-schema#label", "http://www.w3.org/2000/01/rdf-schema#label"});
+//        n3reader.setAttributesToExclude(new String[]{"http://www.w3.org/2000/01/rdf-schema#label", "http://www.w3.org/2000/01/rdf-schema#label"});
         List<EntityProfile> profiles = n3reader.getEntityProfiles();
-        for (EntityProfile profile : profiles) {
+        System.out.println("Found "+ profiles.size()+ " profiles");
+        /*for (EntityProfile profile : profiles) {
             System.out.println("\n\n" + profile.getEntityUrl());
             for (Attribute attribute : profile.getAttributes()) {
                 System.out.print(attribute.toString());
                 System.out.println();
             }
-        }
-        n3reader.storeSerializedObject(profiles, "/home/ethanos/Downloads/JEDAIfiles/im-identity/oaei2014_identity_bPROFILES");
+        }*/
+        n3reader.storeSerializedObject(profiles, "/home/vefthym/Desktop/DATASETS/Papadakis/Matching/dblpOAEIProfilesSAMPLE");
     }
 }

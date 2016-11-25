@@ -52,4 +52,12 @@ public class EntityProfile implements Serializable {
     public Set<Attribute> getAttributes() {
         return attributes;
     }
+    
+    public Set<String> getAllValues() {
+        Set<String> values = new HashSet<>();
+        for (Attribute attribute : attributes) {
+            values.add(attribute.getValue());
+        }
+        return values;
+    }    
 }

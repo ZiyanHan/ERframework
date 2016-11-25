@@ -17,6 +17,8 @@ package EntityClustering;
 
 import EntityMatching.*;
 import BlockBuilding.*;
+import BlockProcessing.ComparisonRefinement.CardinalityNodePruning;
+import BlockProcessing.ComparisonRefinement.WeightedEdgePruning;
 import Utilities.DataStructures.AbstractDuplicatePropagation;
 import BlockProcessing.IBlockProcessing;
 import Utilities.DataStructures.UnilateralDuplicatePropagation;
@@ -32,6 +34,7 @@ import Utilities.BlocksPerformance;
 import Utilities.ClustersPerformance;
 import Utilities.Enumerations.BlockBuildingMethod;
 import Utilities.Enumerations.RepresentationModel;
+import Utilities.Enumerations.WeightingScheme;
 import java.util.List;
 
 /**
@@ -43,26 +46,29 @@ public class TestAllMethods {
     public static void main(String[] args) {
         BlockBuildingMethod blockingWorkflow = BlockBuildingMethod.STANDARD_BLOCKING;
 
-        String[] datasetProfiles = {"E:\\Data\\csvProfiles\\restaurantProfiles",
-            "E:\\Data\\csvProfiles\\censusProfiles",
-            "E:\\Data\\csvProfiles\\coraProfiles",
-            "E:\\Data\\csvProfiles\\cddbProfiles",
-            "E:\\Data\\csvProfiles\\abtBuyProfiles",
-            "E:\\Data\\csvProfiles\\amazonGpProfiles",
-            "E:\\Data\\csvProfiles\\dblpAcmProfiles",
-            "E:\\Data\\csvProfiles\\dblpScholarProfiles",
-            "E:\\Data\\csvProfiles\\moviesProfiles"
-        };
+        final String basePath = "/home/vefthym/Desktop/DATASETS/Papadakis/Matching/";
         
-        String[] datasetGroundtruth = {"E:\\Data\\csvProfiles\\restaurantIdDuplicates",
-            "E:\\Data\\csvProfiles\\censusIdDuplicates",
-            "E:\\Data\\csvProfiles\\coraIdDuplicates",
-            "E:\\Data\\csvProfiles\\cddbIdDuplicates",
-            "E:\\Data\\csvProfiles\\abtBuyIdDuplicates",
-            "E:\\Data\\csvProfiles\\amazonGpIdDuplicates",
-            "E:\\Data\\csvProfiles\\dblpAcmIdDuplicates",
-            "E:\\Data\\csvProfiles\\dblpScholarIdDuplicates",
-            "E:\\Data\\csvProfiles\\moviesIdDuplicates"
+        String[] datasetProfiles = {
+//            basePath+"restaurantProfiles",
+//            basePath+"censusProfiles",
+//            basePath+"coraProfiles",
+//            basePath+"cddbProfiles",
+//            basePath+"abtBuyProfiles",
+//            basePath+"amazonGpProfiles",
+            basePath+"dblpAcmProfiles",
+//            basePath+"dblpScholarProfiles",
+//            basePath+"moviesProfiles"
+        };
+        String[] datasetGroundtruth = {
+//            basePath+"restaurantIdDuplicates",
+//            basePath+"censusIdDuplicates",
+//            basePath+"coraIdDuplicates",
+//            basePath+"cddbIdDuplicates",
+//            basePath+"abtBuyIdDuplicates",
+//            basePath+"amazonGpIdDuplicates",
+            basePath+"dblpAcmIdDuplicates",
+//            basePath+"dblpScholarIdDuplicates",
+//            basePath+"moviesIdDuplicates"
         };
 
         for (int datasetId = 0; datasetId < datasetProfiles.length; datasetId++) {
@@ -70,7 +76,7 @@ public class TestAllMethods {
 
             IEntityReader eReader = new EntitySerializationReader(datasetProfiles[datasetId]);
             List<EntityProfile> profiles = eReader.getEntityProfiles();
-            System.out.println("Input Entity Profiles\t:\t" + profiles.size());
+            System.out.println("Input Entity Profiles\t:\t" + profiles.size());            
 
             IGroundTruthReader gtReader = new GtSerializationReader(datasetGroundtruth[datasetId]);
             final AbstractDuplicatePropagation duplicatePropagation = new UnilateralDuplicatePropagation(gtReader.getDuplicatePairs(eReader.getEntityProfiles()));
@@ -85,24 +91,31 @@ public class TestAllMethods {
                 blocks = blockCleaningMethod.refineBlocks(blocks);
             }
 
-            IBlockProcessing comparisonCleaningMethod = BlockBuildingMethod.getDefaultComparisonCleaning(blockingWorkflow);
-            if (comparisonCleaningMethod != null) {
-                blocks = comparisonCleaningMethod.refineBlocks(blocks);
-            }
-
+            IBlockProcessing comparisonCleaningMethod = new CardinalityNodePruning(WeightingScheme.CBS);
+            blocks = comparisonCleaningMethod.refineBlocks(blocks);
+            
             BlocksPerformance blp = new BlocksPerformance(blocks, duplicatePropagation);
             blp.getStatistics();
 
-            for (RepresentationModel repModel : RepresentationModel.values()) {
+            RepresentationModel[] repModels = {
+                RepresentationModel.CHARACTER_BIGRAM_GRAPHS,
+//                RepresentationModel.CHARACTER_TRIGRAM_GRAPHS,
+//                RepresentationModel.CHARACTER_FOURGRAM_GRAPHS
+            };
+                
+            for (RepresentationModel repModel : repModels) {
                 System.out.println("\n\nCurrent model\t:\t" + repModel.toString());
                 IEntityMatching em = new ProfileMatcher(repModel);
-                SimilarityPairs simPairs = em.executeComparisons(blocks, profiles);
-
-                IEntityClustering ec = new CenterClustering();//new ConnectedComponentsClustering();
+                SimilarityPairs simPairs = em.executeComparisons(blocks, profiles);                                    
+                IEntityClustering ec =  
+//                        new ConnectedComponentsClustering(); 
+                            new CenterClustering();
+    //                        new MergeCenterClustering();
+    //                        new MarkovClustering();
                 List<EquivalenceCluster> entityClusters = ec.getDuplicates(simPairs);
 
                 ClustersPerformance clp = new ClustersPerformance(entityClusters, duplicatePropagation);
-                clp.getStatistics();
+                clp.getStatistics();                
             }
         }
     }

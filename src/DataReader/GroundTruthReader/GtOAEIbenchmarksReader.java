@@ -116,10 +116,16 @@ public class GtOAEIbenchmarksReader extends AbstractGtReader {
                 if (nNode.getNodeType() == Node.ELEMENT_NODE) {
                 	Element eElement = (Element) nNode;
                     Element eElement1 = (Element) eElement.getElementsByTagName("entity1").item(0);
-                    int entityId1 = urlToEntityId1.get(eElement1.getAttribute("rdf:resource"));
+                    String entity1URL = eElement1.getAttribute("rdf:resource");
+                    entity1URL = entity1URL.replace("http://kmi.open.ac.uk/fusion/dblp#", "kmi:");
+                    int entityId1 = urlToEntityId1.get(entity1URL);                    
                     Element eElement2 = (Element) eElement.getElementsByTagName("entity2").item(0);
-                    int entityId2 = urlToEntityId2.get(eElement2.getAttribute("rdf:resource"));
-                    duplicatesGraph.addEdge(entityId1, entityId2);
+                    String entity2URL = eElement2.getAttribute("rdf:resource");
+                    entity2URL = entity2URL.replace("http://dblp.uni-trier.de/rec/bibtex/", "dblp:");                    
+                    if (urlToEntityId2.containsKey(entity2URL)) {
+                        int entityId2 = urlToEntityId2.get(entity2URL);
+                        duplicatesGraph.addEdge(entityId1, entityId2);
+                    }
                                 
                 }               
             }
@@ -142,7 +148,7 @@ public class GtOAEIbenchmarksReader extends AbstractGtReader {
         } else { // Dirty ER
             getUnilateralConnectedComponents(connectedComponents);
         }
-        LOGGER.log(Level.INFO, "Total pair of duplicats\t:\t{0}", idDuplicates.size());
+        LOGGER.log(Level.INFO, "Total pair of duplicates\t:\t{0}", idDuplicates.size());
 
         return idDuplicates;
     }

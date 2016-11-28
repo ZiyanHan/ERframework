@@ -16,13 +16,10 @@
 package EntityMatching;
 
 import EntityClustering.*;
-import EntityMatching.*;
 import BlockBuilding.*;
 import BlockProcessing.ComparisonRefinement.CardinalityNodePruning;
-import BlockProcessing.ComparisonRefinement.WeightedEdgePruning;
 import Utilities.DataStructures.AbstractDuplicatePropagation;
 import BlockProcessing.IBlockProcessing;
-import Utilities.DataStructures.UnilateralDuplicatePropagation;
 import DataModel.AbstractBlock;
 import DataModel.EntityProfile;
 import DataModel.EquivalenceCluster;
@@ -48,13 +45,14 @@ public class TestNeighborSimilarity {
     public static void main(String[] args) {
         BlockBuildingMethod blockingWorkflow = BlockBuildingMethod.STANDARD_BLOCKING;
 
-        final String basePath = "/home/vefthym/Desktop/DATASETS/Papadakis/Matching/";
+//        final String basePath = "/home/vefthym/Desktop/DATASETS/Papadakis/Matching/";
+        final String basePath = "C:\\Users\\VASILIS\\Documents\\Datasets_papadaki\\person1\\";
         
         String[] datasetProfiles = {
-            basePath+"rexaOAEIProfiles",
-            basePath+"dblpOAEIProfilesSAMPLE",
+            basePath+"person11Profiles",
+            basePath+"person12Profiles",
         };
-        String datasetGroundtruth = basePath+"dblpRexaSAMPLEIdDuplicates";
+        String datasetGroundtruth = basePath+"person1IdDuplicates";
 
         IEntityReader eReader1 = new EntitySerializationReader(datasetProfiles[0]);
         List<EntityProfile> profiles1 = eReader1.getEntityProfiles();
@@ -91,7 +89,9 @@ public class TestNeighborSimilarity {
 
         for (RepresentationModel repModel : repModels) {
             System.out.println("\n\nCurrent model\t:\t" + repModel.toString());
-            IEntityMatching em = new ProfileWithNeighborMatcher(repModel);
+            IEntityMatching em = 
+                    new ProfileWithNeighborMatcher(repModel);
+//                    new ProfileMatcher(repModel);
             SimilarityPairs simPairs = em.executeComparisons(blocks, profiles1, profiles2);
 
             
@@ -103,8 +103,7 @@ public class TestNeighborSimilarity {
             List<EquivalenceCluster> entityClusters = ec.getDuplicates(simPairs);
 
             ClustersPerformance clp = new ClustersPerformance(entityClusters, duplicatePropagation);
-            clp.getStatistics();
-            
+            clp.getStatistics();            
         }
         
     }

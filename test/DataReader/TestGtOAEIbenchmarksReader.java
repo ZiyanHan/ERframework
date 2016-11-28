@@ -17,9 +17,9 @@ import java.util.Set;
 
 public class TestGtOAEIbenchmarksReader {
     public static void main(String[] args) {
-    	String entityFilePath1 = "/home/vefthym/Desktop/DATASETS/Papadakis/Matching/rexaOAEIProfiles";
-    	String entityFilePath2 = "/home/vefthym/Desktop/DATASETS/Papadakis/Matching/dblpOAEIProfilesSAMPLE";
-        String gtFilePath = "/home/vefthym/Desktop/DATASETS/TBD_datasets/rexa-dblp/rexa_dblp_goldstandard.xml";
+    	String entityFilePath1 = "C:\\Users\\VASILIS\\Documents\\Datasets_papadaki\\person1\\person11Profiles";
+    	String entityFilePath2 = "C:\\Users\\VASILIS\\Documents\\Datasets_papadaki\\person1\\person12Profiles";
+        String gtFilePath = "C:\\Users\\VASILIS\\Documents\\Datasets_papadaki\\person1\\dataset11_dataset12_goldstandard_person.xml";
         EntitySerializationReader esr1 = new EntitySerializationReader(entityFilePath1);
         EntitySerializationReader esr2 = new EntitySerializationReader(entityFilePath2);
         GtOAEIbenchmarksReader gtOAEIbenchmarksReader = new GtOAEIbenchmarksReader(gtFilePath);
@@ -38,6 +38,6 @@ public class TestGtOAEIbenchmarksReader {
             System.out.println(id1 + " " + duplicate.getEntityId2());
 
         }
-        gtOAEIbenchmarksReader.storeSerializedObject(duplicates, "/home/vefthym/Desktop/DATASETS/Papadakis/Matching/dblpRexaSAMPLEIdDuplicates");
+        gtOAEIbenchmarksReader.storeSerializedObject(duplicates, "C:\\Users\\VASILIS\\Documents\\Datasets_papadaki\\person1\\person1IdDuplicates");
     }
 }

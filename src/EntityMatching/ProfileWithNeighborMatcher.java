@@ -41,7 +41,7 @@ public class ProfileWithNeighborMatcher extends AbstractEntityMatching {
 
     private static final Logger LOGGER = Logger.getLogger(ProfileWithNeighborMatcher.class.getName());
     
-    private boolean cleanCleanER; 
+    private boolean cleanCleanER = false; 
     
     protected AbstractModel[] entityModelsD1;
     protected AbstractModel[] entityModelsD2;
@@ -65,20 +65,15 @@ public class ProfileWithNeighborMatcher extends AbstractEntityMatching {
             System.exit(-1);
         }
         
-        boolean isCleanCleanER = false;
         entityModelsD1 = getModels(profilesD1);
-        if (profilesD2 != null) {
-            isCleanCleanER = true;
-            entityModelsD2 = getModels(profilesD2);
-        }
-        
         neighborModelsD1 = getNeighborModels(profilesD1);
         if (profilesD2 != null) {
-            isCleanCleanER = true;
+            cleanCleanER = true;
+            entityModelsD2 = getModels(profilesD2);
             neighborModelsD2 = getNeighborModels(profilesD2);
         }
         
-        SimilarityPairs simPairs = new SimilarityPairs(isCleanCleanER, blocks);
+        SimilarityPairs simPairs = new SimilarityPairs(cleanCleanER, blocks);
         for (AbstractBlock block : blocks) {
             final Iterator<Comparison> iterator = block.getComparisonIterator();
             while (iterator.hasNext()) {
@@ -92,6 +87,7 @@ public class ProfileWithNeighborMatcher extends AbstractEntityMatching {
     }
     
     private AbstractModel[] getModels(List<EntityProfile> profiles) {
+//        if (1 == 1) return null; //only added for debugging
         int counter = 0;
         AbstractModel[] models  = new AbstractModel[profiles.size()];
         for (EntityProfile profile : profiles) {
@@ -117,7 +113,7 @@ public class ProfileWithNeighborMatcher extends AbstractEntityMatching {
             models[counter] = new CharacterNGrams(2, RepresentationModel.CHARACTER_BIGRAMS, profile.getEntityUrl());
             for (String neighbor: profile.getAllValues()) {
                 Set<String> values = profilesURLs.get(neighbor);
-                if (values != null) { //if this value is an entity id
+                if (values != null) { //then this value is an entity id
                     for (String value : values) { //update the model with its values
                         models[counter].updateModel(value);
                     }
@@ -140,7 +136,7 @@ public class ProfileWithNeighborMatcher extends AbstractEntityMatching {
 
     public double getSimilarity(Comparison comparison) {
         final double a = 0.66;
-        double profile_similarity;        
+        double profile_similarity =0;        
         double neighbor_similarity;        
         
         if (cleanCleanER) {
@@ -151,6 +147,9 @@ public class ProfileWithNeighborMatcher extends AbstractEntityMatching {
             neighbor_similarity = neighborModelsD1[comparison.getEntityId1()].getSimilarity(neighborModelsD1[comparison.getEntityId2()]);
         }
         
+//        if (neighbor_similarity > 0)
+//            System.out.println("The neighbor similarity of "+comparison.getEntityId1()+" and "+comparison.getEntityId2()+" is "+neighbor_similarity);
+//        
         return a * profile_similarity + (1-a) * neighbor_similarity;
     }
 }

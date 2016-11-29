@@ -18,6 +18,7 @@ package EntityMatching;
 import EntityClustering.*;
 import BlockBuilding.*;
 import BlockProcessing.ComparisonRefinement.CardinalityNodePruning;
+import BlockProcessing.ComparisonRefinement.ReciprocalCardinalityNodePruning;
 import Utilities.DataStructures.AbstractDuplicatePropagation;
 import BlockProcessing.IBlockProcessing;
 import DataModel.AbstractBlock;
@@ -75,7 +76,9 @@ public class TestNeighborSimilarity {
             blocks = blockCleaningMethod.refineBlocks(blocks);
         }
 
-        IBlockProcessing comparisonCleaningMethod = new CardinalityNodePruning(WeightingScheme.CBS);
+        IBlockProcessing comparisonCleaningMethod = 
+                //new CardinalityNodePruning(WeightingScheme.CBS);
+                new ReciprocalCardinalityNodePruning(WeightingScheme.CBS);
         blocks = comparisonCleaningMethod.refineBlocks(blocks);
 
         BlocksPerformance blp = new BlocksPerformance(blocks, duplicatePropagation);

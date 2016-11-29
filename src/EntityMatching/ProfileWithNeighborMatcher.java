@@ -16,13 +16,19 @@
 
 package EntityMatching;
 
+import BlockProcessing.ComparisonRefinement.CardinalityNodePruningWithMatching;
+import BlockProcessing.ComparisonRefinement.ReciprocalCardinalityNodePruning;
+import BlockProcessing.IBlockProcessing;
 import DataModel.AbstractBlock;
 import DataModel.Attribute;
 import DataModel.Comparison;
 import DataModel.EntityProfile;
 import DataModel.SimilarityPairs;
+import Utilities.BlocksPerformance;
+import Utilities.DataStructures.AbstractDuplicatePropagation;
 import Utilities.TextModels.AbstractModel;
 import Utilities.Enumerations.RepresentationModel;
+import Utilities.Enumerations.WeightingScheme;
 import Utilities.TextModels.CharacterNGrams;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -49,11 +55,18 @@ public class ProfileWithNeighborMatcher extends AbstractEntityMatching {
     protected AbstractModel[] neighborModelsD1;
     protected AbstractModel[] neighborModelsD2;
     
+    protected AbstractDuplicatePropagation duplicatePropagation;
+    
     protected RepresentationModel representationModel;
     
     public ProfileWithNeighborMatcher (RepresentationModel model) {
         representationModel = model;
         LOGGER.log(Level.INFO, "Initializing profile matcher with : {0}", model);
+    }
+
+    ProfileWithNeighborMatcher(RepresentationModel repModel, AbstractDuplicatePropagation duplicatePropagation) {
+        this(repModel);
+        this.duplicatePropagation = duplicatePropagation;
     }
     
     @Override
@@ -72,6 +85,15 @@ public class ProfileWithNeighborMatcher extends AbstractEntityMatching {
             entityModelsD2 = getModels(profilesD2);
             neighborModelsD2 = getNeighborModels(profilesD2);
         }
+        
+        //meta-blocking
+        IBlockProcessing comparisonCleaningMethod = 
+                new CardinalityNodePruningWithMatching(WeightingScheme.CBS, entityModelsD1, entityModelsD2, neighborModelsD1, neighborModelsD2);
+                //new ReciprocalCardinalityNodePruning(WeightingScheme.CBS, entityModelsD1, entityModelsD2, neighborModelsD1, neighborModelsD2);
+        blocks = comparisonCleaningMethod.refineBlocks(blocks);
+        
+        BlocksPerformance blp = new BlocksPerformance(blocks, duplicatePropagation);
+        blp.getStatistics();
         
         SimilarityPairs simPairs = new SimilarityPairs(cleanCleanER, blocks);
         for (AbstractBlock block : blocks) {

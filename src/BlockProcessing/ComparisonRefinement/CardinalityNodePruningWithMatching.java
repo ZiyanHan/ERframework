@@ -20,7 +20,9 @@ import DataModel.AbstractBlock;
 import DataModel.Comparison;
 import Utilities.Comparators.ComparisonWeightComparator;
 import Utilities.Enumerations.WeightingScheme;
+import Utilities.TextModels.AbstractModel;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -37,9 +39,24 @@ public class CardinalityNodePruningWithMatching extends CardinalityEdgePruning {
     protected int lastId;
     protected Set<Comparison>[] nearestEntities;
     
+    
+    protected AbstractModel[] entityModelsD1;
+    protected AbstractModel[] entityModelsD2;
+    protected AbstractModel[] neighborModelsD1;
+    protected AbstractModel[] neighborModelsD2;
+    
     public CardinalityNodePruningWithMatching(WeightingScheme scheme) {
         super(scheme);
         nodeCentric = true;
+    }
+
+    public CardinalityNodePruningWithMatching(WeightingScheme scheme, AbstractModel[] entityModelsD1, AbstractModel[] entityModelsD2, AbstractModel[] neighborModelsD1, AbstractModel[] neighborModelsD2) {
+        super(scheme);
+        nodeCentric = true;
+        this.entityModelsD1 = entityModelsD1;
+        this.entityModelsD2 = entityModelsD2;
+        this.neighborModelsD1 = neighborModelsD1;
+        this.neighborModelsD2 = neighborModelsD2;
     }
 
     @Override
@@ -92,17 +109,23 @@ public class CardinalityNodePruningWithMatching extends CardinalityEdgePruning {
     }
     
     protected void retainValidComparisons(List<AbstractBlock> newBlocks) {
-        final List<Comparison> retainedComparisons = new ArrayList<>();
+        List<Comparison> retainedComparisons = new ArrayList<>();        
         for (int i = 0; i < noOfEntities; i++) {
+            double max_neighbor_similarity = 0.7; //also sets a matching threshold
             if (nearestEntities[i] != null) {
                 retainedComparisons.clear();
                 for (Comparison comparison : nearestEntities[i]) {
                     if (isValidComparison(i, comparison)) {
-                        //get complex similarity
-                        retainedComparisons.add(comparison);
+                        double similarity = getSimilarity(comparison);
+                        if (similarity > max_neighbor_similarity) {
+                            max_neighbor_similarity = similarity;
+                            retainedComparisons = new ArrayList<>(Collections.singletonList(comparison));
+                        }
+                        //retainedComparisons.add(comparison);
                     }
                 }
-                addDecomposedBlock(retainedComparisons, newBlocks);
+                if (!retainedComparisons.isEmpty())
+                    addDecomposedBlock(retainedComparisons, newBlocks);
             }
         }
     }
@@ -142,5 +165,26 @@ public class CardinalityNodePruningWithMatching extends CardinalityEdgePruning {
             }
         }
         nearestEntities[entityId] = new HashSet<Comparison>(topKEdges);
+    }
+    
+    /**
+     * Returns a synthetic similarity for the pair, 
+     * which is a weighted sum of profile similarity and neighbor similarity.
+     * @param comparison
+     * @return 
+     */
+    public double getSimilarity(Comparison comparison) {
+        final double a = 0.66;
+        double profile_similarity =0;        
+        double neighbor_similarity;        
+        
+        if (cleanCleanER) {
+            profile_similarity =  entityModelsD1[comparison.getEntityId1()].getSimilarity(entityModelsD2[comparison.getEntityId2()]);
+            neighbor_similarity = neighborModelsD1[comparison.getEntityId1()].getSimilarity(neighborModelsD2[comparison.getEntityId2()]);
+        } else {
+            profile_similarity = entityModelsD1[comparison.getEntityId1()].getSimilarity(entityModelsD1[comparison.getEntityId2()]);
+            neighbor_similarity = neighborModelsD1[comparison.getEntityId1()].getSimilarity(neighborModelsD1[comparison.getEntityId2()]);
+        } 
+        return a * profile_similarity + (1-a) * neighbor_similarity;
     }
 }

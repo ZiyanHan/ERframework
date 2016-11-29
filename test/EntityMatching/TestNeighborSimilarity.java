@@ -71,19 +71,15 @@ public class TestNeighborSimilarity {
         List<AbstractBlock> blocks = blockBuildingMethod.getBlocks(profiles1, profiles2);
         System.out.println("Original blocks\t:\t" + blocks.size());
 
+        //block filtering
         IBlockProcessing blockCleaningMethod = BlockBuildingMethod.getDefaultBlockCleaning(blockingWorkflow);
         if (blockCleaningMethod != null) {
             blocks = blockCleaningMethod.refineBlocks(blocks);
         }
+        
+        //move metablocking inside matching (ProfileWithNeighborMatcher
 
-        IBlockProcessing comparisonCleaningMethod = 
-                //new CardinalityNodePruning(WeightingScheme.CBS);
-                new ReciprocalCardinalityNodePruning(WeightingScheme.CBS);
-        blocks = comparisonCleaningMethod.refineBlocks(blocks);
-
-        BlocksPerformance blp = new BlocksPerformance(blocks, duplicatePropagation);
-        blp.getStatistics();
-
+        //matching
         RepresentationModel[] repModels = {
             RepresentationModel.CHARACTER_BIGRAM_GRAPHS,
 //            RepresentationModel.CHARACTER_TRIGRAM_GRAPHS,
@@ -93,7 +89,7 @@ public class TestNeighborSimilarity {
         for (RepresentationModel repModel : repModels) {
             System.out.println("\n\nCurrent model\t:\t" + repModel.toString());
             IEntityMatching em = 
-                    new ProfileWithNeighborMatcher(repModel);
+                    new ProfileWithNeighborMatcher(repModel,duplicatePropagation);
 //                    new ProfileMatcher(repModel);
             SimilarityPairs simPairs = em.executeComparisons(blocks, profiles1, profiles2);
 

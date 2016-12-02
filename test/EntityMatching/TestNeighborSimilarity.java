@@ -47,13 +47,13 @@ public class TestNeighborSimilarity {
         BlockBuildingMethod blockingWorkflow = BlockBuildingMethod.STANDARD_BLOCKING;
 
 //        final String basePath = "/home/vefthym/Desktop/DATASETS/Papadakis/Matching/";
-        final String basePath = "C:\\Users\\VASILIS\\Documents\\Datasets_papadaki\\person1\\";
+        final String basePath = "C:\\Users\\VASILIS\\Documents\\Datasets_papadaki\\restaurant\\";
         
         String[] datasetProfiles = {
-            basePath+"person11Profiles",
-            basePath+"person12Profiles",
+            basePath+"restaurant1Profiles",
+            basePath+"restaurant2Profiles",
         };
-        String datasetGroundtruth = basePath+"person1IdDuplicates";
+        String datasetGroundtruth = basePath+"restaurantIdDuplicates";
 
         IEntityReader eReader1 = new EntitySerializationReader(datasetProfiles[0]);
         List<EntityProfile> profiles1 = eReader1.getEntityProfiles();

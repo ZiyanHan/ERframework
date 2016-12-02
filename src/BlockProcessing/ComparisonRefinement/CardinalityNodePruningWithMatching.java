@@ -111,7 +111,7 @@ public class CardinalityNodePruningWithMatching extends CardinalityEdgePruning {
     protected void retainValidComparisons(List<AbstractBlock> newBlocks) {
         List<Comparison> retainedComparisons = new ArrayList<>();        
         for (int i = 0; i < noOfEntities; i++) {
-            double max_neighbor_similarity = 0.7; //also sets a matching threshold
+            double max_neighbor_similarity = 0.65; //also sets a matching threshold
             if (nearestEntities[i] != null) {
                 retainedComparisons.clear();
                 for (Comparison comparison : nearestEntities[i]) {

@@ -37,19 +37,19 @@ import java.util.List;
  *
  * @author vefthym
  */
-public class TestNeighborSimilarity {
+public class TestNeighborBlocking {
 
     public static void main(String[] args) {
-        BlockBuildingMethod blockingWorkflow = BlockBuildingMethod.STANDARD_BLOCKING;
+        BlockBuildingMethod blockingWorkflow = BlockBuildingMethod.NEIGHBOR_BLOCKING;
 
 //        final String basePath = "/home/vefthym/Desktop/DATASETS/Papadakis/Matching/";
-        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\OAEI2016\\SPIMBENCH_small\\";
+        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\OAEI2010\\restaurant\\";
         
         String[] datasetProfiles = {
-            basePath+"Abox1Profiles",
-            basePath+"Abox2Profiles",
+            basePath+"restaurant1Profiles",
+            basePath+"restaurant2Profiles",
         };
-        String datasetGroundtruth = basePath+"SPIMBENCH_smallIdDuplicates";
+        String datasetGroundtruth = basePath+"restaurantIdDuplicates";
 
         IEntityReader eReader1 = new EntitySerializationReader(datasetProfiles[0]);
         List<EntityProfile> profiles1 = eReader1.getEntityProfiles();
@@ -63,7 +63,7 @@ public class TestNeighborSimilarity {
         final AbstractDuplicatePropagation duplicatePropagation = new BilateralDuplicatePropagation(gtReader.getDuplicatePairs(profiles1, profiles2));
         System.out.println("Existing Duplicates\t:\t" + duplicatePropagation.getDuplicates().size());
 
-        IBlockBuilding blockBuildingMethod = BlockBuildingMethod.getDefaultConfiguration(blockingWorkflow);
+        IBlockBuilding blockBuildingMethod = new NeighborBlocking();
         List<AbstractBlock> blocks = blockBuildingMethod.getBlocks(profiles1, profiles2);
         System.out.println("Original blocks\t:\t" + blocks.size());
 
@@ -89,7 +89,7 @@ public class TestNeighborSimilarity {
 //                    new ProfileMatcher(repModel);
             SimilarityPairs simPairs = em.executeComparisons(blocks, profiles1, profiles2);
 
-            
+            /* //clustering improves numbers even more
             IEntityClustering ec =  
 //                        new ConnectedComponentsClustering(); 
                         new CenterClustering();
@@ -98,7 +98,8 @@ public class TestNeighborSimilarity {
             List<EquivalenceCluster> entityClusters = ec.getDuplicates(simPairs);
 
             ClustersPerformance clp = new ClustersPerformance(entityClusters, duplicatePropagation);
-            clp.getStatistics();            
+            clp.getStatistics();
+                    */
         }
         
     }

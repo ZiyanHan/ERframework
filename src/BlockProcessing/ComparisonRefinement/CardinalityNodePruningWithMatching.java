@@ -30,7 +30,7 @@ import java.util.Set;
 
 /**
  *
- * @author gap2
+ * @author vefthym
  */
 
 public class CardinalityNodePruningWithMatching extends CardinalityEdgePruning {

@@ -55,9 +55,9 @@ public class EntityProfile implements Serializable {
     
     public Set<String> getAllValues() {
         Set<String> values = new HashSet<>();
-        for (Attribute attribute : attributes) {
+        attributes.stream().forEach((attribute) -> {
             values.add(attribute.getValue());
-        }
+        });
         return values;
     }    
 }

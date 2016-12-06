@@ -17,9 +17,9 @@ import java.util.Set;
 
 public class TestGtOAEIbenchmarksReader {
     public static void main(String[] args) {
-    	String entityFilePath1 = "C:\\Users\\VASILIS\\Documents\\Datasets_papadaki\\restaurant\\restaurant1Profiles";
-    	String entityFilePath2 = "C:\\Users\\VASILIS\\Documents\\Datasets_papadaki\\restaurant\\restaurant2Profiles";
-        String gtFilePath = "C:\\Users\\VASILIS\\Documents\\Datasets_papadaki\\restaurant\\restaurant1_restaurant2_goldstandard.rdf";
+    	String entityFilePath1 = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\OAEI2016\\UOBM_small\\Abox1Profiles";
+    	String entityFilePath2 = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\OAEI2016\\UOBM_small\\Abox2Profiles";
+        String gtFilePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\OAEI2016\\UOBM_small\\refalign.rdf";
         EntitySerializationReader esr1 = new EntitySerializationReader(entityFilePath1);
         EntitySerializationReader esr2 = new EntitySerializationReader(entityFilePath2);
         GtOAEIbenchmarksReader gtOAEIbenchmarksReader = new GtOAEIbenchmarksReader(gtFilePath);
@@ -38,6 +38,6 @@ public class TestGtOAEIbenchmarksReader {
             System.out.println(id1 + " " + duplicate.getEntityId2());
 
         }
-        gtOAEIbenchmarksReader.storeSerializedObject(duplicates, "C:\\Users\\VASILIS\\Documents\\Datasets_papadaki\\restaurant\\restaurantIdDuplicates");
+        gtOAEIbenchmarksReader.storeSerializedObject(duplicates, "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\OAEI2016\\UOBM_small\\UOBM_smallIDDuplicates");
     }
 }

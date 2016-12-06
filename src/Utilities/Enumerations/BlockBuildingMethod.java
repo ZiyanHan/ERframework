@@ -21,6 +21,7 @@ import BlockBuilding.ExtendedQGramsBlocking;
 import BlockBuilding.ExtendedSortedNeighborhoodBlocking;
 import BlockBuilding.ExtendedSuffixArraysBlocking;
 import BlockBuilding.IBlockBuilding;
+import BlockBuilding.NeighborBlocking;
 import BlockBuilding.QGramsBlocking;
 import BlockBuilding.SortedNeighborhoodBlocking;
 import BlockBuilding.StandardBlocking;
@@ -43,6 +44,7 @@ public enum BlockBuildingMethod {
     Q_GRAMS_BLOCKING,
     SORTED_NEIGHBORHOOD,
     SUFFIX_ARRAYS,
+    NEIGHBOR_BLOCKING,
     STANDARD_BLOCKING;
     
     public static IBlockBuilding getDefaultConfiguration(BlockBuildingMethod blbuMethod) {
@@ -61,6 +63,8 @@ public enum BlockBuildingMethod {
                 return new SortedNeighborhoodBlocking();
             case SUFFIX_ARRAYS:
                 return new SuffixArraysBlocking();
+            case NEIGHBOR_BLOCKING:
+                return new NeighborBlocking();
             case STANDARD_BLOCKING:
             default:
                 return new StandardBlocking();

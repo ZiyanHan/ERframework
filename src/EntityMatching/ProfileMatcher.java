@@ -57,7 +57,7 @@ public class ProfileMatcher extends AbstractEntityMatching {
             System.exit(-1);
         }
         
-        boolean isCleanCleanER = false;
+        isCleanCleanER = false;
         entityModelsD1 = getModels(profilesD1);
         if (profilesD2 != null) {
             isCleanCleanER = true;

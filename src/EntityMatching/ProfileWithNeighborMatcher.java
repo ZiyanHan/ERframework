@@ -28,6 +28,7 @@ import Utilities.BlocksPerformance;
 import Utilities.DataStructures.AbstractDuplicatePropagation;
 import Utilities.TextModels.AbstractModel;
 import Utilities.Enumerations.RepresentationModel;
+import Utilities.Enumerations.SimilarityMetric;
 import Utilities.Enumerations.WeightingScheme;
 import Utilities.TextModels.CharacterNGrams;
 import java.util.HashMap;
@@ -57,15 +58,13 @@ public class ProfileWithNeighborMatcher extends AbstractEntityMatching {
     
     protected AbstractDuplicatePropagation duplicatePropagation;
     
-    protected RepresentationModel representationModel;
-    
-    public ProfileWithNeighborMatcher (RepresentationModel model) {
-        representationModel = model;
+    public ProfileWithNeighborMatcher (RepresentationModel model, SimilarityMetric sMetric) {
+        super(model, sMetric);
         LOGGER.log(Level.INFO, "Initializing profile matcher with : {0}", model);
     }
 
-    ProfileWithNeighborMatcher(RepresentationModel repModel, AbstractDuplicatePropagation duplicatePropagation) {
-        this(repModel);
+    ProfileWithNeighborMatcher(RepresentationModel repModel, SimilarityMetric sMetric, AbstractDuplicatePropagation duplicatePropagation) {
+        this(repModel, sMetric);
         this.duplicatePropagation = duplicatePropagation;
     }
     
@@ -93,7 +92,8 @@ public class ProfileWithNeighborMatcher extends AbstractEntityMatching {
         blocks = comparisonCleaningMethod.refineBlocks(blocks);
         
         BlocksPerformance blp = new BlocksPerformance(blocks, duplicatePropagation);
-        blp.getStatistics();
+        blp.setStatistics();
+        blp.printStatistics();
         
         SimilarityPairs simPairs = new SimilarityPairs(cleanCleanER, blocks);
         for (AbstractBlock block : blocks) {
@@ -113,7 +113,7 @@ public class ProfileWithNeighborMatcher extends AbstractEntityMatching {
         int counter = 0;
         AbstractModel[] models  = new AbstractModel[profiles.size()];
         for (EntityProfile profile : profiles) {
-            models[counter] = RepresentationModel.getModel(representationModel, profile.getEntityUrl());
+            models[counter] = RepresentationModel.getModel(representationModel, simMetric, profile.getEntityUrl());
             for (Attribute attribute : profile.getAttributes()) {
                 models[counter].updateModel(attribute.getValue());
             }
@@ -132,7 +132,7 @@ public class ProfileWithNeighborMatcher extends AbstractEntityMatching {
                 
         AbstractModel[] models  = new AbstractModel[profiles.size()];
         for (EntityProfile profile : profiles) {
-            models[counter] = new CharacterNGrams(2, RepresentationModel.CHARACTER_BIGRAMS, profile.getEntityUrl());
+            models[counter] = new CharacterNGrams(2, RepresentationModel.CHARACTER_BIGRAMS, SimilarityMetric.JACCARD_SIMILARITY, profile.getEntityUrl());
             for (String neighbor: profile.getAllValues()) {
                 Set<String> values = profilesURLs.get(neighbor);
                 if (values != null) { //then this value is an entity id

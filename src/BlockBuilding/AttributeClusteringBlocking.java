@@ -20,6 +20,7 @@ import DataModel.Attribute;
 import DataModel.EntityProfile;
 import Utilities.TextModels.AbstractModel;
 import Utilities.Enumerations.RepresentationModel;
+import Utilities.Enumerations.SimilarityMetric;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,15 +52,17 @@ public class AttributeClusteringBlocking extends StandardBlocking {
     
     private final Map<String, Integer>[] attributeClusters;
     private final RepresentationModel model;
+    private final SimilarityMetric simMetric;
 
     public AttributeClusteringBlocking() {
-        this(RepresentationModel.TOKEN_UNIGRAM_GRAPHS);
+        this(RepresentationModel.TOKEN_UNIGRAM_GRAPHS, SimilarityMetric.GRAPH_VALUE_SIMILARITY);
         LOGGER.log(Level.INFO, "Using default configuration for Attribute Clustering Blocking.");
     }
     
-    public AttributeClusteringBlocking(RepresentationModel md) {
+    public AttributeClusteringBlocking(RepresentationModel md, SimilarityMetric sMetric) {
         super();
         model = md;
+        simMetric = sMetric;
         LOGGER.log(Level.INFO, "Representation model\t:\t{0}", model);
         attributeClusters = new HashMap[2];
     }
@@ -105,7 +108,7 @@ public class AttributeClusteringBlocking extends StandardBlocking {
         int index = 0;
         AbstractModel[] attributeModels = new AbstractModel[attributeProfiles.size()];
         for (Entry<String, List<String>> entry : attributeProfiles.entrySet()) {
-            attributeModels[index] = RepresentationModel.getModel(model, entry.getKey());
+            attributeModels[index] = RepresentationModel.getModel(model, simMetric, entry.getKey());
             for (String value : entry.getValue()) {
                 attributeModels[index].updateModel(value);
             }

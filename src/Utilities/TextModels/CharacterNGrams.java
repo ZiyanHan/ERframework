@@ -17,63 +17,33 @@
 package Utilities.TextModels;
 
 import Utilities.Enumerations.RepresentationModel;
-import java.util.HashMap;
-import java.util.Map.Entry;
+import Utilities.Enumerations.SimilarityMetric;
 
 /**
  *
  * @author G.A.P. II
  */
 
-public class CharacterNGrams extends AbstractModel {
-
-    private final HashMap<String, Integer> nGrams;
+public class CharacterNGrams extends BagModel {
     
-    public CharacterNGrams(int n, RepresentationModel model, String iName) {
-        super(n, model, iName);
-        nGrams = new HashMap<String, Integer>();
-    }
-
-    private HashMap<String, Integer> getNGrams() {
-        return nGrams;
-    }
-    
-    @Override
-    public double getSimilarity(AbstractModel oModel) {//Jaccard similarity
-        final CharacterNGrams otherModel = (CharacterNGrams) oModel;
-        
-        double numerator = 0.0;
-        for (Entry<String, Integer> entry : nGrams.entrySet()) {
-            Integer frequency2 = otherModel.getNGrams().get(entry.getKey());
-            if (frequency2 != null) {
-                numerator += Math.min(entry.getValue(), frequency2);
-            }
-        }
-
-        double denominator = getTotalFrequency(this.getNGrams())+getTotalFrequency(otherModel.getNGrams())-numerator;
-        return numerator/denominator;
-    }
-    
-    private double getTotalFrequency(HashMap<String, Integer> nGramsFrequency) {
-        double totalFrequency = 0;
-        for (Integer frequency : nGramsFrequency.values()) {
-            totalFrequency += frequency;
-        }
-        return totalFrequency;
+    public CharacterNGrams(int n, RepresentationModel model, SimilarityMetric simMetric, String iName) {
+        super(n, model, simMetric, iName);
     }
     
     @Override
     public void updateModel(String text) {
+        noOfDocuments++;
         int currentPosition = 0;
         final int length = text.length() - (nSize-1);
         while (currentPosition < length) {
+            noOfTotalTerms++;
             final String term = text.substring(currentPosition, currentPosition + nSize);
-            Integer frequency = nGrams.get(term);
+            Integer frequency = itemsFrequency.get(term);
             if (frequency == null) {
                 frequency = new Integer(0);
             } 
             frequency++;
-            nGrams.put(term, frequency);
+            itemsFrequency.put(term, frequency);
             currentPosition++;
         }
     }

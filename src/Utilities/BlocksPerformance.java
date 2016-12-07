@@ -38,12 +38,18 @@ public class BlocksPerformance {
 
     private static final Logger LOGGER = Logger.getLogger(BlocksPerformance.class.getName());
 
-    private double pc;
-    private double pq;
+    private boolean isCleanCleanER;
 
     private int noOfD1Entities;
     private int noOfD2Entities;
     private int detectedDuplicates;
+
+    private double aggregateCardinality;
+    private double blockAssignments;
+    private double d1BlockAssignments;
+    private double d2BlockAssignments;
+    private double pc;
+    private double pq;
 
     private final AbstractDuplicatePropagation abstractDP;
     private final List<AbstractBlock> blocks;
@@ -87,52 +93,44 @@ public class BlocksPerformance {
         return false;
     }
 
-    private void getBilateralBlockingCardinality() {
-        System.out.println("\n\nGetting bilateral BC...");
+    public double getAggregateCardinality() {
+        return aggregateCardinality;
+    }
 
-        double d1BlockAssignments = 0;
-        double d2BlockAssignments = 0;
+    public double getBlockAssignments() {
+        return blockAssignments;
+    }
+
+    public double getD1BlockAssignments() {
+        return d1BlockAssignments;
+    }
+
+    public double getD2BlockAssignments() {
+        return d2BlockAssignments;
+    }
+
+    public double getPc() {
+        return pc;
+    }
+
+    public double getPq() {
+        return pq;
+    }
+
+    private void getBilateralBlockingCardinality() {
+        d1BlockAssignments = 0;
+        d2BlockAssignments = 0;
         for (AbstractBlock block : blocks) {
             BilateralBlock bilBlock = (BilateralBlock) block;
             d1BlockAssignments += bilBlock.getIndex1Entities().length;
             d2BlockAssignments += bilBlock.getIndex2Entities().length;
         }
-
-        System.out.println("Average block\t:\t" + d1BlockAssignments / blocks.size() + "-" + d2BlockAssignments / blocks.size());
-        System.out.println("iBC_1\t:\t" + d1BlockAssignments / noOfD1Entities);
-        System.out.println("iBC_2\t:\t" + d2BlockAssignments / noOfD2Entities);
-        System.out.println("oBC\t:\t" + ((d1BlockAssignments + d2BlockAssignments) / (noOfD1Entities + noOfD2Entities)));
     }
 
-    private void getBlockingCardinality() {
-        if (blocks.get(0) instanceof BilateralBlock) {
-            getBilateralBlockingCardinality();
-        } else if (blocks.get(0) instanceof UnilateralBlock) {
-            getUnilateralBlockingCardinality();
-        }
-    }
-
-    private double getComparisonsCardinality() {
-        System.out.println("\n\nGetting comparisons cardinality...");
-
-        double aggregateCardinality = 0;
-        double blockAssignments = 0;
-        for (AbstractBlock block : blocks) {
-            aggregateCardinality += block.getNoOfComparisons();
-            blockAssignments += block.getTotalBlockAssignments();
-        }
-
-        System.out.println("Aggregate cardinality\t:\t" + aggregateCardinality);
-        System.out.println("CC\t:\t" + (blockAssignments / aggregateCardinality));
-
-        return aggregateCardinality;
-    }
-
-    private void getDecomposedBlocksEntities(double totalComparisons) {
-        DecomposedBlock deBlock = (DecomposedBlock) blocks.get(0);
-        final Set<Integer> entitiesD1 = new HashSet<Integer>((int) totalComparisons);
-        if (deBlock.isCleanCleanER()) {
-            final Set<Integer> entitiesD2 = new HashSet<Integer>((int) totalComparisons);
+    private void getDecomposedBlocksEntities() {
+        final Set<Integer> entitiesD1 = new HashSet<Integer>((int) aggregateCardinality);
+        if (isCleanCleanER) {
+            final Set<Integer> entitiesD2 = new HashSet<Integer>((int) aggregateCardinality);
             for (AbstractBlock block : blocks) {
                 ComparisonIterator iterator = block.getComparisonIterator();
                 while (iterator.hasNext()) {
@@ -143,7 +141,6 @@ public class BlocksPerformance {
             }
             noOfD1Entities = entitiesD1.size();
             noOfD2Entities = entitiesD2.size();
-            System.out.println("Entities in blocks\t:\t" + (noOfD1Entities + noOfD2Entities));
         } else {
             for (AbstractBlock block : blocks) {
                 ComparisonIterator iterator = block.getComparisonIterator();
@@ -154,7 +151,6 @@ public class BlocksPerformance {
                 }
             }
             noOfD1Entities = entitiesD1.size();
-            System.out.println("Entities in blocks\t:\t" + noOfD1Entities);
         }
     }
 
@@ -162,9 +158,7 @@ public class BlocksPerformance {
         return detectedDuplicates;
     }
 
-    private void getDuplicatesOfDecomposedBlocks(double totalComparisons) {
-        System.out.println("\n\nGetting duplicates...");
-
+    private void getDuplicatesOfDecomposedBlocks() {
         for (AbstractBlock block : blocks) {
             ComparisonIterator iterator = block.getComparisonIterator();
             while (iterator.hasNext()) {
@@ -174,15 +168,10 @@ public class BlocksPerformance {
 
         detectedDuplicates = abstractDP.getNoOfDuplicates();
         pc = ((double) abstractDP.getNoOfDuplicates()) / abstractDP.getExistingDuplicates();
-        pq = abstractDP.getNoOfDuplicates() / totalComparisons;
-        System.out.println("Detected duplicates\t:\t" + abstractDP.getNoOfDuplicates());
-        System.out.println("PC\t:\t" + pc);
-        System.out.println("PQ\t:\t" + pq);
+        pq = abstractDP.getNoOfDuplicates() / aggregateCardinality;
     }
 
-    private void getDuplicatesWithEntityIndex(double totalComparisons) {
-        System.out.println("\n\nGetting duplicates...");
-
+    private void getDuplicatesWithEntityIndex() {
         double noOfDuplicates = 0;
         boolean cleanCleanER = blocks.get(0) instanceof BilateralBlock;
         for (IdDuplicates pairOfDuplicates : abstractDP.getDuplicates()) {
@@ -193,29 +182,22 @@ public class BlocksPerformance {
 
         detectedDuplicates = (int) noOfDuplicates;
         pc = noOfDuplicates / abstractDP.getExistingDuplicates();
-        pq = noOfDuplicates / totalComparisons;
-        System.out.println("Detected duplicates\t:\t" + noOfDuplicates);
-        System.out.println("PC\t:\t" + pc);
-        System.out.println("PQ\t:\t" + pq);
+        pq = noOfDuplicates / aggregateCardinality;
     }
 
     private void getEntities() {
         if (blocks.get(0) instanceof UnilateralBlock) {
-            Set<Integer> distinctEntities = new HashSet<Integer>();
+            final Set<Integer> distinctEntities = new HashSet<Integer>();
             for (AbstractBlock block : blocks) {
                 UnilateralBlock uBlock = (UnilateralBlock) block;
                 for (int entityId : uBlock.getEntities()) {
                     distinctEntities.add(entityId);
                 }
             }
-
             noOfD1Entities = distinctEntities.size();
-            System.out.println("Total entities\t:\t" + entityIndex.getNoOfEntities());
-            System.out.println("Entities in blocks\t:\t" + noOfD1Entities);
-            System.out.println("Singleton entities\t:\t" + (entityIndex.getNoOfEntities() - noOfD1Entities));
         } else {
-            Set<Integer> distinctEntitiesD1 = new HashSet<Integer>();
-            Set<Integer> distinctEntitiesD2 = new HashSet<Integer>();
+            final Set<Integer> distinctEntitiesD1 = new HashSet<Integer>();
+            final Set<Integer> distinctEntitiesD2 = new HashSet<Integer>();
             for (AbstractBlock block : blocks) {
                 BilateralBlock bBlock = (BilateralBlock) block;
                 for (int entityId : bBlock.getIndex1Entities()) {
@@ -225,49 +207,87 @@ public class BlocksPerformance {
                     distinctEntitiesD2.add(entityId);
                 }
             }
-
             noOfD1Entities = distinctEntitiesD1.size();
             noOfD2Entities = distinctEntitiesD2.size();
+        }
+    }
+
+    public void printStatistics() {
+        System.out.println("\n\n\n**************************************************");
+        System.out.println("*************** Blocks Performance ***************");
+        System.out.println("**************************************************");
+        System.out.println("No of blocks\t:\t" + blocks.size());
+        System.out.println("Aggregate cardinality\t:\t" + aggregateCardinality);
+        System.out.println("CC\t:\t" + (blockAssignments / aggregateCardinality));
+        if (blocks.get(0) instanceof BilateralBlock) {
             System.out.println("Total entities D1\t:\t" + entityIndex.getDatasetLimit());
             System.out.println("Singleton entities D1\t:\t" + (entityIndex.getDatasetLimit() - noOfD1Entities));
             System.out.println("Total entities D2\t:\t" + (entityIndex.getNoOfEntities() - entityIndex.getDatasetLimit()));
             System.out.println("Singleton entities D2\t:\t" + (entityIndex.getNoOfEntities() - entityIndex.getDatasetLimit() - noOfD2Entities));
             System.out.println("Entities in blocks\t:\t" + (noOfD1Entities + noOfD2Entities));
+            System.out.println("Average block\t:\t" + d1BlockAssignments / blocks.size() + "-" + d2BlockAssignments / blocks.size());
+            System.out.println("iBC_1\t:\t" + d1BlockAssignments / noOfD1Entities);
+            System.out.println("iBC_2\t:\t" + d2BlockAssignments / noOfD2Entities);
+            System.out.println("oBC\t:\t" + ((d1BlockAssignments + d2BlockAssignments) / (noOfD1Entities + noOfD2Entities)));
+        } else if (blocks.get(0) instanceof DecomposedBlock) {
+            if (isCleanCleanER) {
+                System.out.println("Entities in blocks\t:\t" + (noOfD1Entities + noOfD2Entities));
+            } else {
+                System.out.println("Entities in blocks\t:\t" + noOfD1Entities);
+            }
+        } else if (blocks.get(0) instanceof UnilateralBlock) {
+            System.out.println("Total entities\t:\t" + entityIndex.getNoOfEntities());
+            System.out.println("Entities in blocks\t:\t" + noOfD1Entities);
+            System.out.println("Singleton entities\t:\t" + (entityIndex.getNoOfEntities() - noOfD1Entities));
+            System.out.println("Average block\t:\t" + blockAssignments / blocks.size());
+            System.out.println("BC\t:\t" + blockAssignments / noOfD1Entities);
+        }
+        System.out.println("Detected duplicates\t:\t" + abstractDP.getNoOfDuplicates());
+        System.out.println("PC\t:\t" + pc);
+        System.out.println("PQ\t:\t" + pq);
+    }
+
+    private void setComparisonsCardinality() {
+        aggregateCardinality = 0;
+        blockAssignments = 0;
+        for (AbstractBlock block : blocks) {
+            aggregateCardinality += block.getNoOfComparisons();
+            blockAssignments += block.getTotalBlockAssignments();
         }
     }
 
-    public void getStatistics() {
+    public void setStatistics() {
         if (blocks.isEmpty()) {
             LOGGER.log(Level.WARNING, "Empty set of equivalence clusters given as input!");
             return;
         }
 
-        System.out.println("No of blocks\t:\t" + blocks.size());
-        double totalComparisons = getComparisonsCardinality();
+        setType();
+        setComparisonsCardinality();
         if (blocks.get(0) instanceof DecomposedBlock) {
-            getDecomposedBlocksEntities(totalComparisons);
+            getDecomposedBlocksEntities();
         } else {
             entityIndex = new GroundTruthIndex(blocks, abstractDP.getDuplicates());
             getEntities();
         }
-        getBlockingCardinality();
+        if (blocks.get(0) instanceof BilateralBlock) {
+            getBilateralBlockingCardinality();
+        }
         if (blocks.get(0) instanceof DecomposedBlock) {
-            getDuplicatesOfDecomposedBlocks(totalComparisons);
+            getDuplicatesOfDecomposedBlocks();
         } else {
-            getDuplicatesWithEntityIndex(totalComparisons);
+            getDuplicatesWithEntityIndex();
         }
     }
 
-    private void getUnilateralBlockingCardinality() {
-        System.out.println("\n\nGetting unilateral BC...");
-
-        double blockAssignments = 0;
-        for (AbstractBlock block : blocks) {
-            UnilateralBlock uniBlock = (UnilateralBlock) block;
-            blockAssignments += uniBlock.getTotalBlockAssignments();
+    private void setType() {
+        if (blocks.get(0) instanceof BilateralBlock) {
+            isCleanCleanER = true;
+        } else if (blocks.get(0) instanceof DecomposedBlock) {
+            DecomposedBlock deBlock = (DecomposedBlock) blocks.get(0);
+            isCleanCleanER = deBlock.isCleanCleanER();
+        } else if (blocks.get(0) instanceof UnilateralBlock) {
+            isCleanCleanER = false;
         }
-
-        System.out.println("Average block\t:\t" + blockAssignments / blocks.size());
-        System.out.println("BC\t:\t" + blockAssignments / noOfD1Entities);
     }
 }

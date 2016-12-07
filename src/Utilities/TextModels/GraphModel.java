@@ -16,9 +16,12 @@
 package Utilities.TextModels;
 
 import Utilities.Enumerations.RepresentationModel;
+import Utilities.Enumerations.SimilarityMetric;
 import gr.demokritos.iit.jinsect.documentModel.comparators.NGramCachedGraphComparator;
 import gr.demokritos.iit.jinsect.documentModel.representations.DocumentNGramGraph;
 import gr.demokritos.iit.jinsect.structs.GraphSimilarity;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -26,11 +29,13 @@ import gr.demokritos.iit.jinsect.structs.GraphSimilarity;
  */
 public abstract class GraphModel extends AbstractModel {
 
+    private static final Logger LOGGER = Logger.getLogger(GraphModel.class.getName());
+
     protected DocumentNGramGraph graphModel;
     protected final static NGramCachedGraphComparator COMPARATOR = new NGramCachedGraphComparator();
 
-    public GraphModel(int n, RepresentationModel model, String iName) {
-        super(n, model, iName);
+    public GraphModel(int n, RepresentationModel model, SimilarityMetric simMetric, String iName) {
+        super(n, model, simMetric, iName);
     }
 
     public DocumentNGramGraph getGraphModel() {
@@ -42,18 +47,31 @@ public abstract class GraphModel extends AbstractModel {
         graphModel.setDataString(text);
     }
 
-    public double getValue(AbstractModel model1, AbstractModel model2) {
-        final GraphModel graphModel1 = (GraphModel) model1;
-        final GraphModel graphModel2 = (GraphModel) model2;
-
-        final GraphSimilarity graphSimilarity = COMPARATOR.getSimilarityBetween(graphModel1.getGraphModel(), graphModel2.getGraphModel());
-        return graphSimilarity.ValueSimilarity;
-    }
-
     @Override
-    public double getSimilarity(AbstractModel oModel) {//Value Similarity
+    public double getSimilarity(AbstractModel oModel) {
         final GraphSimilarity graphSimilarity = COMPARATOR.getSimilarityBetween(this.getGraphModel(), ((GraphModel) oModel).getGraphModel());
-        return graphSimilarity.ValueSimilarity;
+        switch (simMetric) {
+            case GRAPH_CONTAINMENT_SIMILARITY:
+                return graphSimilarity.ContainmentSimilarity;
+            case GRAPH_NORMALIZED_VALUE_SIMILARITY:
+                if (0 < graphSimilarity.SizeSimilarity) {
+                    return graphSimilarity.ValueSimilarity / graphSimilarity.SizeSimilarity;
+                }
+            case GRAPH_VALUE_SIMILARITY:
+                return graphSimilarity.ValueSimilarity;
+            case GRAPH_OVERALL_SIMILARITY:
+                double overallSimilarity = graphSimilarity.ContainmentSimilarity;
+                overallSimilarity += graphSimilarity.ValueSimilarity;
+                if (0 < graphSimilarity.SizeSimilarity) {
+                    overallSimilarity += graphSimilarity.ValueSimilarity / graphSimilarity.SizeSimilarity;
+                    return overallSimilarity / 3;
+                }
+                return overallSimilarity / 2;
+            default:
+                LOGGER.log(Level.SEVERE, "The given similarity metric is incompatible with the n-gram graphs representation model!");
+                System.exit(-1);
+                return -1;
+        }
     }
 
     public void updateModel(GraphModel model) {

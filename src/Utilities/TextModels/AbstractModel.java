@@ -17,6 +17,7 @@
 package Utilities.TextModels;
 
 import Utilities.Enumerations.RepresentationModel;
+import Utilities.Enumerations.SimilarityMetric;
 import java.io.Serializable;
 
 /**
@@ -32,13 +33,15 @@ public abstract class AbstractModel implements Serializable {
     protected double noOfDocuments;
     
     protected final RepresentationModel modelType;
+    protected final SimilarityMetric simMetric;
     protected final String instanceName;
     
-    public AbstractModel(int n, RepresentationModel md, String iName) {
+    public AbstractModel(int n, RepresentationModel md, SimilarityMetric sMetric, String iName) {
         instanceName = iName;
         modelType = md;
         nSize = n;
         noOfDocuments = 0;
+        simMetric = sMetric;
     }
 
     public String getInstanceName() {
@@ -55,6 +58,10 @@ public abstract class AbstractModel implements Serializable {
     
     public int getNSize() {
         return nSize;
+    }
+    
+    public SimilarityMetric getSimilarityMetric() {
+        return simMetric;
     }
     
     public abstract double getSimilarity(AbstractModel oModel);

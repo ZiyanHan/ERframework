@@ -12,13 +12,14 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 * See the License for the specific language governing permissions and
 * limitations under the License.
-*/
-
+ */
 package EntityMatching;
 
 import DataModel.AbstractBlock;
 import DataModel.EntityProfile;
 import DataModel.SimilarityPairs;
+import Utilities.Enumerations.RepresentationModel;
+import Utilities.Enumerations.SimilarityMetric;
 import java.util.List;
 
 /**
@@ -27,10 +28,16 @@ import java.util.List;
  */
 public abstract class AbstractEntityMatching implements IEntityMatching {
 
-    public AbstractEntityMatching() {
-        
+    protected boolean isCleanCleanER;
+
+    protected RepresentationModel representationModel;
+    protected SimilarityMetric simMetric;
+
+    public AbstractEntityMatching(RepresentationModel model, SimilarityMetric sMetric) {
+        representationModel = model;
+        simMetric = sMetric;
     }
-    
+
     @Override
     public SimilarityPairs executeComparisons(List<AbstractBlock> blocks, List<EntityProfile> profiles) {
         return this.executeComparisons(blocks, profiles, null);

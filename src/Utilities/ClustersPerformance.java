@@ -45,7 +45,48 @@ public class ClustersPerformance {
         entityClusters = clusters;
     }
 
-    public void getStatistics() {
+    public int getDetectedDuplicates() {
+        return abstractDP.getNoOfDuplicates();
+    }
+    
+    public int getEntityClusters() {
+        return entityClusters.size();
+    }
+
+    public int getExistingDuplicates() {
+        return abstractDP.getExistingDuplicates();
+    }
+
+    public double getFMeasure() {
+        return fMeasure;
+    }
+
+    public double getPrecision() {
+        return precision;
+    }
+
+    public double getRecall() {
+        return recall;
+    }
+
+    public double getTotalMatches() {
+        return totalMatches;
+    }
+
+    public void printStatistics() {
+        System.out.println("\n\n\n**************************************************");
+        System.out.println("************** Clusters Performance **************");
+        System.out.println("**************************************************");
+        System.out.println("No of clusters\t:\t" + entityClusters.size());
+        System.out.println("Detected duplicates\t:\t" + abstractDP.getNoOfDuplicates());
+        System.out.println("Existing duplicates\t:\t" + abstractDP.getExistingDuplicates());
+        System.out.println("Total matches\t:\t" + totalMatches);
+        System.out.println("Precision\t:\t" + precision);
+        System.out.println("Recall\t:\t" + recall);
+        System.out.println("F-Measure\t:\t" + fMeasure);
+    }
+
+    public void setStatistics() {
         if (entityClusters.isEmpty()) {
             LOGGER.log(Level.WARNING, "Empty set of equivalence clusters given as input!");
             return;
@@ -77,23 +118,16 @@ public class ClustersPerformance {
             }
         }
 
-        printStatistics();
-    }
-
-    private void printStatistics() {
-        precision = abstractDP.getNoOfDuplicates() / totalMatches;
+        if (0 < totalMatches) {
+            precision = abstractDP.getNoOfDuplicates() / totalMatches;
+        } else {
+            precision = 0;
+        }
         recall = ((double) abstractDP.getNoOfDuplicates()) / abstractDP.getExistingDuplicates();
-        fMeasure = 2 * precision * recall / (precision + recall);
-
-        System.out.println("\n\n\n**************************************************");
-        System.out.println("************** Clusters Performance **************");
-        System.out.println("**************************************************");
-        System.out.println("No of clusters\t:\t" + entityClusters.size());
-        System.out.println("Detected duplicates\t:\t" + abstractDP.getNoOfDuplicates());
-        System.out.println("Existing duplicates\t:\t" + abstractDP.getExistingDuplicates());
-        System.out.println("Total matches\t:\t" + totalMatches);
-        System.out.println("Precision\t:\t" + precision);
-        System.out.println("Recall\t:\t" + recall);
-        System.out.println("F-Measure\t:\t" + fMeasure);
+        if (0 < precision && 0 < recall) {
+            fMeasure = 2 * precision * recall / (precision + recall);
+        } else {
+            fMeasure = 0;
+        }
     }
 }

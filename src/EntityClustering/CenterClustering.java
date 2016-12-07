@@ -20,185 +20,99 @@ import DataModel.EquivalenceCluster;
 import DataModel.SimilarityEdge;
 import DataModel.SimilarityPairs;
 import Utilities.Comparators.SimilarityEdgeComparator;
-import Utilities.TextModels.AbstractModel;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jgrapht.alg.ConnectivityInspector;
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.graph.SimpleGraph;
 
 /**
  *
  * @author G.A.P. II
  */
-public class CenterClustering implements IEntityClustering {
+public class CenterClustering extends AbstractEntityClustering {
 
     private static final Logger LOGGER = Logger.getLogger(CenterClustering.class.getName());
 
-    private int noOfEntities;
-    private int datasetLimit;
-    private final SimpleGraph similarityGraph;
-
     public CenterClustering() {
-        similarityGraph = new SimpleGraph(DefaultEdge.class);
-        LOGGER.log(Level.INFO, "Initializing Connected Components clustering...");
+        super();
+
+        LOGGER.log(Level.INFO, "Initializing Center Clustering...");
     }
 
     @Override
     public List<EquivalenceCluster> getDuplicates(SimilarityPairs simPairs) {
-        initializeGraph(simPairs);
-        SimilarityEdgeComparator SEcomparator = new SimilarityEdgeComparator();
-        PriorityQueue<SimilarityEdge> SEqueue = new PriorityQueue<SimilarityEdge>(simPairs.getNoOfComparisons(), SEcomparator);
-        int[] edgesWeight = new int[noOfEntities];
-        int[] edgesAttached = new int[noOfEntities];
-        double threshold = getSimilarityThreshold(simPairs);
-        Iterator<Comparison> iterator = simPairs.getPairIterator();
-        while (iterator.hasNext()) {	// add an edge for every pair of entities with a weight higher than the threshold
+        initializeData(simPairs);
+        initializeGraph();
+        
+        final double[] edgesWeight = new double[noOfEntities];
+        final double[] edgesAttached = new double[noOfEntities];
+        final Queue<SimilarityEdge> SEqueue = new PriorityQueue<>(simPairs.getNoOfComparisons(), new SimilarityEdgeComparator());
+
+        final Iterator<Comparison> iterator = simPairs.getPairIterator();
+        while (iterator.hasNext()) { // add a similarity edge to the queue, not the for every pair of entities with a weight higher than the threshold
             Comparison comparison = iterator.next();
             if (threshold < comparison.getUtilityMeasure()) {
-                SimilarityEdge se = new SimilarityEdge (comparison.getEntityId1(), (comparison.getEntityId2()+ datasetLimit), comparison.getUtilityMeasure());
-                SEqueue.add(se);
-                edgesWeight[comparison.getEntityId1()]+=comparison.getUtilityMeasure();
-                edgesWeight[comparison.getEntityId2()+ datasetLimit]+=comparison.getUtilityMeasure();
+                SEqueue.add(new SimilarityEdge(comparison.getEntityId1(), comparison.getEntityId2() + datasetLimit, comparison.getUtilityMeasure()));
+
+                edgesWeight[comparison.getEntityId1()] += comparison.getUtilityMeasure();
+                edgesWeight[comparison.getEntityId2() + datasetLimit] += comparison.getUtilityMeasure();
+
                 edgesAttached[comparison.getEntityId1()]++;
-                edgesAttached[comparison.getEntityId2()+ datasetLimit]++;
+                edgesAttached[comparison.getEntityId2() + datasetLimit]++;
             }
         }
 
-        Set<Integer> Center =  new HashSet<Integer>();
-        Set<Integer> NonCenter = new HashSet<Integer>();
-        while (SEqueue.size() > 0)
-        {
+        final Set<Integer> Center = new HashSet<Integer>();
+        final Set<Integer> NonCenter = new HashSet<Integer>();
+        while (!SEqueue.isEmpty()) {
             SimilarityEdge se = SEqueue.remove();
             int v1 = se.getModel1Pos();
             int v2 = se.getModel2Pos();
-            double sim = se.getSimilarity();
 
-            if (!(Center.contains(v1)||Center.contains(v2)||NonCenter.contains(v1)||NonCenter.contains(v2)))
-            {
-            	double w1 = (double) edgesWeight[v1] / (double) edgesAttached[v1];
-            	double w2 = (double) edgesWeight[v2] / (double) edgesAttached[v2];
-            	if (w1>w2)
-            	{
+            boolean v1IsCenter = Center.contains(v1);
+            boolean v2IsCenter = Center.contains(v2);
+            boolean v1IsNonCenter = NonCenter.contains(v1);
+            boolean v2IsNonCenter = NonCenter.contains(v2);
+
+            if (!(v1IsCenter || v2IsCenter || v1IsNonCenter || v2IsNonCenter)) {
+                double w1 = edgesWeight[v1] / edgesAttached[v1];
+                double w2 = edgesWeight[v2] / edgesAttached[v2];
+                if (w1 > w2) {
                     Center.add(v1);
                     NonCenter.add(v2);
-            	}
-            	else
-            	{
+                } else {
                     Center.add(v2);
                     NonCenter.add(v1);
-            	}
+                }
 
                 similarityGraph.addEdge(v1, v2);
-            }
-            else if ((Center.contains(v1)&&Center.contains(v2))||(NonCenter.contains(v1)&&NonCenter.contains(v2)))
-            {
+            } else if ((v1IsCenter && v2IsCenter) || (v1IsNonCenter && v2IsNonCenter)) {
                 continue;
-            }
-            else if (Center.contains(v1)&&(!NonCenter.contains(v2)))
-            {
+            } else if (v1IsCenter && !v2IsNonCenter) {
                 NonCenter.add(v2);
                 similarityGraph.addEdge(v1, v2);
-            }
-            else if (Center.contains(v2)&&(!NonCenter.contains(v1)))
-            {
+            } else if (v2IsCenter && !v1IsNonCenter) {
                 NonCenter.add(v1);
                 similarityGraph.addEdge(v1, v2);
             }
         }
-        
 
-        // get connected components
-        ConnectivityInspector ci = new ConnectivityInspector(similarityGraph);
-        List<Set<Integer>> connectedComponents = ci.connectedSets();
-
-        // prepare output
-        List<EquivalenceCluster> equivalenceClusters = new ArrayList<>();
-        for (Set<Integer> componentIds : connectedComponents) {
-            EquivalenceCluster newCluster = new EquivalenceCluster();
-            equivalenceClusters.add(newCluster);
-            if (!simPairs.isCleanCleanER()) {
-                newCluster.loadBulkEntityIdsD1(componentIds);
-                continue;
-            }
-
-            for (Integer entityId : componentIds) {
-                if (entityId < datasetLimit) {
-                    newCluster.addEntityIdD1(entityId);
-                } else {
-                    newCluster.addEntityIdD2(entityId-datasetLimit);
-                }
-            }
-        }
-        return equivalenceClusters;
-    }
-
-    public int getMaxEntityId(int[] entityIds) {
-        int maxId = Integer.MIN_VALUE;
-        for (int i = 0; i < entityIds.length; i++) {
-            if (maxId < entityIds[i]) {
-                maxId = entityIds[i];
-            }
-        }
-        return maxId;
+        return getConnectedComponents();
     }
 
     @Override
     public String getMethodInfo() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return "Center Clustering: implements the CENTER algorithm such that a vertex is set as a cluster center if it has highest average edge weight from its adjacent node";
     }
 
     @Override
     public String getMethodParameters() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    private double getSimilarityThreshold(SimilarityPairs simPairs) {
-        double averageSimilarity = 0;
-        Iterator<Comparison> iterator = simPairs.getPairIterator();
-        while (iterator.hasNext()) {
-            Comparison comparison = iterator.next();
-            averageSimilarity += comparison.getUtilityMeasure();
-
-        }
-        averageSimilarity /= simPairs.getNoOfComparisons();
-
-        double standardDeviation = 0;
-        iterator = simPairs.getPairIterator();
-        while (iterator.hasNext()) {
-            Comparison comparison = iterator.next();
-            standardDeviation += Math.pow(comparison.getUtilityMeasure()-averageSimilarity, 2.0);
-        }
-        standardDeviation = Math.sqrt(standardDeviation/simPairs.getNoOfComparisons());
-
-        double threshold = 0.5;
-
-        LOGGER.log(Level.INFO, "Similarity threshold : {0}", threshold);
-        return threshold;
-    }
-    
-    
-    private void initializeGraph(SimilarityPairs simPairs) {
-        int maxEntity1 = getMaxEntityId(simPairs.getEntityIds1());
-        int maxEntity2 = getMaxEntityId(simPairs.getEntityIds2());
-        if (simPairs.isCleanCleanER()) {
-            datasetLimit = maxEntity1 + 1;
-            noOfEntities = maxEntity1 + maxEntity2 + 2;
-        } else {
-            datasetLimit = 0;
-            noOfEntities = Math.max(maxEntity1, maxEntity2) + 1;
-        }
-
-        for (int i = 0; i < noOfEntities; i++) {
-            similarityGraph.addVertex(i);
-        }
-        LOGGER.log(Level.INFO, "Added {0} nodes in the graph", noOfEntities);
+        return "The Center Clustering algorithm involves 1 parameter:\n" 
+             + explainThresholdParameter();
     }
 }

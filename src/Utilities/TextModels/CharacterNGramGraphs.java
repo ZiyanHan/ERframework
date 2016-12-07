@@ -17,6 +17,7 @@
 package Utilities.TextModels;
 
 import Utilities.Enumerations.RepresentationModel;
+import Utilities.Enumerations.SimilarityMetric;
 import gr.demokritos.iit.jinsect.documentModel.representations.DocumentNGramGraph;
 import gr.demokritos.iit.jinsect.documentModel.representations.DocumentNGramHGraph;
 
@@ -29,8 +30,8 @@ public class CharacterNGramGraphs extends GraphModel {
     
     private final static int SEGMENTS_UNIT = 100;
     
-    public CharacterNGramGraphs (int n, RepresentationModel model, String iName) {
-        super(n, model, iName);
+    public CharacterNGramGraphs (int n, RepresentationModel model, SimilarityMetric simMetric, String iName) {
+        super(n, model, simMetric, iName);
         
         graphModel = new DocumentNGramHGraph(nSize, nSize, nSize, nSize*SEGMENTS_UNIT);
     }

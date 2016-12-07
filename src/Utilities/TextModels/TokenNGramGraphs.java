@@ -17,6 +17,7 @@
 package Utilities.TextModels;
 
 import Utilities.Enumerations.RepresentationModel;
+import Utilities.Enumerations.SimilarityMetric;
 import gr.demokritos.iit.jinsect.documentModel.representations.DocumentWordGraph;
 
 /**
@@ -26,8 +27,8 @@ import gr.demokritos.iit.jinsect.documentModel.representations.DocumentWordGraph
 
 public class TokenNGramGraphs extends GraphModel {
     
-    public TokenNGramGraphs (int n, RepresentationModel model, String iName) {
-        super(n, model, iName);
+    public TokenNGramGraphs (int n, RepresentationModel model, SimilarityMetric simMetric, String iName) {
+        super(n, model, simMetric, iName);
 
         graphModel = new DocumentWordGraph(nSize, nSize, nSize);
     }

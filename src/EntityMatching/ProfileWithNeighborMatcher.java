@@ -55,18 +55,16 @@ public class ProfileWithNeighborMatcher extends AbstractEntityMatching {
     protected AbstractModel[] neighborModelsD1;
     protected AbstractModel[] neighborModelsD2;
     
-    protected AbstractDuplicatePropagation duplicatePropagation;
+    protected AbstractDuplicatePropagation groundTruth;
     
     protected RepresentationModel representationModel;
+    protected double matching_threshold;
     
-    public ProfileWithNeighborMatcher (RepresentationModel model) {
-        representationModel = model;
-        LOGGER.log(Level.INFO, "Initializing profile matcher with : {0}", model);
-    }
-
-    ProfileWithNeighborMatcher(RepresentationModel repModel, AbstractDuplicatePropagation duplicatePropagation) {
-        this(repModel);
-        this.duplicatePropagation = duplicatePropagation;
+    public ProfileWithNeighborMatcher(RepresentationModel repModel, AbstractDuplicatePropagation groundTruth, double matching_threshold) {
+        this.representationModel = repModel;
+        this.groundTruth = groundTruth;
+        this.matching_threshold = matching_threshold;
+        LOGGER.log(Level.INFO, "Initializing profile matcher with : {0}, {1}, {2}", new Object[]{repModel, groundTruth, matching_threshold});
     }
     
     @Override
@@ -88,12 +86,14 @@ public class ProfileWithNeighborMatcher extends AbstractEntityMatching {
         
         //meta-blocking
         IBlockProcessing comparisonCleaningMethod = 
-                new CardinalityNodePruningWithMatching(WeightingScheme.CBS, entityModelsD1, entityModelsD2, neighborModelsD1, neighborModelsD2);
+                new CardinalityNodePruningWithMatching(WeightingScheme.CBS, entityModelsD1, entityModelsD2, neighborModelsD1, neighborModelsD2, matching_threshold);
                 //new ReciprocalCardinalityNodePruning(WeightingScheme.CBS, entityModelsD1, entityModelsD2, neighborModelsD1, neighborModelsD2);
         blocks = comparisonCleaningMethod.refineBlocks(blocks);
         
-        BlocksPerformance blp = new BlocksPerformance(blocks, duplicatePropagation);
-        blp.getStatistics();
+        if (groundTruth != null) {
+            BlocksPerformance blp = new BlocksPerformance(blocks, groundTruth);
+            blp.getStatistics();
+        }
         
         SimilarityPairs simPairs = new SimilarityPairs(cleanCleanER, blocks);
         for (AbstractBlock block : blocks) {
@@ -148,7 +148,8 @@ public class ProfileWithNeighborMatcher extends AbstractEntityMatching {
 
     @Override
     public String getMethodInfo() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return "ProfileWithNeighborMatcher: it uses a complex similarity measure on the values of the entities and the values of their neighbors."
+                + "Meta-blocking is included in the process.";
     }
 
     @Override
@@ -173,5 +174,9 @@ public class ProfileWithNeighborMatcher extends AbstractEntityMatching {
 //            System.out.println("The neighbor similarity of "+comparison.getEntityId1()+" and "+comparison.getEntityId2()+" is "+neighbor_similarity);
 //        
         return a * profile_similarity + (1-a) * neighbor_similarity;
+    }
+    
+    public void setGroundTruth(AbstractDuplicatePropagation duplicatePropagation) {
+        this.groundTruth = duplicatePropagation;
     }
 }

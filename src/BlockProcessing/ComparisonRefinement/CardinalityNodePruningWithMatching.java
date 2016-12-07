@@ -45,30 +45,33 @@ public class CardinalityNodePruningWithMatching extends CardinalityEdgePruning {
     protected AbstractModel[] neighborModelsD1;
     protected AbstractModel[] neighborModelsD2;
     
+    protected double matching_threshold = 0.5;
+    
     public CardinalityNodePruningWithMatching(WeightingScheme scheme) {
         super(scheme);
         nodeCentric = true;
     }
 
-    public CardinalityNodePruningWithMatching(WeightingScheme scheme, AbstractModel[] entityModelsD1, AbstractModel[] entityModelsD2, AbstractModel[] neighborModelsD1, AbstractModel[] neighborModelsD2) {
+    public CardinalityNodePruningWithMatching(WeightingScheme scheme, AbstractModel[] entityModelsD1, AbstractModel[] entityModelsD2, AbstractModel[] neighborModelsD1, AbstractModel[] neighborModelsD2, double matching_threshold) {
         super(scheme);
-        nodeCentric = true;
         this.entityModelsD1 = entityModelsD1;
         this.entityModelsD2 = entityModelsD2;
         this.neighborModelsD1 = neighborModelsD1;
         this.neighborModelsD2 = neighborModelsD2;
+        this.matching_threshold = matching_threshold;
     }
 
     @Override
     public String getMethodInfo() {
-        return "Cardinality Node Pruning: a Meta-blocking method that retains for every entity, "
-                + "the comparisons that correspond to its top-k weighted edges in the blocking graph.";
+        return "Cardinality Node Pruning with matching: a Meta-blocking method that retains for every entity, "
+                + "the comparisons that correspond to its top-1 weighted edges in the blocking graph.";
     }
 
     @Override
     public String getMethodParameters() {
-        return "Cardinality Node Pruning involves a single parameter:\n"
-                + "the weighting scheme that assigns weights to the edges of the blcoking graph.";
+        return "Cardinality Node Pruning with matching involves two parameters:\n"
+                + "the weighting scheme that assigns weights to the edges of the blcoking graph, "
+                + "and the similarity threshold above which edges are retained (a matching threshold for the top edge).";
     }
     
     protected boolean isValidComparison(int entityId, Comparison comparison) {
@@ -91,7 +94,7 @@ public class CardinalityNodePruningWithMatching extends CardinalityEdgePruning {
     @Override
     protected List<AbstractBlock> pruneEdges() {
         nearestEntities = new Set[noOfEntities];
-        topKEdges = new PriorityQueue<Comparison>((int) (2 * threshold), new ComparisonWeightComparator());
+        topKEdges = new PriorityQueue<>((int) (2 * threshold), new ComparisonWeightComparator());
         if (weightingScheme.equals(WeightingScheme.ARCS)) {
             for (int i = 0; i < noOfEntities; i++) {
                 processArcsEntity(i);
@@ -111,7 +114,7 @@ public class CardinalityNodePruningWithMatching extends CardinalityEdgePruning {
     protected void retainValidComparisons(List<AbstractBlock> newBlocks) {
         List<Comparison> retainedComparisons = new ArrayList<>();        
         for (int i = 0; i < noOfEntities; i++) {
-            double max_neighbor_similarity = 0.65; //also sets a matching threshold
+            double max_neighbor_similarity = matching_threshold;
             if (nearestEntities[i] != null) {
                 retainedComparisons.clear();
                 for (Comparison comparison : nearestEntities[i]) {

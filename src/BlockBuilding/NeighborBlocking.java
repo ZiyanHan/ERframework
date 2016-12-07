@@ -18,7 +18,6 @@ package BlockBuilding;
 
 import static BlockBuilding.IBlockBuilding.DOC_ID;
 import static BlockBuilding.IBlockBuilding.VALUE_LABEL;
-import DataModel.Attribute;
 import DataModel.EntityProfile;
 import java.io.IOException;
 import java.util.Arrays;
@@ -45,7 +44,7 @@ public class NeighborBlocking extends AbstractBlockBuilding {
     
     public NeighborBlocking() {
         super();
-        LOGGER.log(Level.INFO, "Standard Blocking initiated");
+        LOGGER.log(Level.INFO, "Neighbor Blocking initiated");
     }
     
     @Override
@@ -99,12 +98,13 @@ public class NeighborBlocking extends AbstractBlockBuilding {
 
     @Override
     public String getMethodInfo() {
-        return "Standard Blocking: it creates one block for every token in the attribute values of at least two entities.";
+        return "Neighbor Blocking: it creates one block for every token in the attribute values of at least two entities, "
+                + "and in the attribute values of their neighbors.";
     }
 
     @Override
     public String getMethodParameters() {
-        return "Standard Blocking is a parameter-free method, as it uses unsupervised, schema-agnostic blocking keys:\n"
-                + "every token is a blocking key.";
+        return "Neighbor Blocking is a parameter-free method, as it uses unsupervised, schema-agnostic blocking keys:\n"
+                + "every token in the values and in each neighbor's values is a blocking key.";
     }
 }

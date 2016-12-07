@@ -50,6 +50,7 @@ public class TestNeighborBlocking {
             basePath+"restaurant2Profiles",
         };
         String datasetGroundtruth = basePath+"restaurantIdDuplicates";
+        double matching_threshold = 0.65;
 
         IEntityReader eReader1 = new EntitySerializationReader(datasetProfiles[0]);
         List<EntityProfile> profiles1 = eReader1.getEntityProfiles();
@@ -85,7 +86,7 @@ public class TestNeighborBlocking {
         for (RepresentationModel repModel : repModels) {
             System.out.println("\n\nCurrent model\t:\t" + repModel.toString());
             IEntityMatching em = 
-                    new ProfileWithNeighborMatcher(repModel,duplicatePropagation);
+                    new ProfileWithNeighborMatcher(repModel,duplicatePropagation, matching_threshold);
 //                    new ProfileMatcher(repModel);
             SimilarityPairs simPairs = em.executeComparisons(blocks, profiles1, profiles2);
 

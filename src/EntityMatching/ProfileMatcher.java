@@ -92,7 +92,7 @@ public class ProfileMatcher extends AbstractEntityMatching {
 
     @Override
     public String getMethodInfo() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return "Profile Matcher";
     }
 
     @Override

@@ -77,14 +77,14 @@ public class ClustersPerformance {
             }
         }
 
+        precision = abstractDP.getNoOfDuplicates() / totalMatches;
+        recall = ((double) abstractDP.getNoOfDuplicates()) / abstractDP.getExistingDuplicates();
+        fMeasure = 2 * precision * recall / (precision + recall);
+        
         printStatistics();
     }
 
     private void printStatistics() {
-        precision = abstractDP.getNoOfDuplicates() / totalMatches;
-        recall = ((double) abstractDP.getNoOfDuplicates()) / abstractDP.getExistingDuplicates();
-        fMeasure = 2 * precision * recall / (precision + recall);
-
         System.out.println("\n\n\n**************************************************");
         System.out.println("************** Clusters Performance **************");
         System.out.println("**************************************************");
@@ -95,5 +95,17 @@ public class ClustersPerformance {
         System.out.println("Precision\t:\t" + precision);
         System.out.println("Recall\t:\t" + recall);
         System.out.println("F-Measure\t:\t" + fMeasure);
+    }
+    
+    public double getPrecision() {
+        return precision;
+    }
+    
+    public double getRecall() {
+        return recall;
+    }
+    
+    public double getFMeasure() {
+        return fMeasure;
     }
 }

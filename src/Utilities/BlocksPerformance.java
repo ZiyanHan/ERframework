@@ -169,6 +169,11 @@ public class BlocksPerformance {
         detectedDuplicates = abstractDP.getNoOfDuplicates();
         pc = ((double) abstractDP.getNoOfDuplicates()) / abstractDP.getExistingDuplicates();
         pq = abstractDP.getNoOfDuplicates() / aggregateCardinality;
+        double f1 =  2 * pc * pq / (pc + pq);
+        System.out.println("Detected duplicates\t:\t" + abstractDP.getNoOfDuplicates());
+        System.out.println("PC\t:\t" + pc);
+        System.out.println("PQ\t:\t" + pq);
+        System.out.println("F-measure\t:\t" + f1);
     }
 
     private void getDuplicatesWithEntityIndex() {
@@ -183,6 +188,11 @@ public class BlocksPerformance {
         detectedDuplicates = (int) noOfDuplicates;
         pc = noOfDuplicates / abstractDP.getExistingDuplicates();
         pq = noOfDuplicates / aggregateCardinality;
+        double f1 =  2 * pc * pq / (pc + pq);
+        System.out.println("Detected duplicates\t:\t" + noOfDuplicates);
+        System.out.println("PC\t:\t" + pc);
+        System.out.println("PQ\t:\t" + pq);
+        System.out.println("F-measure\t:\t" + f1);
     }
 
     private void getEntities() {

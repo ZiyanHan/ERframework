@@ -44,6 +44,10 @@ public class ProfileMatcher extends AbstractEntityMatching {
 
         LOGGER.log(Level.INFO, "Initializing profile matcher with : {0}", model);
     }
+    
+    public ProfileMatcher(RepresentationModel model) {
+        this(model,SimilarityMetric.getModelDefaultSimMetric(model));
+    }
 
     @Override
     public SimilarityPairs executeComparisons(List<AbstractBlock> blocks,

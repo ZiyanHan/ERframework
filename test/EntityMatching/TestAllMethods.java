@@ -29,6 +29,7 @@ import DataReader.GroundTruthReader.GtSerializationReader;
 import DataReader.GroundTruthReader.IGroundTruthReader;
 import Utilities.Enumerations.BlockBuildingMethod;
 import Utilities.Enumerations.RepresentationModel;
+import Utilities.Enumerations.SimilarityMetric;
 import java.util.List;
 
 /**
@@ -66,7 +67,7 @@ public class TestAllMethods {
             }
             
             for (RepresentationModel model : RepresentationModel.values()) {
-                IEntityMatching pm = new ProfileMatcher(model);
+                IEntityMatching pm = new ProfileMatcher(model, SimilarityMetric.getModelDefaultSimMetric(model));
                 SimilarityPairs simPairs = pm.executeComparisons(blocks, profiles);
                 for (int i = 0; i < 10; i++) {
                     System.out.println(simPairs.getEntityIds1()[i] + "\t\t" + simPairs.getEntityIds2()[i] + "\t\t" + simPairs.getSimilarities()[i]);

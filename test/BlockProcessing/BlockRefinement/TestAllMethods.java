@@ -60,7 +60,8 @@ public class TestAllMethods {
             }
             
             BlocksPerformance blStats = new BlocksPerformance(blocks, duplicatePropagation);
-            blStats.getStatistics();
+            blStats.setStatistics();
+            blStats.printStatistics();
         }
     }
 }

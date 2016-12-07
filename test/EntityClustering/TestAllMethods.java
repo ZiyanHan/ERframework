@@ -18,10 +18,8 @@ package EntityClustering;
 import EntityMatching.*;
 import BlockBuilding.*;
 import BlockProcessing.ComparisonRefinement.CardinalityNodePruning;
-import BlockProcessing.ComparisonRefinement.WeightedEdgePruning;
 import Utilities.DataStructures.AbstractDuplicatePropagation;
 import BlockProcessing.IBlockProcessing;
-import Utilities.DataStructures.UnilateralDuplicatePropagation;
 import DataModel.AbstractBlock;
 import DataModel.EntityProfile;
 import DataModel.EquivalenceCluster;
@@ -35,6 +33,7 @@ import Utilities.ClustersPerformance;
 import Utilities.DataStructures.BilateralDuplicatePropagation;
 import Utilities.Enumerations.BlockBuildingMethod;
 import Utilities.Enumerations.RepresentationModel;
+import Utilities.Enumerations.SimilarityMetric;
 import Utilities.Enumerations.WeightingScheme;
 import java.util.List;
 
@@ -81,7 +80,8 @@ public class TestAllMethods {
         blocks = comparisonCleaningMethod.refineBlocks(blocks);
 
         BlocksPerformance blp = new BlocksPerformance(blocks, duplicatePropagation);
-        blp.getStatistics();
+        blp.setStatistics();
+        blp.printStatistics();
 
         RepresentationModel[] repModels = {
             RepresentationModel.CHARACTER_BIGRAM_GRAPHS,
@@ -91,7 +91,7 @@ public class TestAllMethods {
 
         for (RepresentationModel repModel : repModels) {
             System.out.println("\n\nCurrent model\t:\t" + repModel.toString());
-            IEntityMatching em = new ProfileMatcher(repModel);
+            IEntityMatching em = new ProfileMatcher(repModel, SimilarityMetric.getModelDefaultSimMetric(repModel));
             SimilarityPairs simPairs = em.executeComparisons(blocks, profiles1, profiles2);                                    
             IEntityClustering ec =  
 //                        new ConnectedComponentsClustering(); 
@@ -101,7 +101,8 @@ public class TestAllMethods {
             List<EquivalenceCluster> entityClusters = ec.getDuplicates(simPairs);
 
             ClustersPerformance clp = new ClustersPerformance(entityClusters, duplicatePropagation);
-            clp.getStatistics();                
+            clp.setStatistics();                
+            clp.printStatistics();
         }
         
     }

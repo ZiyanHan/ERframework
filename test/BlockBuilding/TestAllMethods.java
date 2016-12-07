@@ -54,7 +54,8 @@ public class TestAllMethods {
             List<AbstractBlock> blocks = blockBuildingMethod.getBlocks(profiles, null);
             
             BlocksPerformance blStats = new BlocksPerformance(blocks, duplicatePropagation);
-            blStats.getStatistics();
+            blStats.setStatistics();
+            blStats.printStatistics();
         }
     }
 }

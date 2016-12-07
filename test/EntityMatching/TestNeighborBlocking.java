@@ -31,6 +31,7 @@ import Utilities.ClustersPerformance;
 import Utilities.DataStructures.BilateralDuplicatePropagation;
 import Utilities.Enumerations.BlockBuildingMethod;
 import Utilities.Enumerations.RepresentationModel;
+import Utilities.Enumerations.SimilarityMetric;
 import java.util.List;
 
 /**
@@ -85,7 +86,7 @@ public class TestNeighborBlocking {
         for (RepresentationModel repModel : repModels) {
             System.out.println("\n\nCurrent model\t:\t" + repModel.toString());
             IEntityMatching em = 
-                    new ProfileWithNeighborMatcher(repModel,duplicatePropagation);
+                    new ProfileWithNeighborMatcher(repModel, SimilarityMetric.getModelDefaultSimMetric(repModel), duplicatePropagation);
 //                    new ProfileMatcher(repModel);
             SimilarityPairs simPairs = em.executeComparisons(blocks, profiles1, profiles2);
 

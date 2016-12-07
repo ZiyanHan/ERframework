@@ -29,6 +29,7 @@ import DataReader.GroundTruthReader.GtSerializationReader;
 import DataReader.GroundTruthReader.IGroundTruthReader;
 import Utilities.Enumerations.BlockBuildingMethod;
 import Utilities.Enumerations.RepresentationModel;
+import Utilities.Enumerations.SimilarityMetric;
 
 import java.util.List;
 
@@ -91,7 +92,7 @@ public class TestGroupLinkage {
             	if (model.equals(RepresentationModel.CHARACTER_BIGRAMS))
             	{
 
-                GroupLinkageWithGraph gp = new GroupLinkageWithGraph(model);
+                GroupLinkage gp = new GroupLinkage(model, SimilarityMetric.getModelDefaultSimMetric(model));
                 gp.setSimilarityThreshold(0.1);
                 SimilarityPairs simPairs = gp.executeComparisons(blocks, profiles1);//
                 //System.out.println();

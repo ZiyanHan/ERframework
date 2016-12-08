@@ -35,6 +35,7 @@ public abstract class AbstractWorkflowBuilder {
     BlockBuildingMethod blockingMethod;
     IEntityClustering clusteringMethod;
     IEntityMatching similarityMethod;
+    double similarity_threshold;
     IBlockProcessing metaBlockingMethod;
     
     //variables needed and created afterwards
@@ -43,6 +44,8 @@ public abstract class AbstractWorkflowBuilder {
     AbstractDuplicatePropagation groundTruth;
     
     List<AbstractBlock> blocks;
+    
+    double precision, recall, fmeasure;
 
     public AbstractWorkflowBuilder(String dataset1Path, String dataset2Path, String groundTruthPath, BlockBuildingMethod blockingMethod, IBlockProcessing metaBlockingMethod, IEntityMatching similarityMethod, IEntityClustering clusteringMethod) {
         this.dataset1Path = dataset1Path;
@@ -82,6 +85,26 @@ public abstract class AbstractWorkflowBuilder {
             blocks = blockCleaningMethod.refineBlocks(blocks);
         }
     }
+
+    public void setBlockingMethod(BlockBuildingMethod blockingMethod) {
+        this.blockingMethod = blockingMethod;
+    }
+
+    public void setClusteringMethod(IEntityClustering clusteringMethod) {
+        this.clusteringMethod = clusteringMethod;
+    }
+
+    public void setSimilarityMethod(IEntityMatching similarityMethod) {
+        this.similarityMethod = similarityMethod;
+    }
+
+    public void setSimilarity_threshold(double similarity_threshold) {
+        this.similarity_threshold = similarity_threshold;
+    }
+
+    public void setMetaBlockingMethod(IBlockProcessing metaBlockingMethod) {
+        this.metaBlockingMethod = metaBlockingMethod;
+    }
     
     protected void runMetaBlocking() {
         if (blocks == null) {
@@ -96,6 +119,7 @@ public abstract class AbstractWorkflowBuilder {
         blp.printStatistics();
     }
     
+    //TODO: return precision, recall, fmeasure for ProfileWithNeighborMatcher (meta-blocking)
     protected SimilarityPairs runSimilarityComputations() {
         if (blocks == null) {
             throw new IllegalStateException("Cannot compute similarity on a null block collection. Run blocking first!");
@@ -115,14 +139,28 @@ public abstract class AbstractWorkflowBuilder {
         ClustersPerformance clp = new ClustersPerformance(entityClusters, groundTruth);
         clp.setStatistics();
         clp.printStatistics();
+        
+        precision = clp.getPrecision();
+        recall = clp.getRecall();
+        fmeasure = clp.getFMeasure();
     }
     
     
     
     public abstract void runWorkflow();
     
+    public double getPrecision() {
+        return precision;
+    }
     
-
+    public double getRecall() {
+        return recall;
+    }
+    
+    public double getFMeasure() {
+        return fmeasure;
+    }
+    
     public String getDataset1Path() {
         return dataset1Path;
     }
@@ -167,18 +205,19 @@ public abstract class AbstractWorkflowBuilder {
         return blocks;
     }
     
-    
-    
-    
-    
+    public double getSimilarityThreshold() {
+        return similarity_threshold;
+    }
     
     
     @Override
     public String toString() {
         String result = "";
+        result += "Dataset:"+dataset1Path+"\n";
         result += "Blocking method:"+blockingMethod+"\n";
         result += "Meta-blocking method:"+ (metaBlockingMethod != null ? metaBlockingMethod.getMethodInfo() : "NONE") +"\n";
         result += "Similarity method:"+similarityMethod.getMethodInfo()+"\n";
+        result += "Similarity threshold:"+similarity_threshold+"\n";
         result += "Clustering method:"+ (clusteringMethod != null ? clusteringMethod.getMethodInfo() : "NONE")+"\n";
         return result;
     }

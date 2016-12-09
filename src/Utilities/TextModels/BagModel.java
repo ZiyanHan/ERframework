@@ -54,7 +54,7 @@ public abstract class BagModel extends AbstractModel {
         for (Entry<String, Integer> entry : itemVector1.entrySet()) {
             Integer frequency2 = itemVector2.get(entry.getKey());
             if (frequency2 != null) {
-                numerator += entry.getValue() * frequency2;
+                numerator += entry.getValue() * frequency2 / noOfTotalTerms / oModel.getNoOfTotalTerms();
             }
         }
         

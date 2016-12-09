@@ -44,15 +44,12 @@ import java.util.logging.Logger;
  * @author G.A.P. II
  */
 
-public class ProfileWithNeighborMatcher extends AbstractEntityMatching {
+public class ProfileWithNeighborMatcher extends ProfileMatcher {
 
     private static final Logger LOGGER = Logger.getLogger(ProfileWithNeighborMatcher.class.getName());
     
     private boolean cleanCleanER = false; 
-    
-    protected AbstractModel[] entityModelsD1;
-    protected AbstractModel[] entityModelsD2;
-    
+        
     protected AbstractModel[] neighborModelsD1;
     protected AbstractModel[] neighborModelsD2;
     
@@ -60,12 +57,42 @@ public class ProfileWithNeighborMatcher extends AbstractEntityMatching {
     
     protected double matching_threshold;
     
+    private RepresentationModel neighborRepModel;
+    private SimilarityMetric neighborSimMetric;
+    
+    private double a = 0.66;
     
     public ProfileWithNeighborMatcher(RepresentationModel repModel, AbstractDuplicatePropagation groundTruth, double matching_threshold) {
-        super(repModel, SimilarityMetric.getModelDefaultSimMetric(repModel));
+        this(repModel, SimilarityMetric.getModelDefaultSimMetric(repModel));
         this.groundTruth = groundTruth;
         this.matching_threshold = matching_threshold;
         LOGGER.log(Level.INFO, "Initializing profile matcher with : {0}, {1}, {2}", new Object[]{repModel, groundTruth, matching_threshold});
+    }
+    
+    public ProfileWithNeighborMatcher(RepresentationModel repModel, SimilarityMetric simMetric, AbstractDuplicatePropagation groundTruth, double matching_threshold) {
+        this(repModel, simMetric);
+        this.groundTruth = groundTruth;
+        this.matching_threshold = matching_threshold;
+        LOGGER.log(Level.INFO, "Initializing profile matcher with : {0}, {1}, {2}, {3}", new Object[]{repModel, simMetric, groundTruth, matching_threshold});
+    }
+    
+    public ProfileWithNeighborMatcher(RepresentationModel repModel, SimilarityMetric simMetric) {
+        super(repModel, simMetric);
+        this.neighborRepModel =  RepresentationModel.CHARACTER_BIGRAMS; //default values
+        this.simMetric = SimilarityMetric.JACCARD_SIMILARITY; //default values
+    }
+    
+    public ProfileWithNeighborMatcher(RepresentationModel repModel1, SimilarityMetric simMetric1, RepresentationModel repModel2, SimilarityMetric simMetric2) {
+        super(repModel1, simMetric1);
+        neighborRepModel = repModel2;
+        neighborSimMetric = simMetric2;
+        LOGGER.log(Level.INFO, "Initializing profile matcher with : {0}, {1}, {2}, {3}", new Object[]{repModel1, simMetric1, repModel2, simMetric2});
+    }
+    
+    public ProfileWithNeighborMatcher(RepresentationModel repModel1, SimilarityMetric simMetric1, RepresentationModel repModel2, SimilarityMetric simMetric2, double a) {
+        this(repModel1, simMetric1, repModel2, simMetric2);
+        this.a = a;
+        LOGGER.log(Level.INFO, "Initializing profile matcher with : {0}, {1}, {2}, {3}, a={4}", new Object[]{repModel1, simMetric1, repModel2, simMetric2, a});
     }
     
     @Override
@@ -85,17 +112,20 @@ public class ProfileWithNeighborMatcher extends AbstractEntityMatching {
             neighborModelsD2 = getNeighborModels(profilesD2);
         }
         
+        /*
         //meta-blocking
         IBlockProcessing comparisonCleaningMethod = 
                 new CardinalityNodePruningWithMatching(WeightingScheme.CBS, entityModelsD1, entityModelsD2, neighborModelsD1, neighborModelsD2, matching_threshold);
                 //new ReciprocalCardinalityNodePruning(WeightingScheme.CBS, entityModelsD1, entityModelsD2, neighborModelsD1, neighborModelsD2);
         blocks = comparisonCleaningMethod.refineBlocks(blocks);
         
+        
         if (groundTruth != null) {
             BlocksPerformance blp = new BlocksPerformance(blocks, groundTruth);
             blp.setStatistics();
             blp.printStatistics();
         }
+        */
         
         SimilarityPairs simPairs = new SimilarityPairs(cleanCleanER, blocks);
         for (AbstractBlock block : blocks) {
@@ -110,20 +140,6 @@ public class ProfileWithNeighborMatcher extends AbstractEntityMatching {
         return simPairs;
     }
     
-    private AbstractModel[] getModels(List<EntityProfile> profiles) {
-//        if (1 == 1) return null; //only added for debugging
-        int counter = 0;
-        AbstractModel[] models  = new AbstractModel[profiles.size()];
-        for (EntityProfile profile : profiles) {
-            models[counter] = RepresentationModel.getModel(representationModel, simMetric, profile.getEntityUrl());
-            for (Attribute attribute : profile.getAttributes()) {
-                models[counter].updateModel(attribute.getValue());
-            }
-            counter++;
-        }
-        return models;
-    }
-    
     private AbstractModel[] getNeighborModels(List<EntityProfile> profiles) {
         int counter = 0;
         
@@ -134,7 +150,7 @@ public class ProfileWithNeighborMatcher extends AbstractEntityMatching {
                 
         AbstractModel[] models  = new AbstractModel[profiles.size()];
         for (EntityProfile profile : profiles) {
-            models[counter] = new CharacterNGrams(2, RepresentationModel.CHARACTER_BIGRAMS, SimilarityMetric.JACCARD_SIMILARITY, profile.getEntityUrl());
+            models[counter] = RepresentationModel.getModel(neighborRepModel, neighborSimMetric, profile.getEntityUrl());                    
             for (String neighbor: profile.getAllValues()) {
                 Set<String> values = profilesURLs.get(neighbor);
                 if (values != null) { //then this value is an entity id
@@ -159,15 +175,26 @@ public class ProfileWithNeighborMatcher extends AbstractEntityMatching {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    public double getSimilarity(Comparison comparison) {
-        final double a = 0.66;
+    @Override
+    public double getSimilarity(Comparison comparison) {        
         double profile_similarity =0;        
         double neighbor_similarity;        
         
+        
+        if (entityModelsD1[comparison.getEntityId1()].getNoOfDocuments() == 0) {            
+            return 0;
+        }
+        
         if (cleanCleanER) {
+            if (entityModelsD2[comparison.getEntityId2()].getNoOfDocuments() == 0) {                
+                return 0;
+            }
             profile_similarity =  entityModelsD1[comparison.getEntityId1()].getSimilarity(entityModelsD2[comparison.getEntityId2()]);
             neighbor_similarity = neighborModelsD1[comparison.getEntityId1()].getSimilarity(neighborModelsD2[comparison.getEntityId2()]);
         } else {
+            if (entityModelsD1[comparison.getEntityId2()].getNoOfDocuments() == 0) {            
+                return 0;
+            }            
             profile_similarity = entityModelsD1[comparison.getEntityId1()].getSimilarity(entityModelsD1[comparison.getEntityId2()]);
             neighbor_similarity = neighborModelsD1[comparison.getEntityId1()].getSimilarity(neighborModelsD1[comparison.getEntityId2()]);
         }

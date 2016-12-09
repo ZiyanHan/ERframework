@@ -85,6 +85,12 @@ public class ClustersPerformance {
         System.out.println("Recall\t:\t" + recall);
         System.out.println("F-Measure\t:\t" + fMeasure);
     }
+    
+    public void printStatisticsShort() {
+        System.out.println("Precision\t:\t" + precision);
+        System.out.println("Recall\t:\t" + recall);
+        System.out.println("F-Measure\t:\t" + fMeasure);
+    }
 
     public void setStatistics() {
         if (entityClusters.isEmpty()) {

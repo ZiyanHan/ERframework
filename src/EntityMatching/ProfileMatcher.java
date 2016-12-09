@@ -42,7 +42,7 @@ public class ProfileMatcher extends AbstractEntityMatching {
     public ProfileMatcher(RepresentationModel model, SimilarityMetric simMetric) {
         super(model, simMetric);
 
-        LOGGER.log(Level.INFO, "Initializing profile matcher with : {0}", model);
+        LOGGER.log(Level.INFO, "Initializing profile matcher with : {0}, {1}", new Object[]{model, simMetric});
     }
     
     public ProfileMatcher(RepresentationModel model) {
@@ -71,20 +71,37 @@ public class ProfileMatcher extends AbstractEntityMatching {
             while (iterator.hasNext()) {
                 Comparison currentComparison = iterator.next();
                 currentComparison.setUtilityMeasure(getSimilarity(currentComparison));
-                simPairs.addComparison(currentComparison);
+                if (currentComparison.getUtilityMeasure() > 0) {
+                    simPairs.addComparison(currentComparison);
+                }
             }
         }
         return simPairs;
     }
 
-    private AbstractModel[] getModels(List<EntityProfile> profiles) {
+    protected AbstractModel[] getModels(List<EntityProfile> profiles) {
         int counter = 0;
         final AbstractModel[] models = new AbstractModel[profiles.size()];
-        for (EntityProfile profile : profiles) {
+        for (EntityProfile profile : profiles) {              
+            boolean foundType = false; //use only for datasets with specific target type!!            
             models[counter] = RepresentationModel.getModel(representationModel, simMetric, profile.getEntityUrl());
             for (Attribute attribute : profile.getAttributes()) {
                 models[counter].updateModel(attribute.getValue());
+                if (hasTypeRestriction()) {
+                    if (attribute.getName().equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")) {
+                        foundType = true;
+                        if (!getAcceptableEntityTypes().contains(attribute.getValue())) {                        
+                            models[counter] = RepresentationModel.getModel(representationModel, simMetric, profile.getEntityUrl());
+                            break; //go to next entity                            
+                        }
+                    }
+                }
             }
+
+            if (hasTypeRestriction() && !foundType) { //use only for datasets with specific target type!!
+                models[counter] = RepresentationModel.getModel(representationModel, simMetric, profile.getEntityUrl()); //reset model
+            }
+            
             counter++;
         }
         return models;
@@ -106,10 +123,19 @@ public class ProfileMatcher extends AbstractEntityMatching {
     }
 
     public double getSimilarity(Comparison comparison) {
+        if (entityModelsD1[comparison.getEntityId1()].getNoOfDocuments() == 0) {            
+            return 0;
+        }
         if (isCleanCleanER) {
+            if (entityModelsD2[comparison.getEntityId2()].getNoOfDocuments() == 0) {                
+                return 0;
+            }
             return entityModelsD1[comparison.getEntityId1()].getSimilarity(entityModelsD2[comparison.getEntityId2()]);
         }
 
+        if (entityModelsD1[comparison.getEntityId2()].getNoOfDocuments() == 0) {            
+            return 0;
+        }
         return entityModelsD1[comparison.getEntityId1()].getSimilarity(entityModelsD1[comparison.getEntityId2()]);
     }
 }

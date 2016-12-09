@@ -3,12 +3,12 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/EntityClustering/IEntityClustering.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/WorkflowBuilder/AbstractWorkflowBuilder.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataReader/EntityReader/EntitySerializationReader.java</file>
             <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/test/WorkflowBuilder/TestFullWorfklowWithClustering.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/EntityMatching/ProfileWithNeighborMatcher.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/EntityMatching/AbstractEntityMatching.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/BlockProcessing/ComparisonRefinement/CardinalityNodePruningWithMatching.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/BlockBuilding/NeighborBlocking.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/EntityMatching/ProfileMatcher.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/EntityClustering/UniqueMappingClustering.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/WorkflowBuilder/FullWithClustering.java</file>
         </group>
     </open-files>
 </project-private>

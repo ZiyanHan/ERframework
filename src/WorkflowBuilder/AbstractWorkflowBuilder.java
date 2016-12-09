@@ -23,6 +23,7 @@ import Utilities.ClustersPerformance;
 import Utilities.DataStructures.AbstractDuplicatePropagation;
 import Utilities.DataStructures.BilateralDuplicatePropagation;
 import Utilities.Enumerations.BlockBuildingMethod;
+import Utilities.Enumerations.SimilarityMetric;
 import java.util.List;
 
 /**
@@ -100,6 +101,7 @@ public abstract class AbstractWorkflowBuilder {
 
     public void setSimilarity_threshold(double similarity_threshold) {
         this.similarity_threshold = similarity_threshold;
+        this.clusteringMethod.setSimilarityThreshold(similarity_threshold);
     }
 
     public void setMetaBlockingMethod(IBlockProcessing metaBlockingMethod) {
@@ -138,7 +140,7 @@ public abstract class AbstractWorkflowBuilder {
 
         ClustersPerformance clp = new ClustersPerformance(entityClusters, groundTruth);
         clp.setStatistics();
-        clp.printStatistics();
+        clp.printStatisticsShort();
         
         precision = clp.getPrecision();
         recall = clp.getRecall();

@@ -20,7 +20,9 @@ import DataModel.EntityProfile;
 import DataModel.SimilarityPairs;
 import Utilities.Enumerations.RepresentationModel;
 import Utilities.Enumerations.SimilarityMetric;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -32,12 +34,31 @@ public abstract class AbstractEntityMatching implements IEntityMatching {
 
     protected RepresentationModel representationModel;
     protected SimilarityMetric simMetric;
+    
+    protected Set<String> acceptableEntityTypes;
 
     public AbstractEntityMatching(RepresentationModel model, SimilarityMetric sMetric) {
         representationModel = model;
         simMetric = sMetric;
+        acceptableEntityTypes = new HashSet<>();
     }
 
+    public Set<String> getAcceptableEntityTypes() {
+        return acceptableEntityTypes;
+    }
+
+    public void addAcceptableType(String entityType) {
+        acceptableEntityTypes.add(entityType);
+    }
+    
+    public void setAcceptableTypes(Set<String> entityTypes) {
+        acceptableEntityTypes = entityTypes;
+    }
+    
+    public boolean hasTypeRestriction() {
+        return !acceptableEntityTypes.isEmpty();
+    }
+    
     @Override
     public SimilarityPairs executeComparisons(List<AbstractBlock> blocks, List<EntityProfile> profiles) {
         return this.executeComparisons(blocks, profiles, null);

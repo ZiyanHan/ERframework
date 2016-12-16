@@ -1,5 +1,6 @@
-package DataReader;
+package DataReader.EntityReader;
 
+import DataReader.*;
 import DataModel.Attribute;
 import DataModel.EntityProfile;
 import DataReader.EntityReader.EntityRDFReader;
@@ -12,7 +13,7 @@ import java.util.List;
 
 public class TestRdfReader {
     public static void main(String[] args) {
-        String filePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\OAEI2016\\UOBM_small\\Abox2.nt";
+        String filePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\OAEI2009\\rexa.rdf";
         if (args.length == 1) { //override default path
             filePath = args[0];
         }
@@ -28,5 +29,6 @@ public class TestRdfReader {
             }
         }*/
         n3reader.storeSerializedObject(profiles, filePath.replaceAll("\\..*", "Profiles"));
+        System.out.println(profiles.size()+" profiles written in "+filePath.replaceAll("\\..*", "Profiles"));
     }
 }

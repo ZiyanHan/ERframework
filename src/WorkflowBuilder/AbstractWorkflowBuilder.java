@@ -10,6 +10,7 @@ import BlockProcessing.IBlockProcessing;
 import DataModel.AbstractBlock;
 import DataModel.EntityProfile;
 import DataModel.EquivalenceCluster;
+import DataModel.IdDuplicates;
 import DataModel.SimilarityPairs;
 import DataReader.EntityReader.EntitySerializationReader;
 import DataReader.EntityReader.IEntityReader;
@@ -140,7 +141,9 @@ public abstract class AbstractWorkflowBuilder {
 
         ClustersPerformance clp = new ClustersPerformance(entityClusters, groundTruth);
         clp.setStatistics();
-        clp.printStatisticsShort();
+//        clp.printStatisticsShort();
+//        clp.printStatistics();
+        clp.printStatisticsLong(profiles1, profiles2);
         
         precision = clp.getPrecision();
         recall = clp.getRecall();

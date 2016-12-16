@@ -16,6 +16,7 @@
 
 package EntityMatching;
 
+import BlockProcessing.ComparisonRefinement.CardinalityNodePruningReWeighting;
 import BlockProcessing.ComparisonRefinement.CardinalityNodePruningWithMatching;
 import BlockProcessing.ComparisonRefinement.ReciprocalCardinalityNodePruning;
 import BlockProcessing.IBlockProcessing;
@@ -23,6 +24,7 @@ import DataModel.AbstractBlock;
 import DataModel.Attribute;
 import DataModel.Comparison;
 import DataModel.EntityProfile;
+import DataModel.PairIterator;
 import DataModel.SimilarityPairs;
 import Utilities.BlocksPerformance;
 import Utilities.DataStructures.AbstractDuplicatePropagation;
@@ -112,20 +114,18 @@ public class ProfileWithNeighborMatcher extends ProfileMatcher {
             neighborModelsD2 = getNeighborModels(profilesD2);
         }
         
-        /*
         //meta-blocking
         IBlockProcessing comparisonCleaningMethod = 
-                new CardinalityNodePruningWithMatching(WeightingScheme.CBS, entityModelsD1, entityModelsD2, neighborModelsD1, neighborModelsD2, matching_threshold);
-                //new ReciprocalCardinalityNodePruning(WeightingScheme.CBS, entityModelsD1, entityModelsD2, neighborModelsD1, neighborModelsD2);
+//                new CardinalityNodePruningWithMatching(WeightingScheme.CBS, entityModelsD1, entityModelsD2, neighborModelsD1, neighborModelsD2, matching_threshold);
+                new CardinalityNodePruningReWeighting(WeightingScheme.CBS, entityModelsD1, entityModelsD2, neighborModelsD1, neighborModelsD2);
+//                new ReciprocalCardinalityNodePruning(WeightingScheme.CBS, entityModelsD1, entityModelsD2, neighborModelsD1, neighborModelsD2);
         blocks = comparisonCleaningMethod.refineBlocks(blocks);
-        
-        
+                
         if (groundTruth != null) {
             BlocksPerformance blp = new BlocksPerformance(blocks, groundTruth);
             blp.setStatistics();
             blp.printStatistics();
         }
-        */
         
         SimilarityPairs simPairs = new SimilarityPairs(cleanCleanER, blocks);
         for (AbstractBlock block : blocks) {
@@ -134,7 +134,9 @@ public class ProfileWithNeighborMatcher extends ProfileMatcher {
                 Comparison currentComparison = iterator.next();
                 double sim = getSimilarity(currentComparison);
                 currentComparison.setUtilityMeasure(sim);
-                simPairs.addComparison(currentComparison);
+                if (sim > 0) {
+                    simPairs.addComparison(currentComparison);
+                } 
             }
         }
         return simPairs;
@@ -177,16 +179,16 @@ public class ProfileWithNeighborMatcher extends ProfileMatcher {
 
     @Override
     public double getSimilarity(Comparison comparison) {        
-        double profile_similarity =0;        
+        double profile_similarity;        
         double neighbor_similarity;        
         
         
-        if (entityModelsD1[comparison.getEntityId1()].getNoOfDocuments() == 0) {            
+        if (entityModelsD1[comparison.getEntityId1()].getNoOfDocuments() == 0) {      
             return 0;
         }
         
         if (cleanCleanER) {
-            if (entityModelsD2[comparison.getEntityId2()].getNoOfDocuments() == 0) {                
+            if (entityModelsD2[comparison.getEntityId2()].getNoOfDocuments() == 0) { 
                 return 0;
             }
             profile_similarity =  entityModelsD1[comparison.getEntityId1()].getSimilarity(entityModelsD2[comparison.getEntityId2()]);

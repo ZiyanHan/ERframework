@@ -1,5 +1,6 @@
-package DataReader;
+package DataReader.EntityReader;
 
+import DataReader.*;
 import DataModel.Attribute;
 import DataModel.EntityProfile;
 import DataModel.IdDuplicates;

@@ -40,6 +40,9 @@ public abstract class AbstractEntityClustering implements IEntityClustering {
         // prepare output
         final List<EquivalenceCluster> equivalenceClusters = new ArrayList<>();
         for (Set<Integer> componentIds : connectedComponents) {
+            if (componentIds.size() < 2) { //a singleton cluster denotes that its element does not match any other element (skip this cluster)
+                continue;
+            }
             EquivalenceCluster newCluster = new EquivalenceCluster();
             equivalenceClusters.add(newCluster);
 
@@ -53,7 +56,7 @@ public abstract class AbstractEntityClustering implements IEntityClustering {
                     newCluster.addEntityIdD1(entityId);
                 } else {
                     newCluster.addEntityIdD2(entityId - datasetLimit);
-                }
+                }                
             }
         }
         

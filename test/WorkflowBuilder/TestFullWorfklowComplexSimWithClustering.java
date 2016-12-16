@@ -6,7 +6,10 @@
 package WorkflowBuilder;
 
 import BlockProcessing.ComparisonRefinement.CardinalityNodePruning;
+import BlockProcessing.ComparisonRefinement.CardinalityNodePruningReWeighting;
 import BlockProcessing.IBlockProcessing;
+import DataModel.Comparison;
+import DataModel.PairIterator;
 import DataModel.SimilarityPairs;
 import EntityClustering.CenterClustering;
 import EntityClustering.IEntityClustering;
@@ -31,27 +34,36 @@ public class TestFullWorfklowComplexSimWithClustering {
     public static void main (String[] args) {
     
         //set data
-        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\OAEI2016\\SPIMBENCH_small\\";
-        String dataset1 = basePath+"Abox1Profiles";
-        String dataset2 = basePath+"Abox2Profiles";
-        String datasetGroundtruth = basePath+"SPIMBENCH_smallIdDuplicates";
+        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\OAEI2010\\restaurant\\";
+        String dataset1 = basePath+"restaurant1Profiles";
+        String dataset2 = basePath+"restaurant2Profiles";
+        String datasetGroundtruth = basePath+"restaurantIdDuplicates";
         String[] acceptableTypes = {
 //                                    "http://www.okkam.org/ontology_person1.owl#Person",
 //                                    "http://www.okkam.org/ontology_person2.owl#Person", 
             
-//                                    "http://www.okkam.org/ontology_restaurant1.owl#Restaurant",
-//                                    "http://www.okkam.org/ontology_restaurant2.owl#Restaurant",
+                                    "http://www.okkam.org/ontology_restaurant1.owl#Restaurant",
+                                    "http://www.okkam.org/ontology_restaurant2.owl#Restaurant",
             
-                                      "http://www.bbc.co.uk/ontologies/creativework/NewsItem",
-                                      "http://www.bbc.co.uk/ontologies/creativework/BlogPost",
-                                      "http://www.bbc.co.uk/ontologies/creativework/Programme",
-                                      "http://www.bbc.co.uk/ontologies/creativework/CreativeWork"
+//                                      "http://www.bbc.co.uk/ontologies/creativework/NewsItem",
+//                                      "http://www.bbc.co.uk/ontologies/creativework/BlogPost",
+//                                      "http://www.bbc.co.uk/ontologies/creativework/Programme",
+//                                      "http://www.bbc.co.uk/ontologies/creativework/CreativeWork"
                                     };
 
         //set parameters
         BlockBuildingMethod blockingWorkflow = BlockBuildingMethod.STANDARD_BLOCKING;
         IBlockProcessing metaBlocking = new CardinalityNodePruning(WeightingScheme.CBS);
-        AbstractEntityMatching similarity = new ProfileMatcher(RepresentationModel.CHARACTER_BIGRAM_GRAPHS);
+        AbstractEntityMatching similarity = new ProfileWithNeighborMatcher(
+                RepresentationModel.CHARACTER_TRIGRAM_GRAPHS, 
+                SimilarityMetric.getModelDefaultSimMetric(RepresentationModel.CHARACTER_TRIGRAM_GRAPHS), 
+                RepresentationModel.CHARACTER_BIGRAMS, 
+                SimilarityMetric.getModelDefaultSimMetric(RepresentationModel.CHARACTER_BIGRAMS), 
+                0.66);
+        if (acceptableTypes.length > 0) {
+            similarity.setAcceptableTypes(new HashSet<>(Arrays.asList(acceptableTypes)));
+        }
+        
         IEntityClustering clustering =  new UniqueMappingClustering();
                 
         AbstractWorkflowBuilder full = new FullWithClustering(
@@ -63,7 +75,14 @@ public class TestFullWorfklowComplexSimWithClustering {
         
         full.loadData();
         full.runBlocking();
-        full.runMetaBlocking();
+//        full.runMetaBlocking(); //meta-blocking may be executed within ProfileWithNeighborMatcher
+        SimilarityPairs simPairs = full.runSimilarityComputations();
+        full.setSimilarity_threshold(0.6);
+        full.runClustering(simPairs);
+                
+        if (1>0) {
+            return;
+        }
         
         RepresentationModel[] repModels = {
                             RepresentationModel.TOKEN_UNIGRAMS,
@@ -91,7 +110,7 @@ public class TestFullWorfklowComplexSimWithClustering {
 
                             full.setSimilarityMethod(similarity);
 
-                            SimilarityPairs simPairs = full.runSimilarityComputations();
+                            simPairs = full.runSimilarityComputations();
 
                             for (double sim_threshold = 0.2; sim_threshold < 0.9; sim_threshold += 0.2) {  
                                 full.setClusteringMethod(new UniqueMappingClustering());

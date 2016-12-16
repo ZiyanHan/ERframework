@@ -49,6 +49,6 @@ public class SimilarityEdge {
     
     @Override
     public String toString() {
-        return "pos1\t:\t" + model1pos + ", pos2\t:\t" + model2pos +"similarity\t:\t" + similarity;
+        return "pos1\t:\t" + model1pos + ", pos2\t:\t" + model2pos +", similarity\t:\t" + similarity;
     }
 }

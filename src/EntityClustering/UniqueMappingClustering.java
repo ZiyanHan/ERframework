@@ -20,6 +20,7 @@ import DataModel.EquivalenceCluster;
 import DataModel.SimilarityEdge;
 import DataModel.SimilarityPairs;
 import Utilities.Comparators.SimilarityEdgeComparator;
+import java.util.ArrayList;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -49,6 +50,9 @@ public class UniqueMappingClustering extends AbstractEntityClustering {
 
     @Override
     public List<EquivalenceCluster> getDuplicates(SimilarityPairs simPairs) {
+        if (simPairs.getNoOfComparisons() == 0) {
+            return new ArrayList<>();
+        }
         initializeData(simPairs);
         initializeGraph();
         final Queue<SimilarityEdge> SEqueue = new PriorityQueue<>(simPairs.getNoOfComparisons(), new SimilarityEdgeComparator());
@@ -57,12 +61,14 @@ public class UniqueMappingClustering extends AbstractEntityClustering {
         while (iterator.hasNext()) { // add a similarity edge to the queue, for every pair of entities with a weight higher than the threshold
             Comparison comparison = iterator.next();            
             if (threshold < comparison.getUtilityMeasure()) {
-                SEqueue.add(new SimilarityEdge(comparison.getEntityId1(), comparison.getEntityId2() + datasetLimit, comparison.getUtilityMeasure()));
+                SEqueue.add(new SimilarityEdge(comparison.getEntityId1(), comparison.getEntityId2()+datasetLimit, comparison.getUtilityMeasure()));
             }
         }
 
+        System.out.println("Similarity Pairs ordered:");
         while (!SEqueue.isEmpty()) {
             SimilarityEdge se = SEqueue.remove();
+            System.out.println(se);
             int e1 = se.getModel1Pos();
             int e2 = se.getModel2Pos();
             
@@ -75,7 +81,7 @@ public class UniqueMappingClustering extends AbstractEntityClustering {
             matchedIds.add(e1);
             matchedIds.add(e2);
         }
-
+        
         return getConnectedComponents();
     }
 

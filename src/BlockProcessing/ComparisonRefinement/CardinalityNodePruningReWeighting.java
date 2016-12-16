@@ -18,10 +18,12 @@ package BlockProcessing.ComparisonRefinement;
 
 import DataModel.AbstractBlock;
 import DataModel.Comparison;
+import DataModel.SimilarityPairs;
 import Utilities.Comparators.ComparisonWeightComparator;
 import Utilities.Enumerations.WeightingScheme;
 import Utilities.TextModels.AbstractModel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -33,7 +35,7 @@ import java.util.Set;
  * @author vefthym
  */
 
-public class CardinalityNodePruningWithMatching extends CardinalityEdgePruning {
+public class CardinalityNodePruningReWeighting extends CardinalityEdgePruning {
     
     protected int firstId;
     protected int lastId;
@@ -45,20 +47,20 @@ public class CardinalityNodePruningWithMatching extends CardinalityEdgePruning {
     protected AbstractModel[] neighborModelsD1;
     protected AbstractModel[] neighborModelsD2;
     
-    protected double matching_threshold = 0.5;
+    protected SimilarityPairs simPairs;
     
-    public CardinalityNodePruningWithMatching(WeightingScheme scheme) {
+    
+    public CardinalityNodePruningReWeighting(WeightingScheme scheme) {
         super(scheme);
         nodeCentric = true;
     }
 
-    public CardinalityNodePruningWithMatching(WeightingScheme scheme, AbstractModel[] entityModelsD1, AbstractModel[] entityModelsD2, AbstractModel[] neighborModelsD1, AbstractModel[] neighborModelsD2, double matching_threshold) {
+    public CardinalityNodePruningReWeighting(WeightingScheme scheme, AbstractModel[] entityModelsD1, AbstractModel[] entityModelsD2, AbstractModel[] neighborModelsD1, AbstractModel[] neighborModelsD2) {
         super(scheme);
         this.entityModelsD1 = entityModelsD1;
         this.entityModelsD2 = entityModelsD2;
         this.neighborModelsD1 = neighborModelsD1;
-        this.neighborModelsD2 = neighborModelsD2;
-        this.matching_threshold = matching_threshold;
+        this.neighborModelsD2 = neighborModelsD2;        
     }
 
     @Override
@@ -111,26 +113,49 @@ public class CardinalityNodePruningWithMatching extends CardinalityEdgePruning {
         return newBlocks;
     }
     
-    protected void retainValidComparisons(List<AbstractBlock> newBlocks) {
+    protected void retainValidComparisons(List<AbstractBlock> newBlocks) {        
         List<Comparison> retainedComparisons = new ArrayList<>();        
         for (int i = 0; i < noOfEntities; i++) {
-            double max_neighbor_similarity = matching_threshold;
+            double similaritySum = 0;
+            int validComps = 0;
             if (nearestEntities[i] != null) {
                 retainedComparisons.clear();
                 for (Comparison comparison : nearestEntities[i]) {
                     if (isValidComparison(i, comparison)) {
+                        validComps++;
                         double similarity = getSimilarity(comparison);
-                        if (similarity > max_neighbor_similarity) {
-                            max_neighbor_similarity = similarity;
-                            retainedComparisons = new ArrayList<>(Collections.singletonList(comparison));
-                        }
-                        //retainedComparisons.add(comparison);
+                        comparison.setUtilityMeasure(similarity);
+                        similaritySum += similarity;
                     }
                 }
+                if (similaritySum == 0) {
+                    continue;
+                }
+                
+                final double AVERAGE_SIM = similaritySum / validComps;
+                
+                System.out.println("AVERAGE_SIM for entity "+i+" = "+similaritySum+"/"+validComps+"="+AVERAGE_SIM);
+                
+                for (Comparison comparison : nearestEntities[i]) {
+                    if (isValidComparison(i, comparison)) {
+                        double original_sim = comparison.getUtilityMeasure();
+                        if (original_sim > AVERAGE_SIM) {
+                            comparison.setUtilityMeasure(original_sim/AVERAGE_SIM); //should be greater than 1... (FIXME:  THIS IS IGNORED AFTERWARDS!)
+                            System.out.println("New similarity of "+comparison.getEntityId1()+", "+comparison.getEntityId2()+" is "+ comparison.getUtilityMeasure());
+                            retainedComparisons.add(comparison); //keep only the comparisons with similarity above average (per entity)
+                            simPairs.addComparison(comparison);
+                        }
+                    }
+                }                
+                
                 if (!retainedComparisons.isEmpty())
                     addDecomposedBlock(retainedComparisons, newBlocks);
             }
-        }
+        }        
+    }
+    
+    public SimilarityPairs getSimPairs() {
+        return simPairs;
     }
 
     protected void setLimits() {
@@ -140,8 +165,7 @@ public class CardinalityNodePruningWithMatching extends CardinalityEdgePruning {
     
     @Override
     protected void setThreshold() {
-//        threshold = Math.max(1, blockAssingments / noOfEntities);
-        threshold = 1; //vefthym : to get only top-1
+        threshold = Math.max(1, blockAssingments / noOfEntities);
     }
     
     @Override
@@ -152,21 +176,18 @@ public class CardinalityNodePruningWithMatching extends CardinalityEdgePruning {
 
         topKEdges.clear();
         minimumWeight = Double.MIN_VALUE;
-        for (int neighborId : validEntities) {
+        validEntities.stream().forEach((neighborId) -> {
             double weight = getWeight(entityId, neighborId);
-            if (weight < minimumWeight) {
-                continue;
+            if (!(weight < minimumWeight)) {
+                Comparison comparison = getComparison(entityId, neighborId);
+                comparison.setUtilityMeasure(weight);
+                topKEdges.add(comparison);
+                if (threshold < topKEdges.size()) {
+                    Comparison lastComparison = topKEdges.poll();
+                    minimumWeight = lastComparison.getUtilityMeasure();
+                }
             }
-
-            Comparison comparison = getComparison(entityId, neighborId);
-            comparison.setUtilityMeasure(weight);
-
-            topKEdges.add(comparison);
-            if (threshold < topKEdges.size()) {
-                Comparison lastComparison = topKEdges.poll();
-                minimumWeight = lastComparison.getUtilityMeasure();
-            }
-        }
+        });
         nearestEntities[entityId] = new HashSet<>(topKEdges);
     }
     
@@ -178,16 +199,26 @@ public class CardinalityNodePruningWithMatching extends CardinalityEdgePruning {
      */
     public double getSimilarity(Comparison comparison) {
         final double a = 0.66;
-        double profile_similarity =0;        
+        double profile_similarity;        
         double neighbor_similarity;        
         
+        if (entityModelsD1[comparison.getEntityId1()].getNoOfDocuments() == 0) {      
+            return 0;
+        }
+        
         if (cleanCleanER) {
+            if (entityModelsD2[comparison.getEntityId2()].getNoOfDocuments() == 0) { 
+                return 0;
+            }
             profile_similarity =  entityModelsD1[comparison.getEntityId1()].getSimilarity(entityModelsD2[comparison.getEntityId2()]);
             neighbor_similarity = neighborModelsD1[comparison.getEntityId1()].getSimilarity(neighborModelsD2[comparison.getEntityId2()]);
         } else {
+            if (entityModelsD1[comparison.getEntityId2()].getNoOfDocuments() == 0) {            
+                return 0;
+            }            
             profile_similarity = entityModelsD1[comparison.getEntityId1()].getSimilarity(entityModelsD1[comparison.getEntityId2()]);
             neighbor_similarity = neighborModelsD1[comparison.getEntityId1()].getSimilarity(neighborModelsD1[comparison.getEntityId2()]);
-        } 
+        }
         return a * profile_similarity + (1-a) * neighbor_similarity;
     }
 }

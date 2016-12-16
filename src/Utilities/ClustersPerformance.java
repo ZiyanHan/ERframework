@@ -18,8 +18,12 @@ package Utilities;
 import Utilities.DataStructures.BilateralDuplicatePropagation;
 import Utilities.DataStructures.AbstractDuplicatePropagation;
 import DataModel.Comparison;
+import DataModel.EntityProfile;
 import DataModel.EquivalenceCluster;
+import DataModel.IdDuplicates;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -38,11 +42,14 @@ public class ClustersPerformance {
 
     private final AbstractDuplicatePropagation abstractDP;
     private final List<EquivalenceCluster> entityClusters;
+    
+    private Set<IdDuplicates> falseMatches;
 
     public ClustersPerformance(List<EquivalenceCluster> clusters, AbstractDuplicatePropagation adp) {
         abstractDP = adp;
         abstractDP.resetDuplicates();
         entityClusters = clusters;
+        falseMatches = new HashSet<>();
     }
 
     public int getDetectedDuplicates() {
@@ -73,6 +80,10 @@ public class ClustersPerformance {
         return totalMatches;
     }
 
+    public Set<IdDuplicates> getFalseMatches() {
+        return falseMatches;
+    }
+
     public void printStatistics() {
         System.out.println("\n\n\n**************************************************");
         System.out.println("************** Clusters Performance **************");
@@ -97,18 +108,20 @@ public class ClustersPerformance {
             LOGGER.log(Level.WARNING, "Empty set of equivalence clusters given as input!");
             return;
         }
+        abstractDP.resetDuplicates();
 
         totalMatches = 0;
         if (abstractDP instanceof BilateralDuplicatePropagation) { // Clean-Clean ER
             for (EquivalenceCluster cluster : entityClusters) {
                 for (int entityId1 : cluster.getEntityIdsD1()) {
-                    for (int entityid2 : cluster.getEntityIdsD2()) {
+                    for (int entityId2 : cluster.getEntityIdsD2()) {
                         totalMatches++;
-                        Comparison comparison = new Comparison(true, entityId1, entityid2);
+                        Comparison comparison = new Comparison(true, entityId1, entityId2);
                         abstractDP.isSuperfluous(comparison);
                     }
                 }
             }
+            falseMatches = ((BilateralDuplicatePropagation)abstractDP).getFalseMatches();
         } else { // Dirty ER
             for (EquivalenceCluster cluster : entityClusters) {
                 List<Integer> duplicates = cluster.getEntityIdsD1();
@@ -134,6 +147,14 @@ public class ClustersPerformance {
             fMeasure = 2 * precision * recall / (precision + recall);
         } else {
             fMeasure = 0;
+        }
+    }
+    public void printStatisticsLong(List<EntityProfile> profiles1, List<EntityProfile> profiles2) {
+        printStatistics();
+        System.out.println("False Positives:\n");
+        for (IdDuplicates falseMatch : falseMatches) {
+            System.out.println("("+profiles1.get(falseMatch.getEntityId1()).getEntityUrl()+"(id:"+ falseMatch.getEntityId1()+"), "
+                    +profiles2.get(falseMatch.getEntityId2()).getEntityUrl()+"(id:"+falseMatch.getEntityId2()+")) is a false match!");
         }
     }
 }

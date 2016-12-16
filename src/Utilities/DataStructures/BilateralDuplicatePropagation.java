@@ -31,15 +31,23 @@ public class BilateralDuplicatePropagation extends AbstractDuplicatePropagation 
     private Set<Integer> entities1;
     private Set<Integer> entities2;
     
+    private Set<IdDuplicates> falseMatches;
+    
+    
     public BilateralDuplicatePropagation(Set<IdDuplicates> matches) {
         super(matches);
-        entities1 = new HashSet<Integer>(2*existingDuplicates);
-        entities2 = new HashSet<Integer>(2*existingDuplicates);
+        entities1 = new HashSet<>(2*existingDuplicates);
+        entities2 = new HashSet<>(2*existingDuplicates);
+        falseMatches = new HashSet<>();
     }
     
     @Override
     public int getNoOfDuplicates() {
         return entities1.size();
+    }
+        
+    public Set<IdDuplicates> getFalseMatches() {
+        return falseMatches;
     }
     
     @Override
@@ -54,13 +62,16 @@ public class BilateralDuplicatePropagation extends AbstractDuplicatePropagation 
         if (duplicates.contains(tempDuplicates)) {
             entities1.add(id1);
             entities2.add(id2);
+        } else {
+            falseMatches.add(new IdDuplicates(id1, id2));
         }
         return false;
     }
     
     @Override
     public void resetDuplicates() {
-        entities1 = new HashSet<Integer>(2*existingDuplicates);
-        entities2 = new HashSet<Integer>(2*existingDuplicates);
+        entities1 = new HashSet<>(2*existingDuplicates);
+        entities2 = new HashSet<>(2*existingDuplicates);
+        falseMatches = new HashSet<>();
     }
 }

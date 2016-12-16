@@ -5,6 +5,7 @@
  */
 package WorkflowBuilder;
 
+import WorkflowBuilder.*;
 import BlockProcessing.ComparisonRefinement.CardinalityNodePruning;
 import BlockProcessing.IBlockProcessing;
 import DataModel.SimilarityPairs;

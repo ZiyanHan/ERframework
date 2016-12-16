@@ -90,7 +90,7 @@ public class ProfileMatcher extends AbstractEntityMatching {
                 if (hasTypeRestriction()) {
                     if (attribute.getName().equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")) {
                         foundType = true;
-                        if (!getAcceptableEntityTypes().contains(attribute.getValue())) {                        
+                        if (!getAcceptableEntityTypes().contains(attribute.getValue())) {        
                             models[counter] = RepresentationModel.getModel(representationModel, simMetric, profile.getEntityUrl());
                             break; //go to next entity                            
                         }

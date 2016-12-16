@@ -138,13 +138,11 @@ public class CardinalityNodePruningReWeighting extends CardinalityEdgePruning {
                 
                 for (Comparison comparison : nearestEntities[i]) {
                     if (isValidComparison(i, comparison)) {
-                        double original_sim = comparison.getUtilityMeasure();
-                        if (original_sim > AVERAGE_SIM) {
-                            comparison.setUtilityMeasure(original_sim/AVERAGE_SIM); //should be greater than 1... (FIXME:  THIS IS IGNORED AFTERWARDS!)
-                            System.out.println("New similarity of "+comparison.getEntityId1()+", "+comparison.getEntityId2()+" is "+ comparison.getUtilityMeasure());
-                            retainedComparisons.add(comparison); //keep only the comparisons with similarity above average (per entity)
-                            simPairs.addComparison(comparison);
-                        }
+                        double original_sim = comparison.getUtilityMeasure();                        
+                        comparison.setUtilityMeasure(original_sim/AVERAGE_SIM); //should be greater than 1... (FIXME:  THIS IS IGNORED AFTERWARDS!)
+                        System.out.println("New similarity of "+comparison.getEntityId1()+", "+comparison.getEntityId2()+" is "+ comparison.getUtilityMeasure());
+                        retainedComparisons.add(comparison); //keep only the comparisons with similarity above average (per entity)
+                        simPairs.addComparison(comparison);                        
                     }
                 }                
                 

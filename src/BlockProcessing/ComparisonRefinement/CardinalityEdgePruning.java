@@ -50,17 +50,19 @@ public class CardinalityEdgePruning extends WeightedEdgePruning {
 
         int[] entityIds1 = new int[comparisons.size()];
         int[] entityIds2 = new int[comparisons.size()];
-
+        double[] similarities = new double[comparisons.size()];
+        
         int index = 0;
         Iterator<Comparison> iterator = comparisons.iterator();
         while (iterator.hasNext()) {
             Comparison comparison = iterator.next();
             entityIds1[index] = comparison.getEntityId1();
             entityIds2[index] = comparison.getEntityId2();
+            similarities[index] = comparison.getUtilityMeasure();
             index++;
         }
 
-        newBlocks.add(new DecomposedBlock(cleanCleanER, entityIds1, entityIds2));
+        newBlocks.add(new DecomposedBlock(cleanCleanER, similarities, entityIds1, entityIds2));
     }
 
     @Override

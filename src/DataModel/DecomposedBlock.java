@@ -31,8 +31,9 @@ public class DecomposedBlock extends AbstractBlock {
     private int[] blockIndices;
     private final int[] entities1;
     private final int[] entities2;
+    private final double[] similarities;
     
-    public DecomposedBlock(boolean ccER, int[] entities1, int[] entities2) {
+    public DecomposedBlock(boolean ccER, double[] similarities, int[] entities1, int[] entities2) {
         if (entities1.length != entities2.length) {
             System.err.println("\n\nCreating imbalanced decomposed block!!!!");
             System.err.println("Entities 1\t:\t" + entities1.length);
@@ -41,6 +42,7 @@ public class DecomposedBlock extends AbstractBlock {
         cleanCleanER = ccER;
         this.entities1 = entities1;
         this.entities2 = entities2;
+        this.similarities = similarities;
         blockIndices = null;
     }
     
@@ -54,6 +56,10 @@ public class DecomposedBlock extends AbstractBlock {
 
     public int[] getEntities2() {
         return entities2;
+    }
+    
+    public double[] getSimilarities() {
+        return similarities;
     }
     
     public boolean isCleanCleanER() {

@@ -57,7 +57,8 @@ public abstract class AbstractComparisonRefinementMethod implements IBlockProces
 
         int[] entityIds1 = replicateId(entityId, neighbors.size());
         int[] entityIds2 = Converter.convertCollectionToArray(neighbors);
-        newBlocks.add(new DecomposedBlock(cleanCleanER, entityIds1, entityIds2));
+        double[] similarities = new double[neighbors.size()];
+        newBlocks.add(new DecomposedBlock(cleanCleanER, similarities, entityIds1, entityIds2));
     }
     
     protected void addReversedDecomposedBlock(int entityId, Collection<Integer> neighbors, List<AbstractBlock> newBlocks) {
@@ -67,7 +68,8 @@ public abstract class AbstractComparisonRefinementMethod implements IBlockProces
 
         int[] entityIds1 = Converter.convertCollectionToArray(neighbors);
         int[] entityIds2 = replicateId(entityId, neighbors.size());
-        newBlocks.add(new DecomposedBlock(cleanCleanER, entityIds1, entityIds2));
+        double[] similarities = new double[neighbors.size()];
+        newBlocks.add(new DecomposedBlock(cleanCleanER, similarities, entityIds1, entityIds2));
     }
     
     protected abstract List<AbstractBlock> applyMainProcessing();

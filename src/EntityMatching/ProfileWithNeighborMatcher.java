@@ -182,7 +182,6 @@ public class ProfileWithNeighborMatcher extends ProfileMatcher {
         double profile_similarity;        
         double neighbor_similarity;        
         
-        
         if (entityModelsD1[comparison.getEntityId1()].getNoOfDocuments() == 0) {      
             return 0;
         }

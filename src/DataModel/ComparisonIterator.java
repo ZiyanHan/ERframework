@@ -101,7 +101,9 @@ public class ComparisonIterator implements Iterator<Comparison> {
         } else if (block instanceof DecomposedBlock) {
             DecomposedBlock deBlock = (DecomposedBlock) block;
             outerLoop++;
-            return new Comparison(deBlock.isCleanCleanER(), deBlock.getEntities1()[outerLoop], deBlock.getEntities2()[outerLoop]); 
+            Comparison comparison = new Comparison(deBlock.isCleanCleanER(), deBlock.getEntities1()[outerLoop], deBlock.getEntities2()[outerLoop]); 
+            comparison.setUtilityMeasure(deBlock.getSimilarities()[outerLoop]);
+            return comparison;
         }
         
         return null;

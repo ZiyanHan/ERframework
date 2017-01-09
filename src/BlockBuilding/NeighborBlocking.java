@@ -50,9 +50,9 @@ public class NeighborBlocking extends AbstractBlockBuilding {
     @Override
     protected void indexEntities(IndexWriter index, List<EntityProfile> entities) {
         Map<String,Set<String>> profilesURLs = new HashMap<>(entities.size()); //key: entityURL, value: entity values
-        for (EntityProfile profile : entities) {
+        entities.stream().forEach((profile) -> {
             profilesURLs.put(profile.getEntityUrl(), profile.getAllValues());
-        }
+        });
         
         try {
             int counter = 0;
@@ -60,6 +60,7 @@ public class NeighborBlocking extends AbstractBlockBuilding {
                 Document doc = new Document();
                 doc.add(new StoredField(DOC_ID, counter++));
                 
+                /*
                 //simple blocking on the values
                 profile.getAllValues().stream()
                         .flatMap(value -> getBlockingKeys(value).stream())
@@ -68,18 +69,19 @@ public class NeighborBlocking extends AbstractBlockBuilding {
                         .forEach((key) -> {
                             doc.add(new StringField(VALUE_LABEL, key, Field.Store.YES));
                         });
+                */
                 
-                //now add this to one block for each token in the values of its neighbors
-                profile.getAllValues().stream() //for each value (possible neighbor)
+                //now add this entity to one block for each token in the values of its neighbors
+                profile.getAllValues().stream() //for each value of the current profile (possible neighbor)
                         .filter((neighbor) -> profilesURLs.containsKey(neighbor)) //keep only entity neighbors and skip other literals & URIs
                         .flatMap((neighbor) -> profilesURLs.get(neighbor).stream()) //for each value of a neighbor
                         .flatMap((value) -> getBlockingKeys(value).stream()) //get the blocking keys (tokens) of this value
-                        .map((key)->key.trim()) //trim each token
-                        .filter((key) -> (!key.isEmpty()))
+                        .map((key)->key.trim().toLowerCase()) //trim each token
+                        .filter((key) -> (!key.isEmpty())) //keep non-emtpy tokens
                         .forEach((key) -> { //add each trimmed token to a corresponding block
                             doc.add(new StringField(VALUE_LABEL, key, Field.Store.YES));
-                        });
-                
+//                            System.out.println("Adding the value "+key+" from the neighbors of "+profile.getEntityUrl());
+                        });                
                 index.addDocument(doc);
             }
         } catch (IOException ex) {
@@ -98,8 +100,8 @@ public class NeighborBlocking extends AbstractBlockBuilding {
 
     @Override
     public String getMethodInfo() {
-        return "Neighbor Blocking: it creates one block for every token in the attribute values of at least two entities, "
-                + "and in the attribute values of their neighbors.";
+        return "Neighbor Blocking: it creates one block for every token "//in the attribute values of at least two entities, "
+                + " in the attribute values of an entity's neighbors.";
     }
 
     @Override

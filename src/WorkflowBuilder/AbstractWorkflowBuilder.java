@@ -6,6 +6,8 @@
 package WorkflowBuilder;
 
 import BlockBuilding.IBlockBuilding;
+import BlockProcessing.BlockRefinement.ComparisonsBasedBlockPurging;
+import BlockProcessing.BlockRefinement.SizeBasedBlockPurging;
 import BlockProcessing.IBlockProcessing;
 import DataModel.AbstractBlock;
 import DataModel.EntityProfile;
@@ -80,12 +82,17 @@ public abstract class AbstractWorkflowBuilder {
         IBlockBuilding blockBuildingMethod = BlockBuildingMethod.getDefaultConfiguration(blockingMethod);
         blocks = blockBuildingMethod.getBlocks(profiles1, profiles2);
         System.out.println("Original blocks\t:\t" + blocks.size());
+        
+        //block purging
+        IBlockProcessing blockPurging = new SizeBasedBlockPurging();
+        blocks = blockPurging.refineBlocks(blocks);
 
         //block filtering
         IBlockProcessing blockCleaningMethod = BlockBuildingMethod.getDefaultBlockCleaning(blockingMethod);
         if (blockCleaningMethod != null) {
             blocks = blockCleaningMethod.refineBlocks(blocks);
         }
+        System.out.println("Filtered blocks\t:\t"+blocks.size());
     }
 
     public void setBlockingMethod(BlockBuildingMethod blockingMethod) {
@@ -142,8 +149,8 @@ public abstract class AbstractWorkflowBuilder {
         ClustersPerformance clp = new ClustersPerformance(entityClusters, groundTruth);
         clp.setStatistics();
 //        clp.printStatisticsShort();
-//        clp.printStatistics();
-        clp.printStatisticsLong(profiles1, profiles2);
+        clp.printStatistics();
+//        clp.printStatisticsLong(profiles1, profiles2);
         
         precision = clp.getPrecision();
         recall = clp.getRecall();

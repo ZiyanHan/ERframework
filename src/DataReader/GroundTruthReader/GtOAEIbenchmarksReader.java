@@ -125,6 +125,8 @@ public class GtOAEIbenchmarksReader extends AbstractGtReader {
                     if (urlToEntityId2.containsKey(entity2URL)) {
                         int entityId2 = urlToEntityId2.get(entity2URL);
                         duplicatesGraph.addEdge(entityId1, entityId2);
+                    } else {
+                        System.out.println(entity2URL+" does not appear in the dataset! Omitting this ground truth pair...");
                     }
                                 
                 }               

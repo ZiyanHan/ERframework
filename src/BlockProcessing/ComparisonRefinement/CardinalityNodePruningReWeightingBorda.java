@@ -33,7 +33,7 @@ import java.util.Set;
  * @author vefthym
  */
 
-public class CardinalityNodePruningReWeighting extends CardinalityEdgePruning {
+public class CardinalityNodePruningReWeightingBorda extends CardinalityEdgePruning {
     
     protected int firstId;
     protected int lastId;
@@ -47,12 +47,12 @@ public class CardinalityNodePruningReWeighting extends CardinalityEdgePruning {
     
     protected double a;
     
-    public CardinalityNodePruningReWeighting(WeightingScheme scheme) {
+    public CardinalityNodePruningReWeightingBorda(WeightingScheme scheme) {
         super(scheme);
         nodeCentric = true;
     }
 
-    public CardinalityNodePruningReWeighting(WeightingScheme scheme, AbstractModel[] entityModelsD1, AbstractModel[] entityModelsD2, AbstractModel[] neighborModelsD1, AbstractModel[] neighborModelsD2, double a) {
+    public CardinalityNodePruningReWeightingBorda(WeightingScheme scheme, AbstractModel[] entityModelsD1, AbstractModel[] entityModelsD2, AbstractModel[] neighborModelsD1, AbstractModel[] neighborModelsD2, double a) {
         super(scheme);
         this.entityModelsD1 = entityModelsD1;
         this.entityModelsD2 = entityModelsD2;
@@ -84,11 +84,11 @@ public class CardinalityNodePruningReWeighting extends CardinalityEdgePruning {
             return true;
         }
                 
-        if (nearestEntities[neighborId].contains(comparison)) { //if reciprocal
+        if (nearestEntities[neighborId].contains(comparison)) {
             if (entityId < neighborId) {
                 for (Comparison reciprocalComparison : nearestEntities[neighborId]) {
                     if (reciprocalComparison.equals(comparison)) {
-                        comparison.setUtilityMeasure(Math.max(comparison.getUtilityMeasure(), reciprocalComparison.getUtilityMeasure()));
+                        comparison.setUtilityMeasure(comparison.getUtilityMeasure()+ reciprocalComparison.getUtilityMeasure());
                         return true;
                     }
                 }
@@ -99,6 +99,12 @@ public class CardinalityNodePruningReWeighting extends CardinalityEdgePruning {
 
         return true; //false for reciprocal, true for non-reciprocal
     }
+    
+//    protected boolean isReciprocalComparison(Comparison comparison) {
+//        int e1 = comparison.getEntityId1();
+//        int e2 = comparison.getEntityId2()+datasetLimit;
+//        return (nearestEntities[e1].contains(comparison) && nearestEntities[e2].contains(comparison));
+//    }
 
     @Override
     protected List<AbstractBlock> pruneEdges() {
@@ -122,42 +128,44 @@ public class CardinalityNodePruningReWeighting extends CardinalityEdgePruning {
     
     protected void retainValidComparisons(List<AbstractBlock> newBlocks) {        
         List<Comparison> retainedComparisons = new ArrayList<>();        
-        for (int i = noOfEntities-1; i >=0; i--) {
-//            if (i == datasetLimit) break; //only for clean-clean er with source and target KB!
+        for (int i = noOfEntities-1; i >= 0; i--) { //scan the entities from last to first (so valid comparisons are last
+           // if (i == datasetLimit) break; //only for clean-clean er with source and target KB!
             double similaritySum = 0;
-            int validComps = 0;
             if (nearestEntities[i] != null) {
                 retainedComparisons.clear();
                 for (Comparison comparison : nearestEntities[i]) {
-//                    if (isValidComparison(i, comparison)) {                        
-                        double similarity = getSimilarity(comparison);
-                        comparison.setUtilityMeasure(similarity);
-                        similaritySum += similarity;                        
-                        if (similarity > 0) {
-                            validComps++;
-                        }
-//                    }
+                    double similarity = getSimilarity(comparison);       
+                    comparison.setUtilityMeasure(similarity);
+                    similaritySum += similarity;                        
                 }
-                if (similaritySum == 0 || validComps == 1) {
+                if (similaritySum == 0) {
                     continue;
                 }
                 
-                final double AVERAGE_SIM = similaritySum / validComps;
-                
-//                System.out.println("AVERAGE_SIM for entity "+i+" = "+similaritySum+"/"+validComps+"="+AVERAGE_SIM);
-                
+                int newThreshold = 10; //TODO: parameterize this new number of retained neighbors
+                PriorityQueue<Comparison> ordered = new PriorityQueue<>(newThreshold, new ComparisonWeightComparator());
                 for (Comparison comparison : nearestEntities[i]) {
                     double original_sim = comparison.getUtilityMeasure();  
                     if (original_sim > 0) {
-//                        comparison.setUtilityMeasure(original_sim/AVERAGE_SIM); // MAX AVG RATIO
-                        comparison.setUtilityMeasure(original_sim + (original_sim - AVERAGE_SIM)); //MAX AVG DIFFERENCE
-//                        System.out.println("New similarity of "+comparison.getEntityId1()+", "+(comparison.getEntityId2()+datasetLimit-2)+" is "+ comparison.getUtilityMeasure());
-                        if (isValidComparison(i, comparison)) {
-                            retainedComparisons.add(comparison); //keep only the comparisons with similarity above average (per entity)
-                        }
+                        ordered.add(comparison);
                     }
-                    
-                }                
+                    if (ordered.size() > newThreshold) {
+                        ordered.poll();
+                    }
+                }      
+                int rank = (int) newThreshold; //keep the k from top-k comparisons per node and assign k to the first comparison, k-1 to the second...
+                while (!ordered.isEmpty()) {
+                    Comparison nextComparison = ordered.poll(); //get the next best comparison (in decreasing similarity)
+                    nextComparison.setUtilityMeasure(rank--);
+                    double beforeReciprocityScore = nextComparison.getUtilityMeasure();                    
+                    if (isValidComparison(i, nextComparison)) {                        
+                        retainedComparisons.add(nextComparison); //the new similarity score is the rank of this comparison for the current entity
+//                        if (nextComparison.getUtilityMeasure() > beforeReciprocityScore) {
+//                            System.out.println(i+": After reciprocity:"+nextComparison.getUtilityMeasure()+", before: "+beforeReciprocityScore);
+//                        }
+                    }
+                }
+                
                 
                 if (!retainedComparisons.isEmpty())
                     addDecomposedBlock(retainedComparisons, newBlocks);

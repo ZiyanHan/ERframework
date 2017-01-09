@@ -16,7 +16,10 @@
 
 package EntityMatching;
 
+import BlockProcessing.ComparisonRefinement.CardinalityNodePruning;
 import BlockProcessing.ComparisonRefinement.CardinalityNodePruningReWeighting;
+import BlockProcessing.ComparisonRefinement.CardinalityNodePruningReWeightingBorda;
+import BlockProcessing.ComparisonRefinement.CardinalityNodePruningReWeightingSum;
 import BlockProcessing.ComparisonRefinement.CardinalityNodePruningWithMatching;
 import BlockProcessing.ComparisonRefinement.ReciprocalCardinalityNodePruning;
 import BlockProcessing.IBlockProcessing;
@@ -116,9 +119,12 @@ public class ProfileWithNeighborMatcher extends ProfileMatcher {
         
         //meta-blocking
         IBlockProcessing comparisonCleaningMethod = 
+//                 new CardinalityNodePruning(WeightingScheme.CBS);
 //                new CardinalityNodePruningWithMatching(WeightingScheme.CBS, entityModelsD1, entityModelsD2, neighborModelsD1, neighborModelsD2, matching_threshold);
-                new CardinalityNodePruningReWeighting(WeightingScheme.CBS, entityModelsD1, entityModelsD2, neighborModelsD1, neighborModelsD2);
-//                new ReciprocalCardinalityNodePruning(WeightingScheme.CBS, entityModelsD1, entityModelsD2, neighborModelsD1, neighborModelsD2);
+                new CardinalityNodePruningReWeighting(WeightingScheme.CBS, entityModelsD1, entityModelsD2, neighborModelsD1, neighborModelsD2, a);
+//                new CardinalityNodePruningReWeightingBorda(WeightingScheme.CBS, entityModelsD1, entityModelsD2, neighborModelsD1, neighborModelsD2, a);
+//                new CardinalityNodePruningReWeightingSum(WeightingScheme.CBS, entityModelsD1, entityModelsD2, neighborModelsD1, neighborModelsD2, a);
+//                new ReciprocalCardinalityNodePruning(WeightingScheme.CBS);
         blocks = comparisonCleaningMethod.refineBlocks(blocks);
                 
         if (groundTruth != null) {
@@ -132,9 +138,9 @@ public class ProfileWithNeighborMatcher extends ProfileMatcher {
             final Iterator<Comparison> iterator = block.getComparisonIterator();
             while (iterator.hasNext()) {
                 Comparison currentComparison = iterator.next();
-                double sim = getSimilarity(currentComparison);
-                currentComparison.setUtilityMeasure(sim);
-                if (sim > 0) {
+//                double sim = getSimilarity(currentComparison); //comment out if meta-blocking changes the weigths
+//                currentComparison.setUtilityMeasure(sim); //comment out if meta-blocking changes the weigths
+                if (currentComparison.getUtilityMeasure() > 0) {
                     simPairs.addComparison(currentComparison);
                 } 
             }

@@ -76,7 +76,7 @@ public abstract class AbstractBlockBuilding implements IBlockBuilding {
 
     protected void buildBlocks() {
         setMemoryDirectory();
-
+        
         IndexWriter iWriter1 = openWriter(indexDirectoryD1);
         indexEntities(iWriter1, entityProfilesD1);
         closeWriter(iWriter1);
@@ -158,7 +158,7 @@ public abstract class AbstractBlockBuilding implements IBlockBuilding {
         return noOfEntitiesD1 + noOfEntitiesD2;
     }
 
-    protected void indexEntities(IndexWriter index, List<EntityProfile> entities) {
+    protected void indexEntities(IndexWriter index, List<EntityProfile> entities) {        
         try {
             int counter = 0;
             for (EntityProfile profile : entities) {

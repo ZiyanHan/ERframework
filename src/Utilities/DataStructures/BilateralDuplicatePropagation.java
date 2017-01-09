@@ -32,6 +32,7 @@ public class BilateralDuplicatePropagation extends AbstractDuplicatePropagation 
     private Set<Integer> entities2;
     
     private Set<IdDuplicates> falseMatches;
+    private Set<IdDuplicates> missedMatches;
     
     
     public BilateralDuplicatePropagation(Set<IdDuplicates> matches) {
@@ -39,6 +40,7 @@ public class BilateralDuplicatePropagation extends AbstractDuplicatePropagation 
         entities1 = new HashSet<>(2*existingDuplicates);
         entities2 = new HashSet<>(2*existingDuplicates);
         falseMatches = new HashSet<>();
+        missedMatches = new HashSet<>(duplicates);
     }
     
     @Override
@@ -48,6 +50,10 @@ public class BilateralDuplicatePropagation extends AbstractDuplicatePropagation 
         
     public Set<IdDuplicates> getFalseMatches() {
         return falseMatches;
+    }
+    
+    public Set<IdDuplicates> getMissedMatches() {
+        return missedMatches;
     }
     
     @Override
@@ -62,6 +68,7 @@ public class BilateralDuplicatePropagation extends AbstractDuplicatePropagation 
         if (duplicates.contains(tempDuplicates)) {
             entities1.add(id1);
             entities2.add(id2);
+            missedMatches.remove(tempDuplicates);
         } else {
             falseMatches.add(new IdDuplicates(id1, id2));
         }
@@ -73,5 +80,6 @@ public class BilateralDuplicatePropagation extends AbstractDuplicatePropagation 
         entities1 = new HashSet<>(2*existingDuplicates);
         entities2 = new HashSet<>(2*existingDuplicates);
         falseMatches = new HashSet<>();
+        missedMatches = new HashSet<>(duplicates);
     }
 }

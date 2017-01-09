@@ -60,4 +60,13 @@ public class EntityProfile implements Serializable {
         });
         return values;
     }    
+    
+    @Override
+    public String toString() {
+        String entityString = (entityUrl != null) ? entityUrl : "";
+        for (Attribute attribute : attributes) {
+            entityString += "\n"+attribute.getName() +":"+ attribute.getValue();
+        }
+        return entityString;
+    }
 }

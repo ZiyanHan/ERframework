@@ -33,7 +33,7 @@ import java.util.Set;
  * @author vefthym
  */
 
-public class CardinalityNodePruningReWeighting extends CardinalityEdgePruning {
+public class CardinalityNodePruningReWeightingSum extends CardinalityEdgePruning {
     
     protected int firstId;
     protected int lastId;
@@ -47,12 +47,12 @@ public class CardinalityNodePruningReWeighting extends CardinalityEdgePruning {
     
     protected double a;
     
-    public CardinalityNodePruningReWeighting(WeightingScheme scheme) {
+    public CardinalityNodePruningReWeightingSum(WeightingScheme scheme) {
         super(scheme);
         nodeCentric = true;
     }
 
-    public CardinalityNodePruningReWeighting(WeightingScheme scheme, AbstractModel[] entityModelsD1, AbstractModel[] entityModelsD2, AbstractModel[] neighborModelsD1, AbstractModel[] neighborModelsD2, double a) {
+    public CardinalityNodePruningReWeightingSum(WeightingScheme scheme, AbstractModel[] entityModelsD1, AbstractModel[] entityModelsD2, AbstractModel[] neighborModelsD1, AbstractModel[] neighborModelsD2, double a) {
         super(scheme);
         this.entityModelsD1 = entityModelsD1;
         this.entityModelsD2 = entityModelsD2;
@@ -88,7 +88,7 @@ public class CardinalityNodePruningReWeighting extends CardinalityEdgePruning {
             if (entityId < neighborId) {
                 for (Comparison reciprocalComparison : nearestEntities[neighborId]) {
                     if (reciprocalComparison.equals(comparison)) {
-                        comparison.setUtilityMeasure(Math.max(comparison.getUtilityMeasure(), reciprocalComparison.getUtilityMeasure()));
+                        comparison.setUtilityMeasure(comparison.getUtilityMeasure()+ reciprocalComparison.getUtilityMeasure());
                         return true;
                     }
                 }
@@ -99,6 +99,12 @@ public class CardinalityNodePruningReWeighting extends CardinalityEdgePruning {
 
         return true; //false for reciprocal, true for non-reciprocal
     }
+    
+//    protected boolean isReciprocalComparison(Comparison comparison) {
+//        int e1 = comparison.getEntityId1();
+//        int e2 = comparison.getEntityId2()+datasetLimit;
+//        return (nearestEntities[e1].contains(comparison) && nearestEntities[e2].contains(comparison));
+//    }
 
     @Override
     protected List<AbstractBlock> pruneEdges() {
@@ -122,42 +128,28 @@ public class CardinalityNodePruningReWeighting extends CardinalityEdgePruning {
     
     protected void retainValidComparisons(List<AbstractBlock> newBlocks) {        
         List<Comparison> retainedComparisons = new ArrayList<>();        
-        for (int i = noOfEntities-1; i >=0; i--) {
-//            if (i == datasetLimit) break; //only for clean-clean er with source and target KB!
+        for (int i = noOfEntities-1; i >= 0; i--) { //scan the entities from last to first (so valid comparisons are last
+           // if (i == datasetLimit) break; //only for clean-clean er with source and target KB!
             double similaritySum = 0;
-            int validComps = 0;
             if (nearestEntities[i] != null) {
                 retainedComparisons.clear();
                 for (Comparison comparison : nearestEntities[i]) {
-//                    if (isValidComparison(i, comparison)) {                        
-                        double similarity = getSimilarity(comparison);
-                        comparison.setUtilityMeasure(similarity);
-                        similaritySum += similarity;                        
-                        if (similarity > 0) {
-                            validComps++;
-                        }
-//                    }
+                    double similarity = getSimilarity(comparison);       
+                    comparison.setUtilityMeasure(similarity);
+                    similaritySum += similarity;                        
                 }
-                if (similaritySum == 0 || validComps == 1) {
+                if (similaritySum == 0) {
                     continue;
                 }
-                
-                final double AVERAGE_SIM = similaritySum / validComps;
-                
-//                System.out.println("AVERAGE_SIM for entity "+i+" = "+similaritySum+"/"+validComps+"="+AVERAGE_SIM);
                 
                 for (Comparison comparison : nearestEntities[i]) {
                     double original_sim = comparison.getUtilityMeasure();  
                     if (original_sim > 0) {
-//                        comparison.setUtilityMeasure(original_sim/AVERAGE_SIM); // MAX AVG RATIO
-                        comparison.setUtilityMeasure(original_sim + (original_sim - AVERAGE_SIM)); //MAX AVG DIFFERENCE
-//                        System.out.println("New similarity of "+comparison.getEntityId1()+", "+(comparison.getEntityId2()+datasetLimit-2)+" is "+ comparison.getUtilityMeasure());
-                        if (isValidComparison(i, comparison)) {
-                            retainedComparisons.add(comparison); //keep only the comparisons with similarity above average (per entity)
+                        if (isValidComparison(i, comparison)) { //re-weighting occurs in isValidComparison
+                            retainedComparisons.add(comparison);
                         }
                     }
-                    
-                }                
+                }      
                 
                 if (!retainedComparisons.isEmpty())
                     addDecomposedBlock(retainedComparisons, newBlocks);

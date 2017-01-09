@@ -67,16 +67,19 @@ public class UniqueMappingClustering extends AbstractEntityClustering {
 
         System.out.println("Similarity Pairs ordered:");
         while (!SEqueue.isEmpty()) {
-            SimilarityEdge se = SEqueue.remove();
-            System.out.println(se);
+            SimilarityEdge se = SEqueue.remove();            
             int e1 = se.getModel1Pos();
             int e2 = se.getModel2Pos();
-            
+
+//            System.out.print(se);
+                       
             //skip already matched entities (unique mapping contraint for clean-clean ER)
             if (matchedIds.contains(e1) || matchedIds.contains(e2)) {
+//                System.out.println("\t-->\tSkipped!");
                 continue;
             }
             
+//            System.out.println("\t-->\tMatched!");
             similarityGraph.addEdge(e1, e2);
             matchedIds.add(e1);
             matchedIds.add(e2);

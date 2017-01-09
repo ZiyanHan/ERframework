@@ -44,12 +44,14 @@ public class ClustersPerformance {
     private final List<EquivalenceCluster> entityClusters;
     
     private Set<IdDuplicates> falseMatches;
+    private Set<IdDuplicates> missedMatches;
 
     public ClustersPerformance(List<EquivalenceCluster> clusters, AbstractDuplicatePropagation adp) {
         abstractDP = adp;
         abstractDP.resetDuplicates();
         entityClusters = clusters;
         falseMatches = new HashSet<>();
+        missedMatches = new HashSet<>();
     }
 
     public int getDetectedDuplicates() {
@@ -82,6 +84,10 @@ public class ClustersPerformance {
 
     public Set<IdDuplicates> getFalseMatches() {
         return falseMatches;
+    }
+    
+    public Set<IdDuplicates> getMissedMatches() {
+        return missedMatches;
     }
 
     public void printStatistics() {
@@ -122,6 +128,7 @@ public class ClustersPerformance {
                 }
             }
             falseMatches = ((BilateralDuplicatePropagation)abstractDP).getFalseMatches();
+            missedMatches = ((BilateralDuplicatePropagation)abstractDP).getMissedMatches();
         } else { // Dirty ER
             for (EquivalenceCluster cluster : entityClusters) {
                 List<Integer> duplicates = cluster.getEntityIdsD1();
@@ -151,10 +158,15 @@ public class ClustersPerformance {
     }
     public void printStatisticsLong(List<EntityProfile> profiles1, List<EntityProfile> profiles2) {
         printStatistics();
-        System.out.println("False Positives:\n");
+        System.out.println(falseMatches.size()+" False Matches:\n");
         for (IdDuplicates falseMatch : falseMatches) {
             System.out.println("("+profiles1.get(falseMatch.getEntityId1()).getEntityUrl()+"(id:"+ falseMatch.getEntityId1()+"), "
-                    +profiles2.get(falseMatch.getEntityId2()).getEntityUrl()+"(id:"+falseMatch.getEntityId2()+")) is a false match!");
+                    +profiles2.get(falseMatch.getEntityId2()).getEntityUrl()+"(id:"+(falseMatch.getEntityId2()+profiles1.size()-2)+")) is a false match!");
+        }
+        System.out.println("\n\n"+missedMatches.size()+" Missed Matches:\n");
+        for (IdDuplicates missedMatch : missedMatches) {
+            System.out.println("("+profiles1.get(missedMatch.getEntityId1()).getEntityUrl()+"(id:"+ missedMatch.getEntityId1()+"), "
+                    +profiles2.get(missedMatch.getEntityId2()).getEntityUrl()+"(id:"+(missedMatch.getEntityId2()+profiles1.size()-2)+")) is a missed match!");
         }
     }
 }

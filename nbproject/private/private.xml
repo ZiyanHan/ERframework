@@ -3,13 +3,30 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataModel/SimilarityPairs.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/BlockProcessing/ComparisonRefinement/CardinalityNodePruningReWeighting.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/BlockProcessing/BlockRefinement/ComparisonsBasedBlockPurging.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataReader/EntityReader/TestEntityTSVReader.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/WorkflowBuilder/Baseline.java</file>
             <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/test/WorkflowBuilder/TestFullWorfklowComplexSimWithClustering.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/test/DataReader/TestEntityCSVReader.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataReader/EntityReader/TestGtOAEIbenchmarksReader.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/WorkflowBuilder/TestFullWorfklowWithClustering.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/WorkflowBuilder/AbstractComplexWorkflowBuilder.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataReader/EntityReader/IEntityReader.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/WorkflowBuilder/FullWithClustering.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/BlockProcessing/BlockRefinement/SizeBasedBlockPurging.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/BlockBuilding/AbstractBlockBuilding.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataReader/EntityReader/EntityCSVReader.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/WorkflowBuilder/AbstractWorkflowBuilder.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataPatterns/DatasetStatistics.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataReader/EntityReader/TestEntityCSVReader.java</file>
             <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/EntityMatching/ProfileWithNeighborMatcher.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/EntityMatching/ProfileMatcher.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/Utilities/Enumerations/BlockBuildingMethod.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/WorkflowBuilder/TestBaseline.java</file>
             <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/EntityClustering/UniqueMappingClustering.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/BlockProcessing/ComparisonRefinement/CardinalityEdgePruning.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataReader/EntityReader/AbstractEntityReader.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/WorkflowBuilder/TestComplexWorfklow.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataReader/EntityReader/TestRdfReader.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataReader/AbstractReader.java</file>
         </group>
     </open-files>
 </project-private>

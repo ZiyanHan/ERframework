@@ -27,6 +27,7 @@ public class Baseline extends AbstractWorkflowBuilder {
     public void runWorkflow() {
         loadData();
         runBlocking();
+        getBlockPerformance();
         SimilarityPairs simPairs = runSimilarityComputations();
         runClustering(simPairs);
     }

@@ -92,7 +92,7 @@ public class SizeBasedBlockPurging extends AbstractBlockPurging {
     protected boolean satisfiesThreshold(AbstractBlock block) {
         if (isCleanCleanER) {
             BilateralBlock bBlock = (BilateralBlock) block;
-            return Math.min(bBlock.getIndex1Entities().length, bBlock.getIndex2Entities().length) <= maxEntities;
+            return Math.max(bBlock.getIndex1Entities().length, bBlock.getIndex2Entities().length) <= maxEntities;
         } 
         return block.getTotalBlockAssignments() <= maxEntities;
     }

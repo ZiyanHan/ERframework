@@ -6,13 +6,13 @@
 package WorkflowBuilder;
 
 import BlockBuilding.IBlockBuilding;
+import BlockProcessing.BlockRefinement.BlockFiltering;
 import BlockProcessing.BlockRefinement.ComparisonsBasedBlockPurging;
 import BlockProcessing.BlockRefinement.SizeBasedBlockPurging;
 import BlockProcessing.IBlockProcessing;
 import DataModel.AbstractBlock;
 import DataModel.EntityProfile;
 import DataModel.EquivalenceCluster;
-import DataModel.IdDuplicates;
 import DataModel.SimilarityPairs;
 import DataReader.EntityReader.EntitySerializationReader;
 import DataReader.EntityReader.IEntityReader;
@@ -26,7 +26,6 @@ import Utilities.ClustersPerformance;
 import Utilities.DataStructures.AbstractDuplicatePropagation;
 import Utilities.DataStructures.BilateralDuplicatePropagation;
 import Utilities.Enumerations.BlockBuildingMethod;
-import Utilities.Enumerations.SimilarityMetric;
 import java.util.List;
 
 /**
@@ -34,6 +33,7 @@ import java.util.List;
  * @author VASILIS
  */
 public abstract class AbstractWorkflowBuilder {
+
     //parameters to set
     String dataset1Path, dataset2Path, groundTruthPath;
     BlockBuildingMethod blockingMethod;
@@ -41,14 +41,14 @@ public abstract class AbstractWorkflowBuilder {
     IEntityMatching similarityMethod;
     double similarity_threshold;
     IBlockProcessing metaBlockingMethod;
-    
+
     //variables needed and created afterwards
     List<EntityProfile> profiles1;
     List<EntityProfile> profiles2;
     AbstractDuplicatePropagation groundTruth;
-    
+
     List<AbstractBlock> blocks;
-    
+
     double precision, recall, fmeasure;
 
     public AbstractWorkflowBuilder(String dataset1Path, String dataset2Path, String groundTruthPath, BlockBuildingMethod blockingMethod, IBlockProcessing metaBlockingMethod, IEntityMatching similarityMethod, IEntityClustering clusteringMethod) {
@@ -60,39 +60,49 @@ public abstract class AbstractWorkflowBuilder {
         this.similarityMethod = similarityMethod;
         this.metaBlockingMethod = metaBlockingMethod;
     }
-    
+
     public void loadData() {
         IEntityReader eReader1 = new EntitySerializationReader(dataset1Path);
         profiles1 = eReader1.getEntityProfiles();
-        System.out.println("Input Entity Profiles1\t:\t" + profiles1.size());            
-        
+        System.out.println("Input Entity Profiles1\t:\t" + profiles1.size());
+
         IEntityReader eReader2 = new EntitySerializationReader(dataset2Path);
         profiles2 = eReader2.getEntityProfiles();
-        System.out.println("Input Entity Profiles2\t:\t" + profiles2.size());            
+        System.out.println("Input Entity Profiles2\t:\t" + profiles2.size());
 
         IGroundTruthReader gtReader = new GtSerializationReader(groundTruthPath);
         groundTruth = new BilateralDuplicatePropagation(gtReader.getDuplicatePairs(profiles1, profiles2));
         System.out.println("Existing Duplicates\t:\t" + groundTruth.getDuplicates().size());
     }
-    
-    protected void runBlocking() {   
+
+    protected void runBlocking() {
         if (profiles1 == null || profiles2 == null || groundTruth == null) {
             throw new IllegalStateException("Cannot run blocking before successfully loading data and ground truth.");
         }
         IBlockBuilding blockBuildingMethod = BlockBuildingMethod.getDefaultConfiguration(blockingMethod);
         blocks = blockBuildingMethod.getBlocks(profiles1, profiles2);
         System.out.println("Original blocks\t:\t" + blocks.size());
-        
+
+        BlocksPerformance blStats = new BlocksPerformance(blocks, groundTruth);
+        blStats.setStatistics();
+        blStats.printStatistics();
+
         //block purging
-        IBlockProcessing blockPurging = new SizeBasedBlockPurging();
+        IBlockProcessing blockPurging = new ComparisonsBasedBlockPurging();
         blocks = blockPurging.refineBlocks(blocks);
 
+        blStats = new BlocksPerformance(blocks, groundTruth);
+        blStats.setStatistics();
+        blStats.printStatistics();
+        
         //block filtering
-        IBlockProcessing blockCleaningMethod = BlockBuildingMethod.getDefaultBlockCleaning(blockingMethod);
-        if (blockCleaningMethod != null) {
+        IBlockProcessing blockCleaningMethod = new BlockFiltering(0.8);
             blocks = blockCleaningMethod.refineBlocks(blocks);
-        }
-        System.out.println("Filtered blocks\t:\t"+blocks.size());
+        System.out.println("Filtered blocks\t:\t" + blocks.size());
+        
+        blStats = new BlocksPerformance(blocks, groundTruth);
+        blStats.setStatistics();
+        blStats.printStatistics();
     }
 
     public void setBlockingMethod(BlockBuildingMethod blockingMethod) {
@@ -115,20 +125,20 @@ public abstract class AbstractWorkflowBuilder {
     public void setMetaBlockingMethod(IBlockProcessing metaBlockingMethod) {
         this.metaBlockingMethod = metaBlockingMethod;
     }
-    
+
     protected void runMetaBlocking() {
         if (blocks == null) {
             throw new IllegalStateException("Cannot run meta-blocking on a null block collection. Run blocking first!");
         }
         blocks = metaBlockingMethod.refineBlocks(blocks);
     }
-    
+
     public void getBlockPerformance() {
         BlocksPerformance blp = new BlocksPerformance(blocks, groundTruth);
         blp.setStatistics();
         blp.printStatistics();
     }
-    
+
     //TODO: return precision, recall, fmeasure for ProfileWithNeighborMatcher (meta-blocking)
     protected SimilarityPairs runSimilarityComputations() {
         if (blocks == null) {
@@ -137,9 +147,9 @@ public abstract class AbstractWorkflowBuilder {
         if (similarityMethod instanceof ProfileWithNeighborMatcher) {
             ((ProfileWithNeighborMatcher) similarityMethod).setGroundTruth(groundTruth);
         }
-        return similarityMethod.executeComparisons(blocks, profiles1, profiles2);      
+        return similarityMethod.executeComparisons(blocks, profiles1, profiles2);
     }
-    
+
     protected void runClustering(SimilarityPairs simPairs) {
         if (simPairs == null || clusteringMethod == null) {
             throw new IllegalStateException("Cannot run clustering at this state, since either simPairs or clustering method are null.");
@@ -151,28 +161,26 @@ public abstract class AbstractWorkflowBuilder {
 //        clp.printStatisticsShort();
         clp.printStatistics();
 //        clp.printStatisticsLong(profiles1, profiles2);
-        
+
         precision = clp.getPrecision();
         recall = clp.getRecall();
         fmeasure = clp.getFMeasure();
     }
-    
-    
-    
+
     public abstract void runWorkflow();
-    
+
     public double getPrecision() {
         return precision;
     }
-    
+
     public double getRecall() {
         return recall;
     }
-    
+
     public double getFMeasure() {
         return fmeasure;
     }
-    
+
     public String getDataset1Path() {
         return dataset1Path;
     }
@@ -216,21 +224,20 @@ public abstract class AbstractWorkflowBuilder {
     public List<AbstractBlock> getBlocks() {
         return blocks;
     }
-    
+
     public double getSimilarityThreshold() {
         return similarity_threshold;
     }
-    
-    
+
     @Override
     public String toString() {
         String result = "";
-        result += "Dataset:"+dataset1Path+"\n";
-        result += "Blocking method:"+blockingMethod+"\n";
-        result += "Meta-blocking method:"+ (metaBlockingMethod != null ? metaBlockingMethod.getMethodInfo() : "NONE") +"\n";
-        result += "Similarity method:"+similarityMethod.getMethodInfo()+"\n";
-        result += "Similarity threshold:"+similarity_threshold+"\n";
-        result += "Clustering method:"+ (clusteringMethod != null ? clusteringMethod.getMethodInfo() : "NONE")+"\n";
+        result += "Dataset:" + dataset1Path + "\n";
+        result += "Blocking method:" + blockingMethod + "\n";
+        result += "Meta-blocking method:" + (metaBlockingMethod != null ? metaBlockingMethod.getMethodInfo() : "NONE") + "\n";
+        result += "Similarity method:" + similarityMethod.getMethodInfo() + "\n";
+        result += "Similarity threshold:" + similarity_threshold + "\n";
+        result += "Clustering method:" + (clusteringMethod != null ? clusteringMethod.getMethodInfo() : "NONE") + "\n";
         return result;
     }
 }

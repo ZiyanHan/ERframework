@@ -28,7 +28,7 @@ import java.util.List;
 
 public abstract class AbstractEntityReader extends AbstractReader implements IEntityReader {
     
-    protected final List<EntityProfile> entityProfiles;
+    protected List<EntityProfile> entityProfiles;
     
     public AbstractEntityReader (String filePath) {
         super(filePath);

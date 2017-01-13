@@ -60,7 +60,7 @@ public class GtCSVReader extends AbstractGtReader {
     protected void getBilateralConnectedComponents(List<Set<Integer>> connectedComponents) {
         for (Set<Integer> cluster : connectedComponents) {
             if (cluster.size() != 2) {
-                LOGGER.log(Level.WARNING, "Connected component that does not involve just a couple of entities!\t{0}", cluster.toString());
+                //LOGGER.log(Level.WARNING, "Connected component that does not involve just a couple of entities!\t{0}", cluster.toString());
                 continue;
             }
 
@@ -111,12 +111,25 @@ public class GtCSVReader extends AbstractGtReader {
                 if (nextLine.length < 2) {
                     LOGGER.log(Level.WARNING, "Line with inadequate information{0}", nextLine);
                     continue;
+                } else if (nextLine.length > 2) { //this probably means that the first url contains a comma (so try to concatenate it as one, hoping that the second url does not contain a comma as well)
+                    for (int i = 1; i < nextLine.length-1; ++i) {
+                        nextLine[0] += nextLine[i];
+                    }
+                    nextLine[1] = nextLine[nextLine.length-1];
                 }
 
                 // add a new edge for every pair of duplicate entities
-                int entityId1 = urlToEntityId1.get(nextLine[0]);
-                int entityId2 = urlToEntityId1.get(nextLine[1])+datasetLimit;
-                duplicatesGraph.addEdge(entityId1, entityId2);
+                if (urlToEntityId1.containsKey(nextLine[0])) {
+                    int entityId1 = urlToEntityId1.get(nextLine[0]);
+                    if (urlToEntityId2.containsKey(nextLine[1])) {
+                        int entityId2 = urlToEntityId2.get(nextLine[1]);
+                        duplicatesGraph.addEdge(entityId1, entityId2);                        
+                    } else {
+                        System.out.println(nextLine[1]+" does not appear in the dataset! Omitting this ground truth pair...");
+                    }
+                } else {
+                    System.out.println(nextLine[0]+" does not appear in the dataset! Omitting this ground truth pair...");
+                }
             }
         } catch (FileNotFoundException ex) {
             LOGGER.log(Level.SEVERE, null, ex);
@@ -136,7 +149,7 @@ public class GtCSVReader extends AbstractGtReader {
         } else { // Dirty ER
             getUnilateralConnectedComponents(connectedComponents);
         }
-        LOGGER.log(Level.INFO, "Total pair of duplicats\t:\t{0}", idDuplicates.size());
+        LOGGER.log(Level.INFO, "Total pair of duplicates\t:\t{0}", idDuplicates.size());
 
         return idDuplicates;
     }

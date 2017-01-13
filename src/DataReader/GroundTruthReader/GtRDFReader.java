@@ -129,7 +129,7 @@ public class GtRDFReader extends AbstractGtReader {
 
                 // add a new edge for every pair of duplicate entities
                 int entityId1 = urlToEntityId1.get(sub);
-                int entityId2 = urlToEntityId1.get(obj)+datasetLimit;
+                int entityId2 = urlToEntityId1.get(obj)+datasetLimit; //FIXME: shouldn't this be urlToEntityId2.get...?
 
                 duplicatesGraph.addEdge(entityId1, entityId2);
             }

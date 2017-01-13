@@ -17,9 +17,11 @@ package DataReader.EntityReader;
 
 import DataModel.EntityProfile;
 import com.opencsv.CSVReader;
+import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,48 +34,53 @@ import java.util.logging.Logger;
 public class EntityTSVReader extends AbstractEntityReader {
 
     private static final Logger LOGGER = Logger.getLogger(EntityTSVReader.class.getName());    
-    private final char SEPARATOR = '\t';
+    private final String SEPARATOR = "\t";
 
     public EntityTSVReader(String filePath) {
         super(filePath);
     }
 
     @Override
-    public List<EntityProfile> getEntityProfiles() {
+    public List<EntityProfile> getEntityProfiles() {        
         if (!entityProfiles.isEmpty()) {
             return entityProfiles;
         }
+        entityProfiles = new LinkedList<>(); //LinkedList does not require the time needed to resize an ArrayList -> O(1) in worst-case vs O(n) for ArrayLists
         
         if (inputFilePath == null) {
             LOGGER.log(Level.SEVERE, "Input file path has not been set!");
             return null;
         }
         
-        try {
-            //creating reader
-            CSVReader reader = new CSVReader(new FileReader(inputFilePath), SEPARATOR);
+        try (BufferedReader br = new BufferedReader(new FileReader(inputFilePath))) { //CSVReader has bugs!
+            String line;
 
+            int entityCounter = 0;
             //read entity profiles                       
             String[] nextLine; //a line of the form subject\tpredicate\tobject
             String previousEntityURL = ""; //check if this line is about the same entity as the previous line
             String currentEntityURL = " "; //check if this line is about the same entity as the previous line
             EntityProfile e = null; //keep the last entity profile in memory and add it when a new profile appears
-            while ((nextLine = reader.readNext()) != null) {
+            while ((line = br.readLine()) != null) {
+                nextLine = line.split(SEPARATOR);
                 currentEntityURL = nextLine[0];
                 if (!currentEntityURL.equals(previousEntityURL)) {
                     if (e != null) {
                         entityProfiles.add(e);
                     }
                     e = new EntityProfile(currentEntityURL);
-                }
-                                
+                    if (++entityCounter % 1000000 == 0) {
+                        System.out.println(entityCounter/1000000+"M entities have been written so far...");
+                    }
+                }                
+                previousEntityURL = currentEntityURL;
+                
                 if (nextLine.length != 3) { 
                     LOGGER.log(Level.WARNING, "Line in non-triple format : {0}", Arrays.toString(nextLine));
                     continue;
                 }                
                     
                 readEntity(e, nextLine);
-                previousEntityURL = currentEntityURL;
             }
             
             if (currentEntityURL.equals(previousEntityURL) && e != null) { //for the case the last  line was about the same entity as the line before

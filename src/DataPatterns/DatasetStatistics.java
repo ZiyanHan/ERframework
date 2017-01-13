@@ -224,48 +224,17 @@ public class DatasetStatistics {
             EntityProfile e2 = profiles2.get(duplicate.getEntityId2());            
             
             //get the value similarity
-            AbstractModel model1 = RepresentationModel.getModel(RepresentationModel.TOKEN_UNIGRAMS, SimilarityMetric.JACCARD_SIMILARITY, e1.getEntityUrl());
-            e1.getAllValues().stream().forEach((value) -> {
-                model1.updateModel(value);
-            });
+            double valueSim = getValueSim(e1, e2);
             
-            AbstractModel model2 = RepresentationModel.getModel(RepresentationModel.TOKEN_UNIGRAMS, SimilarityMetric.JACCARD_SIMILARITY, e2.getEntityUrl());
-            e2.getAllValues().stream().forEach((value) -> {
-                model2.updateModel(value);
-            });            
-            
-            double valueSim = model1.getSimilarity(model2);
             if (valueSim < minValueSim) {
                 minValueSim = valueSim;
             }
             if (valueSim > maxValueSim) {
                 maxValueSim = valueSim;
             }
-            
-            
+                        
             //get the neighbor similarity
-            AbstractModel neighborModel1 = RepresentationModel.getModel(RepresentationModel.TOKEN_UNIGRAMS, SimilarityMetric.JACCARD_SIMILARITY, e1.getEntityUrl());
-            
-            for (String neighbor: e1.getAllValues()) {
-                Set<String> values = profilesURLs.get(neighbor);
-                if (values != null) { //then this value is an entity id
-                    for (String value : values) { //update the model with its values
-                        neighborModel1.updateModel(value);
-                    }
-                }
-            }
-            
-            AbstractModel neighborModel2 = RepresentationModel.getModel(RepresentationModel.TOKEN_UNIGRAMS, SimilarityMetric.JACCARD_SIMILARITY, e2.getEntityUrl());
-            for (String neighbor: e2.getAllValues()) {
-                Set<String> values = profilesURLs.get(neighbor);
-                if (values != null) { //then this value is an entity id
-                    for (String value : values) { //update the model with its values
-                        neighborModel2.updateModel(value);
-                    }
-                }
-            }
-            
-            double neighborSim = neighborModel1.getSimilarity(neighborModel2);
+            double neighborSim = getNeighborSim(e1, e2, profilesURLs);
             
             if (neighborSim < minNeighborSim) {
                 minNeighborSim = neighborSim;
@@ -287,6 +256,46 @@ public class DatasetStatistics {
         return numPairsWithHigherNeighborSim;
     }
     
+    
+    public int getMatchVsNonMatchNeighborSim() {
+        Map<String,Set<String>> profilesURLs = new HashMap<>(profiles1.size()+profiles2.size()); //key: entityURL, value: entity values
+        profiles1.stream().forEach((profile) -> {
+            profilesURLs.put(profile.getEntityUrl(), profile.getAllValues());
+        });
+        profiles2.stream().forEach((profile) -> {
+            profilesURLs.put(profile.getEntityUrl(), profile.getAllValues());
+        });
+        
+        int numMatchesWithHigherNeighborSim = 0;
+        
+        double avgDifference = 0;
+        
+        
+        Set<IdDuplicates> duplicates = groundTruth.getDuplicates();
+        EntityProfile e3 = null; //a non-matching entity profile for e1
+        for (IdDuplicates duplicate : duplicates) {
+            EntityProfile e1 = profiles1.get(duplicate.getEntityId1());
+            EntityProfile e2 = profiles2.get(duplicate.getEntityId2());         
+                       
+            double neighborSim = getNeighborSim(e1, e2, profilesURLs);    
+            
+            if (e3 == null) { //only for the first iteration
+                e3 = e2;
+                continue;
+            }
+            
+            double nonMatchNeighborSim = getNeighborSim(e1, e3, profilesURLs);
+            if (neighborSim > nonMatchNeighborSim) {
+                numMatchesWithHigherNeighborSim++;
+            }
+            avgDifference += (neighborSim - nonMatchNeighborSim);
+        }       
+        avgDifference /= (duplicates.size() - 1);
+        System.out.println(numMatchesWithHigherNeighborSim+"/"+(duplicates.size()-1)+" times a random match had higher neighbr sim than a random non-match.");
+        System.out.println("The average difference in neighbor sim between a match and a non-match is: "+avgDifference);
+        
+        return numMatchesWithHigherNeighborSim;
+    }
     
     
     
@@ -314,6 +323,59 @@ public class DatasetStatistics {
     public void setGroundTruth(AbstractDuplicatePropagation groundTruth) {
         this.groundTruth = groundTruth;
     }
+
+    /**
+     * Get the neighbor similarity (Jaccard on neighbors' tokens) of two entity profiles
+     * @param e1
+     * @param e2
+     * @param profilesURLs
+     * @return the neighbor similarity (Jaccard on neighbors' tokens) of two entity profiles
+     */
+    private double getNeighborSim(EntityProfile e1, EntityProfile e2, Map<String, Set<String>> profilesURLs) {
+        AbstractModel neighborModel1 = RepresentationModel.getModel(RepresentationModel.TOKEN_UNIGRAMS, SimilarityMetric.JACCARD_SIMILARITY, e1.getEntityUrl());
+            
+        for (String neighbor: e1.getAllValues()) {
+            Set<String> values = profilesURLs.get(neighbor);
+            if (values != null) { //then this value is an entity id
+                for (String value : values) { //update the model with its values
+                    neighborModel1.updateModel(value);
+                }
+            }
+        }
+
+        AbstractModel neighborModel2 = RepresentationModel.getModel(RepresentationModel.TOKEN_UNIGRAMS, SimilarityMetric.JACCARD_SIMILARITY, e2.getEntityUrl());
+        for (String neighbor: e2.getAllValues()) {
+            Set<String> values = profilesURLs.get(neighbor);
+            if (values != null) { //then this value is an entity id
+                for (String value : values) { //update the model with its values
+                    neighborModel2.updateModel(value);
+                }
+            }
+        }
+
+        return neighborModel1.getSimilarity(neighborModel2);            
+    }
+
+    /**
+     * Get the value similarity (Jaccard on tokens) of two entity profiles
+     * @param e1
+     * @param e2
+     * @param profilesURLs
+     * @return the value similarity (Jaccard on tokens) of two entity profiles
+     */
+    private double getValueSim(EntityProfile e1, EntityProfile e2) {
+        AbstractModel model1 = RepresentationModel.getModel(RepresentationModel.TOKEN_UNIGRAMS, SimilarityMetric.JACCARD_SIMILARITY, e1.getEntityUrl());
+        e1.getAllValues().stream().forEach((value) -> {
+            model1.updateModel(value);
+        });
+
+        AbstractModel model2 = RepresentationModel.getModel(RepresentationModel.TOKEN_UNIGRAMS, SimilarityMetric.JACCARD_SIMILARITY, e2.getEntityUrl());
+        e2.getAllValues().stream().forEach((value) -> {
+            model2.updateModel(value);
+        });            
+
+        return model1.getSimilarity(model2);            
+    }
     
     
     public static void main(String[] args) {
@@ -326,8 +388,8 @@ public class DatasetStatistics {
 //                                    "http://www.okkam.org/ontology_person1.owl#Person",
 //                                    "http://www.okkam.org/ontology_person2.owl#Person", 
             
-//                                    "http://www.okkam.org/ontology_restaurant1.owl#Restaurant",
-//                                    "http://www.okkam.org/ontology_restaurant2.owl#Restaurant",
+                                    "http://www.okkam.org/ontology_restaurant1.owl#Restaurant",
+                                    "http://www.okkam.org/ontology_restaurant2.owl#Restaurant",
             
 //                                      "http://www.bbc.co.uk/ontologies/creativework/NewsItem",
 //                                      "http://www.bbc.co.uk/ontologies/creativework/BlogPost",
@@ -352,6 +414,7 @@ public class DatasetStatistics {
         System.out.println("Neighbor sim is greater than value sim "+stats.getMatchValueVsNeighborSim()+"/"
                     +stats.getGroundTruth().getDuplicates().size()+" times.");
         System.out.println("Average #neighbor pairs with common tokens per match: "+stats.getAverageNumberOfNeighborsWithCommonTokens());
+        stats.getMatchVsNonMatchNeighborSim();
     }
     
 }

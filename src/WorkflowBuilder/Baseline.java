@@ -5,10 +5,6 @@
  */
 package WorkflowBuilder;
 
-import BlockProcessing.BlockRefinement.ComparisonsBasedBlockPurging;
-import BlockProcessing.IBlockProcessing;
-import DataModel.SimilarityPairs;
-import EntityClustering.IEntityClustering;
 import EntityClustering.UniqueMappingClustering;
 import EntityMatching.IEntityMatching;
 import Utilities.Enumerations.BlockBuildingMethod;
@@ -27,6 +23,7 @@ public class Baseline extends AbstractWorkflowBuilder {
     public void runWorkflow() {
         loadData();
         runBlocking();
+<<<<<<< HEAD
         getBlockPerformance();
         SimilarityPairs simPairs = runSimilarityComputations();
         runClustering(simPairs);
@@ -35,12 +32,27 @@ public class Baseline extends AbstractWorkflowBuilder {
     
     public void runBlockPurging() {
         
+=======
+//        SimilarityPairs simPairs = runSimilarityComputations();
+//        runClustering(simPairs);
+>>>>>>> origin/master
     }
     
     @Override
     public String toString() {
         return "Workflow: Baseline\n"
                 +super.toString();
+    }
+    
+    public static void main (String[] args) {
+        //set data
+        final String basePath = "/home/gpapadakis/data/";
+        String dataset1 = basePath+"rexaProfiles";
+        String dataset2 = basePath+"swetodblp_april_2008Profiles";
+        String datasetGroundtruth = basePath+"rexa_dblp_goldstandardIdDuplicates";
+        
+        AbstractWorkflowBuilder baseline = new Baseline(dataset1, dataset2, datasetGroundtruth, null);
+        baseline.runWorkflow();
     }
     
 }

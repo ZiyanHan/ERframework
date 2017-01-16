@@ -85,17 +85,7 @@ public class DatasetStatistics {
             EntityProfile e1 = profiles1.get(duplicate.getEntityId1());
             EntityProfile e2 = profiles2.get(duplicate.getEntityId2());
             
-            AbstractModel model1 = RepresentationModel.getModel(RepresentationModel.TOKEN_UNIGRAMS, SimilarityMetric.JACCARD_SIMILARITY, e1.getEntityUrl());
-            e1.getAllValues().stream().forEach((value) -> {
-                model1.updateModel(value);
-            });
-            
-            AbstractModel model2 = RepresentationModel.getModel(RepresentationModel.TOKEN_UNIGRAMS, SimilarityMetric.JACCARD_SIMILARITY, e2.getEntityUrl());
-            e2.getAllValues().stream().forEach((value) -> {
-                model2.updateModel(value);
-            });
-            
-            sumSimilarity += model1.getSimilarity(model2);            
+            sumSimilarity += getValueSim(e1, e2);
         }
         
         return sumSimilarity / duplicates.size();
@@ -118,28 +108,7 @@ public class DatasetStatistics {
             EntityProfile e1 = profiles1.get(duplicate.getEntityId1());
             EntityProfile e2 = profiles2.get(duplicate.getEntityId2());
             
-            AbstractModel model1 = RepresentationModel.getModel(RepresentationModel.TOKEN_UNIGRAMS, SimilarityMetric.JACCARD_SIMILARITY, e1.getEntityUrl());
-            
-            for (String neighbor: e1.getAllValues()) {
-                Set<String> values = profilesURLs.get(neighbor);
-                if (values != null) { //then this value is an entity id
-                    for (String value : values) { //update the model with its values
-                        model1.updateModel(value);
-                    }
-                }
-            }
-            
-            AbstractModel model2 = RepresentationModel.getModel(RepresentationModel.TOKEN_UNIGRAMS, SimilarityMetric.JACCARD_SIMILARITY, e2.getEntityUrl());
-            for (String neighbor: e2.getAllValues()) {
-                Set<String> values = profilesURLs.get(neighbor);
-                if (values != null) { //then this value is an entity id
-                    for (String value : values) { //update the model with its values
-                        model2.updateModel(value);
-                    }
-                }
-            }
-            
-            sumSimilarity += model1.getSimilarity(model2);            
+            sumSimilarity += getNeighborSim(e1, e2, profilesURLs);
         }
         
         return sumSimilarity / duplicates.size();
@@ -181,9 +150,7 @@ public class DatasetStatistics {
                         Set<String> neighbor2Tokens = getAllTokensFromStrings(values);
                         if (neighbor1Tokens.removeAll(neighbor2Tokens)) {
                             neighborsWithCommonTokens++;
-                        } else {
-                            System.out.println("The pair ("+neighbor1+", "+neighbor+") have 0 common tokens");
-                        }
+                        } 
                     }
                 }
             }
@@ -291,7 +258,7 @@ public class DatasetStatistics {
             avgDifference += (neighborSim - nonMatchNeighborSim);
         }       
         avgDifference /= (duplicates.size() - 1);
-        System.out.println(numMatchesWithHigherNeighborSim+"/"+(duplicates.size()-1)+" times a random match had higher neighbr sim than a random non-match.");
+        System.out.println(numMatchesWithHigherNeighborSim+"/"+(duplicates.size()-1)+" times a random match had higher neighbor sim than a random non-match.");
         System.out.println("The average difference in neighbor sim between a match and a non-match is: "+avgDifference);
         
         return numMatchesWithHigherNeighborSim;
@@ -351,9 +318,10 @@ public class DatasetStatistics {
                     neighborModel2.updateModel(value);
                 }
             }
-        }
+        }        
+        double result = neighborModel1.getSimilarity(neighborModel2);
 
-        return neighborModel1.getSimilarity(neighborModel2);            
+        return result != result ? 0 : result; // replace NaN with 0 (if result is NaN, then result has the property result != result)
     }
 
     /**
@@ -365,6 +333,7 @@ public class DatasetStatistics {
      */
     private double getValueSim(EntityProfile e1, EntityProfile e2) {
         AbstractModel model1 = RepresentationModel.getModel(RepresentationModel.TOKEN_UNIGRAMS, SimilarityMetric.JACCARD_SIMILARITY, e1.getEntityUrl());
+        
         e1.getAllValues().stream().forEach((value) -> {
             model1.updateModel(value);
         });
@@ -372,9 +341,11 @@ public class DatasetStatistics {
         AbstractModel model2 = RepresentationModel.getModel(RepresentationModel.TOKEN_UNIGRAMS, SimilarityMetric.JACCARD_SIMILARITY, e2.getEntityUrl());
         e2.getAllValues().stream().forEach((value) -> {
             model2.updateModel(value);
-        });            
+        });     
+        
+        double result = model1.getSimilarity(model2);
 
-        return model1.getSimilarity(model2);            
+        return result != result ? 0 : result; // replace NaN with 0 (if result is NaN, then result has the property result != result)
     }
     
     
@@ -388,8 +359,8 @@ public class DatasetStatistics {
 //                                    "http://www.okkam.org/ontology_person1.owl#Person",
 //                                    "http://www.okkam.org/ontology_person2.owl#Person", 
             
-                                    "http://www.okkam.org/ontology_restaurant1.owl#Restaurant",
-                                    "http://www.okkam.org/ontology_restaurant2.owl#Restaurant",
+//                                    "http://www.okkam.org/ontology_restaurant1.owl#Restaurant",
+//                                    "http://www.okkam.org/ontology_restaurant2.owl#Restaurant",
             
 //                                      "http://www.bbc.co.uk/ontologies/creativework/NewsItem",
 //                                      "http://www.bbc.co.uk/ontologies/creativework/BlogPost",

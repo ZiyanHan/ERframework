@@ -13,6 +13,7 @@ import RankAggregation.AbstractRankAggregation;
 import RankAggregation.BordaCount;
 import Utilities.ClustersPerformance;
 import Utilities.Comparators.ComparisonWeightComparator;
+import Utilities.Comparators.ReverseComparisonWeightComparator;
 import Utilities.DataStructures.AbstractDuplicatePropagation;
 import Utilities.DataStructures.BilateralDuplicatePropagation;
 import Utilities.Enumerations.WeightingScheme;
@@ -62,7 +63,7 @@ public class Slide8 {
 
             // rank aggregation
             System.out.println("Running rank aggregation...");
-            Queue<Comparison> valueQ = new PriorityQueue<>(new ComparisonWeightComparator());           
+            Queue<Comparison> valueQ = new PriorityQueue<>(new ReverseComparisonWeightComparator());           
             for (AbstractBlock block : copyOfVBlocks) {
                 final Iterator<Comparison> iterator = block.getComparisonIterator();           
                 while (iterator.hasNext()) {
@@ -73,7 +74,7 @@ public class Slide8 {
             Comparison[] valuesArray = new Comparison[valueQ.size()];
             valuesArray = valueQ.toArray(valuesArray);
             
-            Queue<Comparison> neighborQ = new PriorityQueue<>(new ComparisonWeightComparator());           
+            Queue<Comparison> neighborQ = new PriorityQueue<>(new ReverseComparisonWeightComparator());           
             for (AbstractBlock block : copyOfNBlocks) {
                 final Iterator<Comparison> iterator = block.getComparisonIterator();           
                 while (iterator.hasNext()) {

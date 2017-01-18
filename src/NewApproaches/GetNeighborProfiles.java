@@ -54,32 +54,31 @@ public class GetNeighborProfiles {
     
     
     public static void main (String[] args) {
+        
+//        String basePath = "/home/gpapadakis/data/";
+        String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\OAEI2010\\restaurant\\";
+        
         String[] entityPaths = { 
-            "/home/gpapadakis/data/newRestaurant/restaurant1Profiles",
-            "/home/gpapadakis/data/newRestaurant/restaurant2Profiles",
-            "/home/gpapadakis/data/newBibliographicalRecords/rexaProfiles",
-            "/home/gpapadakis/data/newBibliographicalRecords/swetodblp_april_2008Profiles",
-            "/home/gpapadakis/data/newImdb/yagoProfiles",
-            "/home/gpapadakis/data/newImdb/imdbProfiles"
+            basePath+"restaurant1Profiles",
+            basePath+"restaurant2Profiles",
+//            basePath+"newRestaurant/restaurant1Profiles",
+//            basePath+"newRestaurant/restaurant2Profiles",
+//            basePath+"newBibliographicalRecords/rexaProfiles",
+//            basePath+"newBibliographicalRecords/swetodblp_april_2008Profiles",
+//            basePath+"newImdb/yagoProfiles",
+//            basePath+"newImdb/imdbProfiles"
         };
         
-        String[] neighborPaths = { 
-            "/home/gpapadakis/data/newRestaurant/restaurant1Neighbors",
-            "/home/gpapadakis/data/newRestaurant/restaurant2Neighbors",
-            "/home/gpapadakis/data/newBibliographicalRecords/rexaNeighbors",
-            "/home/gpapadakis/data/newBibliographicalRecords/swetodblp_april_2008Neighbors",
-            "/home/gpapadakis/data/newImdb/yagoNeighbors",
-            "/home/gpapadakis/data/newImdb/imdbNeighbors"
-        };
         
-        String[] outputPaths = { 
-            "/home/gpapadakis/data/newRestaurant/restaurant1NeighborProfile",
-            "/home/gpapadakis/data/newRestaurant/restaurant2NeighborProfile",
-            "/home/gpapadakis/data/newBibliographicalRecords/rexaNeighborProfile",
-            "/home/gpapadakis/data/newBibliographicalRecords/swetodblp_april_2008NeighborProfile",
-            "/home/gpapadakis/data/newImdb/yagoNeighborProfile",
-            "/home/gpapadakis/data/newImdb/imdbNeighborProfile"
-        };
+        String[] neighborPaths = new String[entityPaths.length];
+        for (int i=0; i < neighborPaths.length; ++i) {
+            neighborPaths[i] = entityPaths[i].replaceAll("Profiles$", "Neighbors");
+        }
+        
+        String[] outputPaths = new String[entityPaths.length];
+        for (int i=0; i < outputPaths.length; ++i) {
+            outputPaths[i] = entityPaths[i].replaceAll("Profiles$", "NeighborProfiles");
+        }
         
         for (int i = 0; i < entityPaths.length; i++) {
             GetNeighborProfiles gnp = new GetNeighborProfiles(entityPaths[i], neighborPaths[i], outputPaths[i]);

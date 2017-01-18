@@ -155,13 +155,13 @@ public abstract class AbstractWorkflowBuilder {
             throw new IllegalStateException("Cannot run clustering at this state, since either simPairs or clustering method are null.");
         }
         List<EquivalenceCluster> entityClusters = clusteringMethod.getDuplicates(simPairs);
-
+        
         ClustersPerformance clp = new ClustersPerformance(entityClusters, groundTruth);
         clp.setStatistics();
 //        clp.printStatisticsShort();
         clp.printStatistics();
 //        clp.printStatisticsLong(profiles1, profiles2);
-
+        
         precision = clp.getPrecision();
         recall = clp.getRecall();
         fmeasure = clp.getFMeasure();

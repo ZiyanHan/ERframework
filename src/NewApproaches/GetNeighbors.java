@@ -65,23 +65,23 @@ public class GetNeighbors {
     
     
     public static void main (String[] args) {
+//        String basePath = "/home/gpapadakis/data/";
+        String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\OAEI2010\\restaurant\\";
         String[] inputPaths = { 
-            "/home/gpapadakis/data/newRestaurant/restaurant1Profiles",
-            "/home/gpapadakis/data/newRestaurant/restaurant2Profiles",
-            "/home/gpapadakis/data/newBibliographicalRecords/rexaProfiles",
-            "/home/gpapadakis/data/newBibliographicalRecords/swetodblp_april_2008Profiles",
-            "/home/gpapadakis/data/newImdb/yagoProfiles",
-            "/home/gpapadakis/data/newImdb/imdbProfiles"
+            basePath+"restaurant1Profiles",
+            basePath+"restaurant2Profiles",
+//            basePath+"newRestaurant/restaurant1Profiles",
+//            basePath+"newRestaurant/restaurant2Profiles",
+//            basePath+"newBibliographicalRecords/rexaProfiles",
+//            basePath+"newBibliographicalRecords/swetodblp_april_2008Profiles",
+//            basePath+"newImdb/yagoProfiles",
+//            basePath+"newImdb/imdbProfiles"
         };
         
-        String[] outputPaths = { 
-            "/home/gpapadakis/data/newRestaurant/restaurant1Neighbors",
-            "/home/gpapadakis/data/newRestaurant/restaurant2Neighbors",
-            "/home/gpapadakis/data/newBibliographicalRecords/rexaNeighbors",
-            "/home/gpapadakis/data/newBibliographicalRecords/swetodblp_april_2008Neighbors",
-            "/home/gpapadakis/data/newImdb/yagoNeighbors",
-            "/home/gpapadakis/data/newImdb/imdbNeighbors"
-        };
+        String[] outputPaths = new String[inputPaths.length];
+        for (int i=0; i < outputPaths.length; ++i) {
+            outputPaths[i] = inputPaths[i].replaceAll("Profiles$", "Neighbors");
+        }
         
         for (int i = 0; i < inputPaths.length; i++) {
             GetNeighbors gn = new GetNeighbors(inputPaths[i], outputPaths[i]);

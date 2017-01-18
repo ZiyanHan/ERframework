@@ -5,6 +5,7 @@
  */
 package WorkflowBuilder;
 
+import DataModel.SimilarityPairs;
 import EntityClustering.UniqueMappingClustering;
 import EntityMatching.IEntityMatching;
 import Utilities.Enumerations.BlockBuildingMethod;
@@ -23,8 +24,8 @@ public class Baseline extends AbstractWorkflowBuilder {
     public void runWorkflow() {
         loadData();
         runBlocking();
-//        SimilarityPairs simPairs = runSimilarityComputations();
-//        runClustering(simPairs);
+        SimilarityPairs simPairs = runSimilarityComputations();
+        runClustering(simPairs);
     }
     
     @Override

@@ -65,7 +65,7 @@ public class UniqueMappingClustering extends AbstractEntityClustering {
             }
         }
 
-        System.out.println("Similarity Pairs ordered:");
+//        System.out.println("Similarity Pairs ordered:");
         while (!SEqueue.isEmpty()) {
             SimilarityEdge se = SEqueue.remove();            
             int e1 = se.getModel1Pos();

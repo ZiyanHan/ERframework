@@ -44,6 +44,14 @@ public class SimilarityPairs {
         entityIds2 = new int[(int) totalComparisons];
         similarities = new double[(int) totalComparisons];
     }
+    
+    //alternative constructor to skip block comparisons enumeration
+    public SimilarityPairs(boolean ccer, int totalComparisons) {
+        isCleanCleanER = ccer;
+        entityIds1 = new int[totalComparisons];
+        entityIds2 = new int[totalComparisons];
+        similarities = new double[totalComparisons];
+    }
 
     public void addComparison(Comparison comparison) {
         entityIds1[currentIndex] = comparison.getEntityId1();

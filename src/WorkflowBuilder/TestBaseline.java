@@ -9,6 +9,8 @@ import DataModel.SimilarityPairs;
 import EntityClustering.UniqueMappingClustering;
 import EntityMatching.AbstractEntityMatching;
 import EntityMatching.ProfileMatcher;
+import Utilities.DataStructures.AbstractDuplicatePropagation;
+import Utilities.DataStructures.BilateralDuplicatePropagation;
 import Utilities.Enumerations.RepresentationModel;
 import Utilities.Enumerations.SimilarityMetric;
 import java.util.Arrays;
@@ -57,19 +59,23 @@ public class TestBaseline {
         baseline.runBlocking();
         
         RepresentationModel[] repModels = {
-                            RepresentationModel.TOKEN_UNIGRAMS,
-//                            RepresentationModel.CHARACTER_BIGRAMS,
-//                            RepresentationModel.CHARACTER_TRIGRAMS,
+//                            RepresentationModel.TOKEN_UNIGRAMS, //already tested
+//                            RepresentationModel.TOKEN_BIGRAMS, //already tested
+//                            RepresentationModel.TOKEN_TRIGRAMS, //already tested
+                            RepresentationModel.CHARACTER_BIGRAMS,
+                            RepresentationModel.CHARACTER_TRIGRAMS,
                             RepresentationModel.TOKEN_UNIGRAM_GRAPHS,
-//                            RepresentationModel.CHARACTER_BIGRAM_GRAPHS, 
-//                            RepresentationModel.CHARACTER_TRIGRAM_GRAPHS
+                            RepresentationModel.TOKEN_BIGRAM_GRAPHS,
+                            RepresentationModel.TOKEN_TRIGRAM_GRAPHS, 
+                            RepresentationModel.CHARACTER_BIGRAM_GRAPHS,
+                            RepresentationModel.CHARACTER_TRIGRAM_GRAPHS
         };
         
         double bestPrecision=0, bestRecall=0, bestFmeasure=0, bestThreshold=0;
         RepresentationModel bestRepresentation= null;
         SimilarityMetric bestSimilarityMetric = null;
         
-        for (RepresentationModel repModel : repModels) {                       
+        for (RepresentationModel repModel : repModels) {   
             
             for (SimilarityMetric simMetric : SimilarityMetric.getModelCompatibleSimMetrics(repModel)) {
                 similarity = new ProfileMatcher(repModel, simMetric);

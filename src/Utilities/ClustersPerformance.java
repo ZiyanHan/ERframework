@@ -114,7 +114,7 @@ public class ClustersPerformance {
             LOGGER.log(Level.WARNING, "Empty set of equivalence clusters given as input!");
             return;
         }
-        abstractDP.resetDuplicates();
+        abstractDP.resetDuplicates(); //why?
 
         totalMatches = 0;
         if (abstractDP instanceof BilateralDuplicatePropagation) { // Clean-Clean ER
@@ -123,7 +123,7 @@ public class ClustersPerformance {
                     for (int entityId2 : cluster.getEntityIdsD2()) {
                         totalMatches++;
                         Comparison comparison = new Comparison(true, entityId1, entityId2);
-                        abstractDP.isSuperfluous(comparison);
+                        abstractDP.isSuperfluous(comparison); //isSuperfluous is a transformer, not an accessor!
                     }
                 }
             }

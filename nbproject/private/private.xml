@@ -3,34 +3,21 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/BlockProcessing/BlockRefinement/ComparisonsBasedBlockPurging.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/test/DataReader/TestGtCSVReader.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataModel/SimilarityPairs.java</file>
             <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/WorkflowBuilder/Baseline.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataReader/GroundTruthReader/GtSerializationReader.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/test/WorkflowBuilder/TestFullWorfklowComplexSimWithClustering.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/test/DataReader/TestGtOAEIbenchmarksReader.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataReader/GroundTruthReader/FixImdbGoldStandard.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/WorkflowBuilder/FullWithClustering.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/BlockProcessing/BlockRefinement/SizeBasedBlockPurging.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/BlockBuilding/AbstractBlockBuilding.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/Utilities/Enumerations/BlockBuildingMethod.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/WorkflowBuilder/TestBaseline.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataReader/GroundTruthReader/TestGtCSVReader.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataReader/GroundTruthReader/IGroundTruthReader.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/WorkflowBuilder/TestComplexWorfklow.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataReader/EntityReader/TestRdfReader.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataReader/EntityReader/TestEntityTSVReader.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/test/DataReader/TestEntityCSVReader.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataReader/EntityReader/TestGtOAEIbenchmarksReader.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/WorkflowBuilder/AbstractComplexWorkflowBuilder.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataReader/EntityReader/EntityCSVReader.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/Utilities/DataStructures/BilateralDuplicatePropagation.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/NewApproaches/Slide8.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/RankAggregation/AbstractRankAggregation.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/WorkflowBuilder/TestFullWorfklowWithClustering.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataModel/Comparison.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/Utilities/DataStructures/AbstractDuplicatePropagation.java</file>
             <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/WorkflowBuilder/AbstractWorkflowBuilder.java</file>
             <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataPatterns/DatasetStatistics.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataModel/EntityProfile.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/EntityMatching/ProfileWithNeighborMatcher.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataReader/GroundTruthReader/GtOAEIbenchmarksReader.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataReader/EntityReader/EntityTSVReader.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataReader/GroundTruthReader/GtCSVReader.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/RankAggregation/BordaCount.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/WorkflowBuilder/TestBaseline.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/NewApproaches/AlternativeSlide8.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/EntityClustering/UniqueMappingClustering.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/Utilities/ClustersPerformance.java</file>
         </group>
     </open-files>
 </project-private>

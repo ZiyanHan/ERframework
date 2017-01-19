@@ -74,7 +74,7 @@ public abstract class AbstractMetablocking extends AbstractComparisonRefinementM
             }
         }
 
-        if (weightingScheme.equals(WeightingScheme.EJS)) {
+        if (weightingScheme != null && weightingScheme.equals(WeightingScheme.EJS)) {
             setStatistics();
         }
 

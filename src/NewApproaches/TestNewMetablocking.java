@@ -1,11 +1,11 @@
 package NewApproaches;
 
-import BlockProcessing.ComparisonRefinement.CardinalityNodePruning;
 import BlockProcessing.ComparisonRefinement.NeighborCardinalityNodePruning;
 import DataModel.AbstractBlock;
 import DataReader.AbstractReader;
 import DataReader.GroundTruthReader.GtSerializationReader;
 import DataReader.GroundTruthReader.IGroundTruthReader;
+import Utilities.BlocksPerformance;
 import Utilities.DataStructures.AbstractDuplicatePropagation;
 import Utilities.DataStructures.BilateralDuplicatePropagation;
 import Utilities.Enumerations.WeightingScheme;
@@ -16,34 +16,40 @@ import java.util.List;
  *
  * @author G.A.P. II
  */
-public class AlternativeSlide8 {
+public class TestNewMetablocking {
 
     public static void main(String[] args) {
-        String mainDirectory = "/home/gpapadakis/data/newBibliographicalRecords/";
+        String mainDirectory = "E:\\Data\\newRestaurant\\";
 
-        String entitiesPath1 = mainDirectory + "rexaProfiles";
-        String entitiesPath2 = mainDirectory + "swetodblp_april_2008Profiles";
+        String entitiesPath1 = mainDirectory + "restaurant1Profiles";
+        String entitiesPath2 = mainDirectory + "restaurant2Profiles";
         String neighborIdsPath = mainDirectory + "totalNeighborIds";
-        
+
         int[][] neighborIds = (int[][]) AbstractReader.loadSerializedObject(neighborIdsPath);
-        
+
         Preprocessing valueBlocking = new Preprocessing(entitiesPath1, entitiesPath2);
         final List<AbstractBlock> valueBlocks = valueBlocking.getBlocks();
 
-        IGroundTruthReader gtReader = new GtSerializationReader(mainDirectory + "rexa_dblp_goldstandardIdDuplicates");
+        IGroundTruthReader gtReader = new GtSerializationReader(mainDirectory + "restaurantIdDuplicates");
         final AbstractDuplicatePropagation duplicatePropagation = new BilateralDuplicatePropagation(gtReader.getDuplicatePairs(null));
         System.out.println("Existing Duplicates\t:\t" + duplicatePropagation.getDuplicates().size());
 
         for (WeightingScheme wScheme : WeightingScheme.values()) {
-            List<AbstractBlock> copyOfVBlocks1 = new ArrayList<>(valueBlocks);
-            CardinalityNodePruning cnpVB = new CardinalityNodePruning(wScheme);
-            copyOfVBlocks1 = cnpVB.refineBlocks(copyOfVBlocks1);
-            
-            List<AbstractBlock> copyOfVBlocks2 = new ArrayList<>(valueBlocks);
+            List<AbstractBlock> copyOfVBlocks = new ArrayList<>(valueBlocks);
             NeighborCardinalityNodePruning ncnpVB = new NeighborCardinalityNodePruning(neighborIds, wScheme);
-            copyOfVBlocks2 = ncnpVB.refineBlocks(copyOfVBlocks2);
-            
-            // rank aggregation
+            copyOfVBlocks = ncnpVB.refineBlocks(copyOfVBlocks);
+
+            BlocksPerformance blp = new BlocksPerformance(copyOfVBlocks, duplicatePropagation);
+            blp.setStatistics();
+            blp.printStatistics();
         }
+
+        List<AbstractBlock> copyOfVBlocks = new ArrayList<>(valueBlocks);
+        NeighborCardinalityNodePruning ncnpVB = new NeighborCardinalityNodePruning(neighborIds, null);
+        copyOfVBlocks = ncnpVB.refineBlocks(copyOfVBlocks);
+
+        BlocksPerformance blp = new BlocksPerformance(copyOfVBlocks, duplicatePropagation);
+        blp.setStatistics();
+        blp.printStatistics();
     }
 }

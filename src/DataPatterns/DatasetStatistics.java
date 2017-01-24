@@ -78,7 +78,7 @@ public class DatasetStatistics {
         return (double) sumNeighbors / acceptableEntities;
     }
     
-    public double getAverageMatchSim() {
+    public double getAverageValueSimMatch() {
         Set<IdDuplicates> duplicates = groundTruth.getDuplicates();
         double sumSimilarity = 0;
         for (IdDuplicates duplicate : duplicates) {
@@ -92,15 +92,8 @@ public class DatasetStatistics {
     }
     
     
-    public double getAverageMatchNeighborSim() {
-        Map<String,Set<String>> profilesURLs = new HashMap<>(profiles1.size()+profiles2.size()); //key: entityURL, value: entity values
-        profiles1.stream().forEach((profile) -> {
-            profilesURLs.put(profile.getEntityUrl(), profile.getAllValues());
-        });
-        profiles2.stream().forEach((profile) -> {
-            profilesURLs.put(profile.getEntityUrl(), profile.getAllValues());
-        });
-        
+    public double getAverageNeighborSimMatch() {
+        Map<String,Set<String>> profilesURLs = getAllValuesFromProfileURLs();        
         
         Set<IdDuplicates> duplicates = groundTruth.getDuplicates();
         double sumSimilarity = 0;
@@ -117,13 +110,7 @@ public class DatasetStatistics {
     
     
     public double getAverageNumberOfNeighborsWithCommonTokens() {
-        Map<String,Set<String>> profilesURLs = new HashMap<>(profiles1.size()+profiles2.size()); //key: entityURL, value: entity values
-        profiles1.stream().forEach((profile) -> {
-            profilesURLs.put(profile.getEntityUrl(), profile.getAllValues());
-        });
-        profiles2.stream().forEach((profile) -> {
-            profilesURLs.put(profile.getEntityUrl(), profile.getAllValues());
-        });
+        Map<String,Set<String>> profilesURLs = getAllValuesFromProfileURLs();
         
         int neighborsWithCommonTokens = 0;
         
@@ -173,13 +160,7 @@ public class DatasetStatistics {
     }
     
     public int getMatchValueVsNeighborSim() {
-        Map<String,Set<String>> profilesURLs = new HashMap<>(profiles1.size()+profiles2.size()); //key: entityURL, value: entity values
-        profiles1.stream().forEach((profile) -> {
-            profilesURLs.put(profile.getEntityUrl(), profile.getAllValues());
-        });
-        profiles2.stream().forEach((profile) -> {
-            profilesURLs.put(profile.getEntityUrl(), profile.getAllValues());
-        });
+        Map<String,Set<String>> profilesURLs = getAllValuesFromProfileURLs();
         
         int numPairsWithHigherNeighborSim = 0;
         
@@ -225,18 +206,11 @@ public class DatasetStatistics {
     
     
     public int getMatchVsNonMatchNeighborSim() {
-        Map<String,Set<String>> profilesURLs = new HashMap<>(profiles1.size()+profiles2.size()); //key: entityURL, value: entity values
-        profiles1.stream().forEach((profile) -> {
-            profilesURLs.put(profile.getEntityUrl(), profile.getAllValues());
-        });
-        profiles2.stream().forEach((profile) -> {
-            profilesURLs.put(profile.getEntityUrl(), profile.getAllValues());
-        });
+        Map<String,Set<String>> profilesURLs = getAllValuesFromProfileURLs();
         
         int numMatchesWithHigherNeighborSim = 0;
         
-        double avgDifference = 0;
-        
+        double avgDifference = 0;        
         
         Set<IdDuplicates> duplicates = groundTruth.getDuplicates();
         EntityProfile e3 = null; //a non-matching entity profile for e1
@@ -264,7 +238,21 @@ public class DatasetStatistics {
         return numMatchesWithHigherNeighborSim;
     }
     
-    
+    /**
+     * Keeps for each entity profile URL (key of map) its set of values (value of map).
+     * The resulting keys are stored in random order (HashMap implementation).
+     * @return 
+     */
+    protected Map<String,Set<String>> getAllValuesFromProfileURLs() {
+        Map<String,Set<String>> profilesURLs = new HashMap<>(profiles1.size()+profiles2.size()); //key: entityURL, value: entity values
+        profiles1.stream().forEach((profile) -> {
+            profilesURLs.put(profile.getEntityUrl(), profile.getAllValues());
+        });
+        profiles2.stream().forEach((profile) -> {
+            profilesURLs.put(profile.getEntityUrl(), profile.getAllValues());
+        });
+        return profilesURLs;
+    }
     
 
     public List<EntityProfile> getProfiles1() {
@@ -298,7 +286,7 @@ public class DatasetStatistics {
      * @param profilesURLs
      * @return the neighbor similarity (Jaccard on neighbors' tokens) of two entity profiles
      */
-    private double getNeighborSim(EntityProfile e1, EntityProfile e2, Map<String, Set<String>> profilesURLs) {
+    protected double getNeighborSim(EntityProfile e1, EntityProfile e2, Map<String, Set<String>> profilesURLs) {
         AbstractModel neighborModel1 = RepresentationModel.getModel(RepresentationModel.TOKEN_UNIGRAMS, SimilarityMetric.JACCARD_SIMILARITY, e1.getEntityUrl());
             
         for (String neighbor: e1.getAllValues()) {
@@ -328,10 +316,9 @@ public class DatasetStatistics {
      * Get the value similarity (Jaccard on tokens) of two entity profiles
      * @param e1
      * @param e2
-     * @param profilesURLs
      * @return the value similarity (Jaccard on tokens) of two entity profiles
      */
-    private double getValueSim(EntityProfile e1, EntityProfile e2) {
+    protected double getValueSim(EntityProfile e1, EntityProfile e2) {
         AbstractModel model1 = RepresentationModel.getModel(RepresentationModel.TOKEN_UNIGRAMS, SimilarityMetric.JACCARD_SIMILARITY, e1.getEntityUrl());
         
         e1.getAllValues().stream().forEach((value) -> {
@@ -380,8 +367,8 @@ public class DatasetStatistics {
         double avNeighbs2 = stats.getAverageNeighbors(stats.getProfiles2(), new HashSet<>(Arrays.asList(acceptableTypes)));
         System.out.println("Average #neighbors for profiles1: "+avNeighbs1);
         System.out.println("Average #neighbors for profiles2: "+avNeighbs2);
-        System.out.println("Average value similarity of matches: "+stats.getAverageMatchSim());
-        System.out.println("Average neighbor similarity of matches: "+stats.getAverageMatchNeighborSim());
+        System.out.println("Average value similarity of matches: "+stats.getAverageValueSimMatch());
+        System.out.println("Average neighbor similarity of matches: "+stats.getAverageNeighborSimMatch());
         System.out.println("Neighbor sim is greater than value sim "+stats.getMatchValueVsNeighborSim()+"/"
                     +stats.getGroundTruth().getDuplicates().size()+" times.");
         System.out.println("Average #neighbor pairs with common tokens per match: "+stats.getAverageNumberOfNeighborsWithCommonTokens());

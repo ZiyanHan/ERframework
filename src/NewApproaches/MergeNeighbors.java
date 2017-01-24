@@ -2,6 +2,8 @@ package NewApproaches;
 
 import DataReader.AbstractReader;
 import DataReader.EntityReader.EntityCSVReader;
+import java.io.File;
+import java.util.Arrays;
 
 /**
  *
@@ -20,6 +22,17 @@ public class MergeNeighbors {
         String neighborsPath1 = mainDirectory + "imdbNeighbors";
         String neighborsPath2 = mainDirectory + "yagoNeighbors";
         String outputPath = mainDirectory + "totalNeighborIds";
+        
+        if (args.length == 2) { //then the input is the Profiles files
+            neighborsPath1 = args[0].replaceAll("Profiles$", "Neighbors");
+            neighborsPath2 = args[1].replaceAll("Profiles$", "Neighbors");
+            outputPath = new File(args[0]).getParent()+File.separator+"totalNeighborIds";
+        }
+        
+        File np = new File(neighborsPath1);
+        if (!np.exists()) {
+            GetNeighbors.main(args);
+        }
         
         int[][] neighbors1 = (int[][]) AbstractReader.loadSerializedObject(neighborsPath1);
         int[][] neighbors2 = (int[][]) AbstractReader.loadSerializedObject(neighborsPath2);

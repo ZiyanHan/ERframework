@@ -44,13 +44,7 @@ public class IdDuplicates implements Serializable {
             return false;
         }
         final IdDuplicates other = (IdDuplicates) obj;
-        if (this.entityId1 != other.entityId1) {
-            return false;
-        }
-        if (this.entityId2 != other.entityId2) {
-            return false;
-        }
-        return true;
+        return (this.entityId1 == other.entityId1) && (this.entityId2 == other.entityId2);
     }
 
     @Override
@@ -67,5 +61,10 @@ public class IdDuplicates implements Serializable {
     
     public int getEntityId2() {
         return entityId2;
+    }
+    
+    @Override
+    public String toString() {
+        return "duplicate:"+entityId1+","+entityId2;
     }
 }

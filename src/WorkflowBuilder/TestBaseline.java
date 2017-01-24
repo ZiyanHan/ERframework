@@ -62,13 +62,13 @@ public class TestBaseline {
 //                            RepresentationModel.TOKEN_UNIGRAMS, //already tested
 //                            RepresentationModel.TOKEN_BIGRAMS, //already tested
 //                            RepresentationModel.TOKEN_TRIGRAMS, //already tested
-                            RepresentationModel.CHARACTER_BIGRAMS,
-                            RepresentationModel.CHARACTER_TRIGRAMS,
+//                            RepresentationModel.CHARACTER_BIGRAMS,
+//                            RepresentationModel.CHARACTER_TRIGRAMS,
                             RepresentationModel.TOKEN_UNIGRAM_GRAPHS,
                             RepresentationModel.TOKEN_BIGRAM_GRAPHS,
-                            RepresentationModel.TOKEN_TRIGRAM_GRAPHS, 
-                            RepresentationModel.CHARACTER_BIGRAM_GRAPHS,
-                            RepresentationModel.CHARACTER_TRIGRAM_GRAPHS
+//                            RepresentationModel.TOKEN_TRIGRAM_GRAPHS, 
+//                            RepresentationModel.CHARACTER_BIGRAM_GRAPHS,
+//                            RepresentationModel.CHARACTER_TRIGRAM_GRAPHS
         };
         
         double bestPrecision=0, bestRecall=0, bestFmeasure=0, bestThreshold=0;
@@ -86,9 +86,9 @@ public class TestBaseline {
                 baseline.setSimilarityMethod(similarity);                
                 SimilarityPairs simPairs = baseline.runSimilarityComputations();
                 
-                for (double sim_threshold = 0.2; sim_threshold < 0.9; sim_threshold += 0.2) {  
-                    baseline.setSimilarity_threshold(sim_threshold);   
+                for (double sim_threshold = 0.2; sim_threshold <  0.9; sim_threshold += 0.2) {  
                     baseline.setClusteringMethod(new UniqueMappingClustering());
+                    baseline.setSimilarity_threshold(sim_threshold);                       
                     baseline.runClustering(simPairs);
 
                     double fMeasure = baseline.getFMeasure();

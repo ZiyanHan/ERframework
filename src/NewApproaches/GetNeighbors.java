@@ -78,6 +78,10 @@ public class GetNeighbors {
 //            basePath+"newImdb/imdbProfiles"
         };
         
+        if (args.length != 0) {
+            inputPaths = args;
+        }
+        
         String[] outputPaths = new String[inputPaths.length];
         for (int i=0; i < outputPaths.length; ++i) {
             outputPaths[i] = inputPaths[i].replaceAll("Profiles$", "Neighbors");

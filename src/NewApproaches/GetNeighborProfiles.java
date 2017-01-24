@@ -69,6 +69,10 @@ public class GetNeighborProfiles {
 //            basePath+"newImdb/imdbProfiles"
         };
         
+        if (args.length != 0) {
+            entityPaths = args;
+        }
+        
         
         String[] neighborPaths = new String[entityPaths.length];
         for (int i=0; i < neighborPaths.length; ++i) {

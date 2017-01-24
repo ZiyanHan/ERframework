@@ -59,7 +59,7 @@ public class UniqueMappingClustering extends AbstractEntityClustering {
 
         final Iterator<Comparison> iterator = simPairs.getPairIterator();
         while (iterator.hasNext()) { // add a similarity edge to the queue, for every pair of entities with a weight higher than the threshold
-            Comparison comparison = iterator.next();            
+            Comparison comparison = iterator.next();              
             if (threshold < comparison.getUtilityMeasure()) {
                 SEqueue.add(new SimilarityEdge(comparison.getEntityId1(), comparison.getEntityId2()+datasetLimit, comparison.getUtilityMeasure()));
             }

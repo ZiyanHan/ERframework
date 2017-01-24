@@ -17,7 +17,9 @@ import Utilities.Comparators.ReverseComparisonWeightComparator;
 import Utilities.DataStructures.AbstractDuplicatePropagation;
 import Utilities.DataStructures.BilateralDuplicatePropagation;
 import Utilities.Enumerations.WeightingScheme;
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -35,20 +37,35 @@ public class Slide8 {
 
 //        String entitiesPath1 = mainDirectory + "rexaProfiles";
 //        String entitiesPath2 = mainDirectory + "swetodblp_april_2008Profiles";
+//        String gtPath = mainDirectory + "rexa_dblp_goldstandardIdDuplicates";
         String entitiesPath1 = mainDirectory + "restaurant1Profiles";
         String entitiesPath2 = mainDirectory + "restaurant2Profiles";
+        String gtPath = mainDirectory + "restaurantIdDuplicates";
+        
+        if (args.length == 3) {
+            entitiesPath1 = args[0];
+            entitiesPath2 = args[1];
+            gtPath = args[2];
+        }
 
         Preprocessing valueBlocking = new Preprocessing(entitiesPath1, entitiesPath2);
         final List<AbstractBlock> valueBlocks = valueBlocking.getBlocks();
 
         String neighborProfilesPath1 = entitiesPath1.replaceAll("Profiles$", "NeighborProfiles");
         String neighborProfilesPath2 = entitiesPath2.replaceAll("Profiles$", "NeighborProfiles");
+        
+        //if input does not exist, run the necessary jobs to create it
+        File npp1 = new File(neighborProfilesPath1);
+        if (!npp1.exists()) {
+            GetNeighbors.main(Arrays.copyOf(args, 2));
+            GetNeighborProfiles.main(Arrays.copyOf(args, 2));
+        }
+        
 
         Preprocessing neighborBlocking = new Preprocessing(neighborProfilesPath1, neighborProfilesPath2);
         final List<AbstractBlock> neighborBlocks = neighborBlocking.getBlocks();
 
-//        IGroundTruthReader gtReader = new GtSerializationReader(mainDirectory + "rexa_dblp_goldstandardIdDuplicates");
-        IGroundTruthReader gtReader = new GtSerializationReader(mainDirectory + "restaurantIdDuplicates");
+        IGroundTruthReader gtReader = new GtSerializationReader(gtPath);
         final AbstractDuplicatePropagation duplicatePropagation = new BilateralDuplicatePropagation(gtReader.getDuplicatePairs(null));
         System.out.println("Existing Duplicates\t:\t" + duplicatePropagation.getDuplicates().size());
 
@@ -62,41 +79,18 @@ public class Slide8 {
             copyOfNBlocks = cnpNB.refineBlocks(copyOfNBlocks);
 
             // rank aggregation
-            System.out.println("Running rank aggregation...");
-            Queue<Comparison> valueQ = new PriorityQueue<>(new ReverseComparisonWeightComparator());           
-            for (AbstractBlock block : copyOfVBlocks) {
-                final Iterator<Comparison> iterator = block.getComparisonIterator();           
-                while (iterator.hasNext()) {
-                    Comparison currentComparison = iterator.next();                    
-                    valueQ.add(currentComparison);                    
-                }
-            }
-            Comparison[] valuesArray = new Comparison[valueQ.size()];
-            valuesArray = valueQ.toArray(valuesArray);
-            
-            Queue<Comparison> neighborQ = new PriorityQueue<>(new ReverseComparisonWeightComparator());           
-            for (AbstractBlock block : copyOfNBlocks) {
-                final Iterator<Comparison> iterator = block.getComparisonIterator();           
-                while (iterator.hasNext()) {
-                    Comparison currentComparison = iterator.next();                    
-                    neighborQ.add(currentComparison);                    
-                }
-            }            
-            Comparison[] neighborsArray = new Comparison[neighborQ.size()];
-            neighborsArray = neighborQ.toArray(neighborsArray);
-            
-            AbstractRankAggregation ra = new BordaCount(valuesArray, neighborsArray);
+            AbstractRankAggregation ra = new BordaCount(copyOfVBlocks, copyOfNBlocks);
             SimilarityPairs aggregation = ra.getAggregation(); 
             
             // clustering
             System.out.println("Running clustering...");
             IEntityClustering clustering = new UniqueMappingClustering();
+            clustering.setSimilarityThreshold(1.4 * Math.max(ra.getInputQueue1().length, ra.getInputQueue2().length)); //rule of thumb
             List<EquivalenceCluster> entityClusters = clustering.getDuplicates(aggregation);
             
             ClustersPerformance performance = new ClustersPerformance(entityClusters, duplicatePropagation);
             performance.setStatistics();
             performance.printStatistics();
-            //return; //only for debugging
         }
     }
 }

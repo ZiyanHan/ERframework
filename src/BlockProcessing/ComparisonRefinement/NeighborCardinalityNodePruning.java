@@ -302,7 +302,7 @@ public class NeighborCardinalityNodePruning extends CardinalityEdgePruning {
             distinctNeighbors.clear();
             minimumWeight = 0;
 
-            final int[] associatedBlocks = entityIndex.getEntityBlocks(entityId, 0);
+            final int[] associatedBlocks = entityIndex.getEntityBlocks(entityId, 0); //entity index
             if (associatedBlocks.length == 0) {
                 continue;
             }
@@ -312,20 +312,20 @@ public class NeighborCardinalityNodePruning extends CardinalityEdgePruning {
                 distinctNeighbors.addAll(neighbors);
             }
 
-            int[] entityAssociates = associatedEntities[entityId];
+            int[] entityAssociates = associatedEntities[entityId]; //rdf neighbors
             if (entityAssociates == null) {
                 continue;
             }
 
-            for (int neighborId : distinctNeighbors) {
+            for (int neighborId : distinctNeighbors) { //for each candidate match of this entity
                 double degreeOfCooccurrence = 0;
                 int[] neighborAssociates = associatedEntities[neighborId];
                 if (neighborAssociates == null) {
                     continue;
                 }
 
-                for (int associateId : entityAssociates) {
-                    for (int nAssociateId : neighborAssociates) {
+                for (int associateId : entityAssociates) { //for each rdf neighbor of the current entity
+                    for (int nAssociateId : neighborAssociates) { //for each rdf neighbor of the candidate match
                         degreeOfCooccurrence += getWeight(associateId, nAssociateId);
                     }
                 }

@@ -15,16 +15,10 @@ import java.util.List;
  *
  * @author G.A.P. II
  */
-public class Slide9 {
+public class GetValueBlockingPerformance {
 
     public static void main(String[] args) {
         String mainDirectory = "/home/gpapadakis/data/newBibliographicalRecords/";
-
-        String entitiesPath1 = mainDirectory + "rexaProfiles";
-        String entitiesPath2 = mainDirectory + "swetodblp_april_2008Profiles";
-
-        Preprocessing valueBlocking = new Preprocessing(entitiesPath1, entitiesPath2);
-        final List<AbstractBlock> valueBlocks = valueBlocking.getBlocks();
 
         String neighborProfilesPath1 = mainDirectory + "rexaNeighborProfile";
         String neighborProfilesPath2 = mainDirectory + "swetodblp_april_2008NeighborProfile";
@@ -36,20 +30,19 @@ public class Slide9 {
         final AbstractDuplicatePropagation duplicatePropagation = new BilateralDuplicatePropagation(gtReader.getDuplicatePairs(null));
         System.out.println("Existing Duplicates\t:\t" + duplicatePropagation.getDuplicates().size());
 
+        BlocksPerformance blpe = new BlocksPerformance(neighborBlocks, duplicatePropagation);
+        blpe.setStatistics();
+        blpe.printStatistics();
+
         for (WeightingScheme wScheme : WeightingScheme.values()) {
-            List<AbstractBlock> unionBlocks = new ArrayList<>(valueBlocks);
-            unionBlocks.addAll(neighborBlocks);
+            List<AbstractBlock> copyOfBlocks = new ArrayList<>(neighborBlocks);
 
             CardinalityNodePruning cnp = new CardinalityNodePruning(wScheme);
-            unionBlocks = cnp.refineBlocks(unionBlocks);
+            copyOfBlocks = cnp.refineBlocks(copyOfBlocks);
 
-            BlocksPerformance blp = new BlocksPerformance(unionBlocks, duplicatePropagation);
+            BlocksPerformance blp = new BlocksPerformance(copyOfBlocks, duplicatePropagation);
             blp.setStatistics();
             blp.printStatistics();
-            
-            // entity matching??
-            
-            // clustering
         }
     }
 }

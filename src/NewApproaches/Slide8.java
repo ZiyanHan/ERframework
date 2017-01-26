@@ -2,7 +2,6 @@ package NewApproaches;
 
 import BlockProcessing.ComparisonRefinement.CardinalityNodePruning;
 import DataModel.AbstractBlock;
-import DataModel.Comparison;
 import DataModel.EquivalenceCluster;
 import DataModel.SimilarityPairs;
 import DataReader.GroundTruthReader.GtSerializationReader;
@@ -12,18 +11,13 @@ import EntityClustering.UniqueMappingClustering;
 import RankAggregation.AbstractRankAggregation;
 import RankAggregation.BordaCount;
 import Utilities.ClustersPerformance;
-import Utilities.Comparators.ComparisonWeightComparator;
-import Utilities.Comparators.ReverseComparisonWeightComparator;
 import Utilities.DataStructures.AbstractDuplicatePropagation;
 import Utilities.DataStructures.BilateralDuplicatePropagation;
 import Utilities.Enumerations.WeightingScheme;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
-import java.util.PriorityQueue;
-import java.util.Queue;
 
 /**
  *
@@ -61,7 +55,6 @@ public class Slide8 {
             GetNeighborProfiles.main(Arrays.copyOf(args, 2));
         }
         
-
         Preprocessing neighborBlocking = new Preprocessing(neighborProfilesPath1, neighborProfilesPath2);
         final List<AbstractBlock> neighborBlocks = neighborBlocking.getBlocks();
 

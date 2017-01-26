@@ -1,19 +1,11 @@
 package NewApproaches;
 
-import BlockProcessing.ComparisonRefinement.CardinalityNodePruning;
 import BlockProcessing.ComparisonRefinement.NeighborCardinalityNodePruning;
 import DataModel.AbstractBlock;
-import DataModel.EquivalenceCluster;
-import DataModel.SimilarityPairs;
 import DataReader.AbstractReader;
 import DataReader.GroundTruthReader.GtSerializationReader;
 import DataReader.GroundTruthReader.IGroundTruthReader;
-import EntityClustering.IEntityClustering;
-import EntityClustering.UniqueMappingClustering;
-import RankAggregation.AbstractRankAggregation;
-import RankAggregation.BordaCount;
 import Utilities.BlocksPerformance;
-import Utilities.ClustersPerformance;
 import Utilities.DataStructures.AbstractDuplicatePropagation;
 import Utilities.DataStructures.BilateralDuplicatePropagation;
 import Utilities.Enumerations.WeightingScheme;

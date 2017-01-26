@@ -106,8 +106,8 @@ public class NewCardinalityNodePruning extends CardinalityEdgePruning {
         int comparisonIndex = topKEdges.size();
         nearestEntities[entityId] = new Comparison[comparisonIndex];
         while (0 < comparisonIndex) {
-            nearestEntities[entityId][comparisonIndex] = topKEdges.poll();
             comparisonIndex--;
+            nearestEntities[entityId][comparisonIndex] = topKEdges.poll();
         }
     }
 }

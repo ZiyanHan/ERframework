@@ -15,11 +15,11 @@ import java.util.Set;
 public class TestGtCSVReader {
     public static void main(String[] args) {
         //default input
-        String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\PARIS\\";
+        String basePath = "G:\\VASILIS\\bbcMusic\\";
 //        String basePath = "/home/vassilis/datasets/imdb_yago/";        
-    	String entityFilePath1 = basePath+"yagoProfiles";
-    	String entityFilePath2 = basePath+"imdbProfiles";
-        String gtFilePath = basePath+"imdbgoldFinal.csv";
+    	String entityFilePath1 = basePath+"bbc-musicNewProfiles";
+    	String entityFilePath2 = basePath+"dbpedia37NewProfiles";
+        String gtFilePath = basePath+"bbc-music_groundTruthUTF8.txt";
         //custom input
         if (args.length == 3) {
             entityFilePath1 = args[0];
@@ -31,6 +31,7 @@ public class TestGtCSVReader {
         EntitySerializationReader esr2 = new EntitySerializationReader(entityFilePath2);
         System.out.println("Loading "+gtFilePath);
         GtCSVReader gtCSVReader = new GtCSVReader(gtFilePath);
+        gtCSVReader.setSeparator(' ');
         System.out.println("Loading "+entityFilePath1);
         List<EntityProfile> profiles1 = esr1.getEntityProfiles();
         System.out.println("Loading "+entityFilePath2);

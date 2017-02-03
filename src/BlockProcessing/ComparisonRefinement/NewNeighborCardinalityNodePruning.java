@@ -341,4 +341,8 @@ public class NewNeighborCardinalityNodePruning extends CardinalityEdgePruning {
     protected void setThreshold() {
         threshold = Math.max(1, blockAssingments / noOfEntities);
     }
+    
+    public Comparison[][] getNearestEntities() {
+        return nearestEntities;
+    }
 }

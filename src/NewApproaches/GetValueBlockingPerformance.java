@@ -22,11 +22,18 @@ public class GetValueBlockingPerformance {
 
         String neighborProfilesPath1 = mainDirectory + "rexaNeighborProfile";
         String neighborProfilesPath2 = mainDirectory + "swetodblp_april_2008NeighborProfile";
+        String gtPath = mainDirectory + "rexa_dblp_goldstandardIdDuplicates";
+        
+        if (args.length == 3) {
+            neighborProfilesPath1 = args[0];
+            neighborProfilesPath2 = args[1];
+            gtPath = args[2];
+        }
 
         Preprocessing neighborBlocking = new Preprocessing(neighborProfilesPath1, neighborProfilesPath2);
         final List<AbstractBlock> neighborBlocks = neighborBlocking.getBlocks();
 
-        IGroundTruthReader gtReader = new GtSerializationReader(mainDirectory + "rexa_dblp_goldstandardIdDuplicates");
+        IGroundTruthReader gtReader = new GtSerializationReader(gtPath);
         final AbstractDuplicatePropagation duplicatePropagation = new BilateralDuplicatePropagation(gtReader.getDuplicatePairs(null));
         System.out.println("Existing Duplicates\t:\t" + duplicatePropagation.getDuplicates().size());
 
@@ -34,7 +41,7 @@ public class GetValueBlockingPerformance {
         blpe.setStatistics();
         blpe.printStatistics();
 
-        for (WeightingScheme wScheme : WeightingScheme.values()) {
+        for (WeightingScheme wScheme : WeightingScheme.values()) {            
             List<AbstractBlock> copyOfBlocks = new ArrayList<>(neighborBlocks);
 
             CardinalityNodePruning cnp = new CardinalityNodePruning(wScheme);
@@ -43,6 +50,7 @@ public class GetValueBlockingPerformance {
             BlocksPerformance blp = new BlocksPerformance(copyOfBlocks, duplicatePropagation);
             blp.setStatistics();
             blp.printStatistics();
+            System.out.println(wScheme);
         }
     }
 }

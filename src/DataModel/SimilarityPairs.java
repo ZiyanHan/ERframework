@@ -17,6 +17,7 @@ package DataModel;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,6 +58,13 @@ public class SimilarityPairs {
         entityIds1[currentIndex] = comparison.getEntityId1();
         entityIds2[currentIndex] = comparison.getEntityId2();
         similarities[currentIndex++] = comparison.getUtilityMeasure();
+    }
+    
+    public void addComparisons(SimilarityPairs comparisons) {
+        Iterator<Comparison> compIterator = comparisons.getPairIterator();
+        while (compIterator.hasNext()) {
+            addComparison(compIterator.next());
+        }
     }
 
     private double countComparisons(List<AbstractBlock> blocks) {

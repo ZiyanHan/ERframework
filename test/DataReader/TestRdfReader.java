@@ -12,7 +12,7 @@ import java.util.List;
 
 public class TestRdfReader {
     public static void main(String[] args) {
-        String filePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\OAEI2009\\swetodblp_april_2008.rdf";
+        String filePath = "G:\\VASILIS\\bbcMusic\\bbc-musicNew.nt";
         if (args.length == 1) { //override default path
             filePath = args[0];
         }

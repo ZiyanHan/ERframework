@@ -22,21 +22,28 @@ public class GetComplexBlockingPerformance {
 
         String entitiesPath1 = mainDirectory + "rexaProfiles";
         String entitiesPath2 = mainDirectory + "swetodblp_april_2008Profiles";
+        String gtPath = mainDirectory + "rexa_dblp_goldstandardIdDuplicates";
+        
+        if (args.length == 3) {
+            entitiesPath1 = args[0];
+            entitiesPath2 = args[1];
+            gtPath = args[2];
+        }
 
         Preprocessing valueBlocking = new Preprocessing(entitiesPath1, entitiesPath2);
         final List<AbstractBlock> valueBlocks = valueBlocking.getBlocks();
 
-        String neighborProfilesPath1 = mainDirectory + "rexaNeighborProfile";
-        String neighborProfilesPath2 = mainDirectory + "swetodblp_april_2008NeighborProfile";
+        String neighborProfilesPath1 = entitiesPath1.replaceAll("Profiles$", "NeighborProfiles");
+        String neighborProfilesPath2 = entitiesPath2.replaceAll("Profiles$", "NeighborProfiles");
 
         Preprocessing neighborBlocking = new Preprocessing(neighborProfilesPath1, neighborProfilesPath2);
         final List<AbstractBlock> neighborBlocks = neighborBlocking.getBlocks();
 
-        IGroundTruthReader gtReader = new GtSerializationReader(mainDirectory + "rexa_dblp_goldstandardIdDuplicates");
+        IGroundTruthReader gtReader = new GtSerializationReader(gtPath);
         final AbstractDuplicatePropagation duplicatePropagation = new BilateralDuplicatePropagation(gtReader.getDuplicatePairs(null));
         System.out.println("Existing Duplicates\t:\t" + duplicatePropagation.getDuplicates().size());
 
-        for (WeightingScheme wScheme : WeightingScheme.values()) {
+        for (WeightingScheme wScheme : WeightingScheme.values()) {            
             List<AbstractBlock> unionBlocks = new ArrayList<>(valueBlocks);
             unionBlocks.addAll(neighborBlocks);
 
@@ -46,6 +53,7 @@ public class GetComplexBlockingPerformance {
             BlocksPerformance blp = new BlocksPerformance(unionBlocks, duplicatePropagation);
             blp.setStatistics();
             blp.printStatistics();
+            System.out.println(wScheme);
         }
     }
 }

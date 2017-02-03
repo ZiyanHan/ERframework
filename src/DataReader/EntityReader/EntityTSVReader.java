@@ -16,7 +16,6 @@
 package DataReader.EntityReader;
 
 import DataModel.EntityProfile;
-import com.opencsv.CSVReader;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -34,7 +33,7 @@ import java.util.logging.Logger;
 public class EntityTSVReader extends AbstractEntityReader {
 
     private static final Logger LOGGER = Logger.getLogger(EntityTSVReader.class.getName());    
-    private final String SEPARATOR = "\t";
+    private final String SEPARATOR = " ";
 
     public EntityTSVReader(String filePath) {
         super(filePath);
@@ -75,7 +74,7 @@ public class EntityTSVReader extends AbstractEntityReader {
                 }                
                 previousEntityURL = currentEntityURL;
                 
-                if (nextLine.length != 3) { 
+                if (nextLine.length < 3) { 
                     LOGGER.log(Level.WARNING, "Line in non-triple format : {0}", Arrays.toString(nextLine));
                     continue;
                 }                
@@ -113,6 +112,11 @@ public class EntityTSVReader extends AbstractEntityReader {
         if (!entityId.equals(e.getEntityUrl())) {
             LOGGER.log(Level.WARNING, "Entity profile and current line subjects should match! Skipping...");
             return;
+        }
+        if (currentLine.length > 3) {
+            for (int i = 3; i < currentLine.length; i++) {
+                currentLine[2] += " "+currentLine[i];
+            }
         }
 //        System.out.println("Adding the fact "+currentLine[1]+":"+currentLine[2]+" for entity "+entityId);
         e.addAttribute(currentLine[1], currentLine[2]);

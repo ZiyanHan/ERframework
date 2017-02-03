@@ -101,7 +101,7 @@ public class DatasetStatistics {
             EntityProfile e1 = profiles1.get(duplicate.getEntityId1());
             EntityProfile e2 = profiles2.get(duplicate.getEntityId2());
             
-            sumSimilarity += getNeighborSim(e1, e2, profilesURLs);
+            sumSimilarity += getNeighborSimAvg(e1, e2, profilesURLs);
         }
         
         return sumSimilarity / duplicates.size();
@@ -182,7 +182,7 @@ public class DatasetStatistics {
             }
                         
             //get the neighbor similarity
-            double neighborSim = getNeighborSim(e1, e2, profilesURLs);
+            double neighborSim = getNeighborSimAvg(e1, e2, profilesURLs);
             
             if (neighborSim < minNeighborSim) {
                 minNeighborSim = neighborSim;
@@ -218,14 +218,14 @@ public class DatasetStatistics {
             EntityProfile e1 = profiles1.get(duplicate.getEntityId1());
             EntityProfile e2 = profiles2.get(duplicate.getEntityId2());         
                        
-            double neighborSim = getNeighborSim(e1, e2, profilesURLs);    
+            double neighborSim = getNeighborSimAvg(e1, e2, profilesURLs);    
             
             if (e3 == null) { //only for the first iteration
                 e3 = e2;
                 continue;
             }
             
-            double nonMatchNeighborSim = getNeighborSim(e1, e3, profilesURLs);
+            double nonMatchNeighborSim = getNeighborSimAvg(e1, e3, profilesURLs);
             if (neighborSim > nonMatchNeighborSim) {
                 numMatchesWithHigherNeighborSim++;
             }
@@ -237,7 +237,7 @@ public class DatasetStatistics {
         
         return numMatchesWithHigherNeighborSim;
     }
-    
+        
     /**
      * Keeps for each entity profile URL (key of map) its set of values (value of map).
      * The resulting keys are stored in random order (HashMap implementation).
@@ -280,36 +280,59 @@ public class DatasetStatistics {
     }
 
     /**
-     * Get the neighbor similarity (Jaccard on neighbors' tokens) of two entity profiles
+     * Get the average neighbor similarity (Jaccard on neighbors' tokens) of two entity profiles
      * @param e1
      * @param e2
      * @param profilesURLs
      * @return the neighbor similarity (Jaccard on neighbors' tokens) of two entity profiles
      */
-    protected double getNeighborSim(EntityProfile e1, EntityProfile e2, Map<String, Set<String>> profilesURLs) {
-        AbstractModel neighborModel1 = RepresentationModel.getModel(RepresentationModel.TOKEN_UNIGRAMS, SimilarityMetric.JACCARD_SIMILARITY, e1.getEntityUrl());
-            
-        for (String neighbor: e1.getAllValues()) {
-            Set<String> values = profilesURLs.get(neighbor);
-            if (values != null) { //then this value is an entity id
-                for (String value : values) { //update the model with its values
-                    neighborModel1.updateModel(value);
+    protected double getNeighborSimAvg(EntityProfile e1, EntityProfile e2, Map<String, Set<String>> profilesURLs) {
+        Set<Set<String>> neighbor1values = getAllNeighborValues(e1, profilesURLs);
+        Set<Set<String>> neighbor2values = getAllNeighborValues(e2, profilesURLs);
+        
+        double sum = 0;
+        //get the similarity of each pair of neighbors and add it to the sum
+        for (Set<String> neighbor1 : neighbor1values) {
+            for (Set<String> neighbor2 : neighbor2values) {
+                sum += getJaccardSim(neighbor1, neighbor2);
+            }
+        }
+        return sum / (neighbor1values.size() * neighbor2values.size());
+    }
+    
+    /**
+     * Get the max neighbor similarity (Jaccard on neighbors' tokens) of two entity profiles
+     * @param e1
+     * @param e2
+     * @param profilesURLs
+     * @return the neighbor similarity (Jaccard on neighbors' tokens) of two entity profiles
+     */
+    protected double getNeighborSimMax(EntityProfile e1, EntityProfile e2, Map<String, Set<String>> profilesURLs) {
+        Set<Set<String>> neighbor1values = getAllNeighborValues(e1, profilesURLs);
+        Set<Set<String>> neighbor2values = getAllNeighborValues(e2, profilesURLs);
+        
+        double max = 0;
+        //get the similarity of each pair of neighbors and add it to the sum
+        for (Set<String> neighbor1 : neighbor1values) {
+            for (Set<String> neighbor2 : neighbor2values) {
+                double sim = getJaccardSim(neighbor1, neighbor2);
+                if (sim > max) {
+                    max = sim;
                 }
             }
         }
-
-        AbstractModel neighborModel2 = RepresentationModel.getModel(RepresentationModel.TOKEN_UNIGRAMS, SimilarityMetric.JACCARD_SIMILARITY, e2.getEntityUrl());
-        for (String neighbor: e2.getAllValues()) {
-            Set<String> values = profilesURLs.get(neighbor);
-            if (values != null) { //then this value is an entity id
-                for (String value : values) { //update the model with its values
-                    neighborModel2.updateModel(value);
-                }
-            }
-        }        
-        double result = neighborModel1.getSimilarity(neighborModel2);
-
-        return result != result ? 0 : result; // replace NaN with 0 (if result is NaN, then result has the property result != result)
+        return max;
+    }
+    
+    private Set<Set<String>> getAllNeighborValues(EntityProfile e, Map<String, Set<String>> profilesURLs) {
+        Set<Set<String>> neighborValues = new HashSet<>();
+        e.getAllValues().stream()
+                .map((neighbor) -> profilesURLs.get(neighbor)) //for each value, check if it exists in the profileURLs
+                .filter((values) -> (values != null)) //if it exists, then this value is an entity id (i.e., a neighbor)
+                .forEach((values) -> {         //for each set of values of this neighbor           
+                    neighborValues.add(values);  //add this value to the values of the neighbor
+                });
+        return neighborValues;
     }
 
     /**
@@ -319,20 +342,20 @@ public class DatasetStatistics {
      * @return the value similarity (Jaccard on tokens) of two entity profiles
      */
     protected double getValueSim(EntityProfile e1, EntityProfile e2) {
-        AbstractModel model1 = RepresentationModel.getModel(RepresentationModel.TOKEN_UNIGRAMS, SimilarityMetric.JACCARD_SIMILARITY, e1.getEntityUrl());
-        
-        e1.getAllValues().stream().forEach((value) -> {
-            model1.updateModel(value);
-        });
-
-        AbstractModel model2 = RepresentationModel.getModel(RepresentationModel.TOKEN_UNIGRAMS, SimilarityMetric.JACCARD_SIMILARITY, e2.getEntityUrl());
-        e2.getAllValues().stream().forEach((value) -> {
-            model2.updateModel(value);
-        });     
-        
+        return getJaccardSim(e1.getAllValues(), e2.getAllValues(), e1.getEntityUrl(), e2.getEntityUrl());
+    }
+    
+    private double getJaccardSim(Set<String> strings1, Set<String> strings2, String instanceName1, String instanceName2) {
+        AbstractModel model1 = RepresentationModel.getModel(RepresentationModel.TOKEN_UNIGRAMS, SimilarityMetric.JACCARD_SIMILARITY, instanceName1);
+        AbstractModel model2 = RepresentationModel.getModel(RepresentationModel.TOKEN_UNIGRAMS, SimilarityMetric.JACCARD_SIMILARITY, instanceName2);
+        strings1.stream().forEach(value -> model1.updateModel(value));
+        strings2.stream().forEach(value -> model2.updateModel(value));
         double result = model1.getSimilarity(model2);
-
         return result != result ? 0 : result; // replace NaN with 0 (if result is NaN, then result has the property result != result)
+    }
+    
+    private double getJaccardSim(Set<String> strings1, Set<String> strings2) {
+        return getJaccardSim(strings1, strings2, "noname1", "noname2");
     }
     
     
@@ -363,10 +386,10 @@ public class DatasetStatistics {
         
         
         DatasetStatistics stats = new DatasetStatistics(dataset1, dataset2, datasetGroundtruth);
-        double avNeighbs1 = stats.getAverageNeighbors(stats.getProfiles1(), new HashSet<>(Arrays.asList(acceptableTypes)));
-        double avNeighbs2 = stats.getAverageNeighbors(stats.getProfiles2(), new HashSet<>(Arrays.asList(acceptableTypes)));
-        System.out.println("Average #neighbors for profiles1: "+avNeighbs1);
-        System.out.println("Average #neighbors for profiles2: "+avNeighbs2);
+//        double avNeighbs1 = stats.getAverageNeighbors(stats.getProfiles1(), new HashSet<>(Arrays.asList(acceptableTypes)));
+//        double avNeighbs2 = stats.getAverageNeighbors(stats.getProfiles2(), new HashSet<>(Arrays.asList(acceptableTypes)));
+//        System.out.println("Average #neighbors for profiles1: "+avNeighbs1);
+//        System.out.println("Average #neighbors for profiles2: "+avNeighbs2);
         System.out.println("Average value similarity of matches: "+stats.getAverageValueSimMatch());
         System.out.println("Average neighbor similarity of matches: "+stats.getAverageNeighborSimMatch());
         System.out.println("Neighbor sim is greater than value sim "+stats.getMatchValueVsNeighborSim()+"/"

@@ -24,6 +24,12 @@ public class GetCnpPerformance {
         String entitiesPath2 = mainDirectory + "swetodblp_april_2008Profiles";
         String gtPath = mainDirectory + "rexa_dblp_goldstandardIdDuplicates";
         
+        if (args.length == 3) {
+            entitiesPath1 = args[0];
+            entitiesPath2 = args[1];
+            gtPath = args[2];
+        }
+        
         Preprocessing valueBlocking = new Preprocessing(entitiesPath1, entitiesPath2);
         final List<AbstractBlock> valueBlocks = valueBlocking.getBlocks();
 
@@ -31,7 +37,7 @@ public class GetCnpPerformance {
         final AbstractDuplicatePropagation duplicatePropagation = new BilateralDuplicatePropagation(gtReader.getDuplicatePairs(null));
         System.out.println("Existing Duplicates\t:\t" + duplicatePropagation.getDuplicates().size());
 
-        for (WeightingScheme wScheme : WeightingScheme.values()) {
+        for (WeightingScheme wScheme : WeightingScheme.values()) {            
             List<AbstractBlock> copyOfVBlocks1 = new ArrayList<>(valueBlocks);
             CardinalityNodePruning cnpVB = new CardinalityNodePruning(wScheme);
             copyOfVBlocks1 = cnpVB.refineBlocks(copyOfVBlocks1);
@@ -39,6 +45,7 @@ public class GetCnpPerformance {
             BlocksPerformance blpe = new BlocksPerformance(copyOfVBlocks1, duplicatePropagation);
             blpe.setStatistics();
             blpe.printStatistics();
+            System.out.println(wScheme);
         }
     }
 }

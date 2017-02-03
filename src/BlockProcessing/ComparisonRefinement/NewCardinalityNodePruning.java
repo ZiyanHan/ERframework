@@ -110,4 +110,8 @@ public class NewCardinalityNodePruning extends CardinalityEdgePruning {
             nearestEntities[entityId][comparisonIndex] = topKEdges.poll();
         }
     }
+    
+    public Comparison[][] getNearestEntities() {
+        return nearestEntities;
+    }
 }

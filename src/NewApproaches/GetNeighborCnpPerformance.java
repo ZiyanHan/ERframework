@@ -58,6 +58,7 @@ public class GetNeighborCnpPerformance {
             BlocksPerformance blpe = new BlocksPerformance(copyOfVBlocks2, duplicatePropagation);
             blpe.setStatistics();
             blpe.printStatistics();
+            System.out.println(wScheme);
         }
     }
 }

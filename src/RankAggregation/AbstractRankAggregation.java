@@ -9,7 +9,6 @@ import DataModel.AbstractBlock;
 import DataModel.Comparison;
 import DataModel.SimilarityPairs;
 import Utilities.Comparators.ReverseComparisonWeightComparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;

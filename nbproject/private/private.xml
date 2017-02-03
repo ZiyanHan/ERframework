@@ -3,15 +3,11 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataPatterns/DatasetStatistics.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/RankAggregation/BordaCount.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataModel/SimilarityPairs.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/NewApproaches/GetNeighbors.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/WorkflowBuilder/Baseline.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/NewApproaches/Slide8.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/WorkflowBuilder/TestBaseline.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataReader/EntityReader/EntityRDFReader.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataReader/EntityReader/TestEntityTSVReader.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataReader/GroundTruthReader/TestGtCSVReader.java</file>
             <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataPatterns/SimilarityDistributions.java</file>
-            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/NewApproaches/AlternativeSlide8.java</file>
+            <file>file:/C:/Users/VASILIS/Documents/NetBeansProjects/ERframework/src/DataReader/EntityReader/EntityTSVReader.java</file>
         </group>
     </open-files>
 </project-private>

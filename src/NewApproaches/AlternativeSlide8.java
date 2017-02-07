@@ -28,11 +28,19 @@ import java.util.List;
 public class AlternativeSlide8 {
 
     public static void main(String[] args) {
-        String mainDirectory = "/home/gpapadakis/data/newBibliographicalRecords/";
-
-        String entitiesPath1 = mainDirectory + "rexaProfiles";
-        String entitiesPath2 = mainDirectory + "swetodblp_april_2008Profiles";
-        String gtPath = mainDirectory + "rexa_dblp_goldstandardIdDuplicates";
+        //Restaurant
+        String mainDirectory = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\OAEI2010\\restaurant\\";
+        String entitiesPath1 = mainDirectory + "restaurant1Profiles";
+        String entitiesPath2 = mainDirectory + "restaurant2Profiles";
+        String gtPath = mainDirectory + "restaurantIdDuplicates";        
+        
+        //Rexa-DBLP
+//        String mainDirectory = "/home/gpapadakis/data/newBibliographicalRecords/";
+//        String mainDirectory = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\rexa-dblp\\";
+//        String entitiesPath1 = mainDirectory + "rexaProfiles";
+//        String entitiesPath2 = mainDirectory + "swetodblp_april_2008Profiles";
+//        String gtPath = mainDirectory + "rexa_dblp_goldstandardIdDuplicates";
+        
         String neighborIdsPath = mainDirectory + "totalNeighborIds";
         
         if (args.length == 3) {
@@ -45,6 +53,11 @@ public class AlternativeSlide8 {
         //if input does not exist, run the necessary tasks to create it
         File nip = new File(neighborIdsPath);
         if (!nip.exists()) {
+            if (args.length == 0) {
+                args = new String[2];
+                args[0] = entitiesPath1;
+                args[1] = entitiesPath2;
+            }
             MergeNeighbors.main(Arrays.copyOf(args, 2));
         }
         
@@ -73,7 +86,8 @@ public class AlternativeSlide8 {
             // clustering
             System.out.println("Running clustering...");
             IEntityClustering clustering = new UniqueMappingClustering();
-            clustering.setSimilarityThreshold(1.4 * Math.max(ra.getInputQueue1().length, ra.getInputQueue2().length)); //rule of thumb
+//            clustering.setSimilarityThreshold(1.4 * Math.max(ra.getInputQueue1().length, ra.getInputQueue2().length)); //rule of thumb
+            clustering.setSimilarityThreshold(1200); //rule of thumb
             List<EquivalenceCluster> entityClusters = clustering.getDuplicates(aggregation);
             
             ClustersPerformance performance = new ClustersPerformance(entityClusters, duplicatePropagation);

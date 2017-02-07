@@ -17,6 +17,7 @@ package Utilities.TextModels;
 
 import Utilities.Enumerations.RepresentationModel;
 import Utilities.Enumerations.SimilarityMetric;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -39,7 +40,7 @@ public class TokenNGrams extends BagModel {
         
         int noOfTokens = tokens.length;
         noOfTotalTerms += noOfTokens;
-        for (int j = 0; j < noOfTokens-nSize; j++) {
+        for (int j = 0; j <= noOfTokens-nSize; j++) { //this missed the last token without <=
             final StringBuilder sb = new StringBuilder();
             for (int k = 0; k < nSize; k++) {
                 sb.append(tokens[j+k]).append(" ");

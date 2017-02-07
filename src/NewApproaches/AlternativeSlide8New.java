@@ -21,6 +21,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.TreeSet;
 
 /**
  *
@@ -76,22 +77,43 @@ public class AlternativeSlide8New {
         for (WeightingScheme wScheme : WeightingScheme.values()) {
             List<AbstractBlock> copyOfVBlocks1 = new ArrayList<>(valueBlocks);
             NewCardinalityNodePruning cnpVB = new NewCardinalityNodePruning(wScheme);
-            copyOfVBlocks1 = cnpVB.refineBlocks(copyOfVBlocks1);
+            cnpVB.refineBlocks(copyOfVBlocks1);
             Comparison[][] valueComparisons = cnpVB.getNearestEntities();
-            System.out.println(copyOfVBlocks1 == null);
             
             List<AbstractBlock> copyOfVBlocks2 = new ArrayList<>(valueBlocks);
             NewNeighborCardinalityNodePruning ncnpVB = new NewNeighborCardinalityNodePruning(neighborIds, wScheme);
             ncnpVB.refineBlocks(copyOfVBlocks2);
             Comparison[][] neighborComparisons = ncnpVB.getNearestEntities();
             
+            
             // rank aggregation
-            SimilarityPairs aggregation = new SimilarityPairs(true, copyOfVBlocks1);
-            for (int i = 0; i < valueComparisons.length; ++i) {                
-                AbstractRankAggregation ra = new BordaCount(valueComparisons[i], neighborComparisons[i]);
-                aggregation.addComparisons(ra.getAggregation());
+            int valueCompCounter = 0;
+            for (Comparison[] comparisonArray : valueComparisons) {
+                if (comparisonArray != null) {
+                    valueCompCounter += comparisonArray.length;
+                }
             }
             
+            int neighborCompCounter = 0;
+            for (Comparison[] comparisonArray : neighborComparisons) {
+                if (comparisonArray != null) {
+                    neighborCompCounter += comparisonArray.length;
+                }
+            }     
+            int compCounter = Math.max(valueCompCounter, neighborCompCounter);  
+            int maxEntities = Math.max(valueComparisons.length, neighborComparisons.length);
+            
+            SimilarityPairs aggregation = new SimilarityPairs(true, compCounter);
+            TreeSet<Comparison> pq = new TreeSet<>();
+            System.out.println("Found "+compCounter+" total comparisons");
+            for (int i = 0; i < maxEntities; ++i) {                  
+                AbstractRankAggregation ra = new BordaCount(valueComparisons[i], neighborComparisons[i]);                
+                System.out.println("Adding comparisons to the final aggregation for entity "+i);
+                SimilarityPairs aggr = ra.getAggregation();
+                if (aggr.getNoOfComparisons() > 0) {
+                    aggregation.addComparisons(ra.getAggregation());
+                }
+            }            
             
             // clustering
             System.out.println("Running clustering...");

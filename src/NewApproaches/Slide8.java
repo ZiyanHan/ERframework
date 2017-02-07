@@ -63,6 +63,7 @@ public class Slide8 {
         System.out.println("Existing Duplicates\t:\t" + duplicatePropagation.getDuplicates().size());
 
         for (WeightingScheme wScheme : WeightingScheme.values()) {
+            System.out.println(wScheme);
             List<AbstractBlock> copyOfVBlocks = new ArrayList<>(valueBlocks);
             CardinalityNodePruning cnpVB = new CardinalityNodePruning(wScheme);
             copyOfVBlocks = cnpVB.refineBlocks(copyOfVBlocks);
@@ -78,7 +79,8 @@ public class Slide8 {
             // clustering
             System.out.println("Running clustering...");
             IEntityClustering clustering = new UniqueMappingClustering();
-            clustering.setSimilarityThreshold(1.4 * Math.max(ra.getInputQueue1().length, ra.getInputQueue2().length)); //rule of thumb
+//            clustering.setSimilarityThreshold(1.4 * Math.max(ra.getInputQueue1().length, ra.getInputQueue2().length)); //rule of thumb
+            clustering.setSimilarityThreshold(00); //rule of thumb
             List<EquivalenceCluster> entityClusters = clustering.getDuplicates(aggregation);
             
             ClustersPerformance performance = new ClustersPerformance(entityClusters, duplicatePropagation);

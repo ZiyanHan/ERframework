@@ -30,7 +30,8 @@ public enum SimilarityMetric {
     GRAPH_NORMALIZED_VALUE_SIMILARITY,
     GRAPH_VALUE_SIMILARITY,
     GRAPH_OVERALL_SIMILARITY,
-    JACCARD_SIMILARITY;
+    JACCARD_SIMILARITY, 
+    WEIGHTED_JACCARD_SIMILARITY;
 
     public static List<SimilarityMetric> getModelCompatibleSimMetrics(RepresentationModel model) {
         final List<SimilarityMetric> simMetrics = new ArrayList<>();

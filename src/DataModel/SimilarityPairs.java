@@ -54,13 +54,13 @@ public class SimilarityPairs {
         similarities = new double[totalComparisons];
     }
 
-    public void addComparison(Comparison comparison) {
+    public void addComparison(Comparison comparison) {        
         entityIds1[currentIndex] = comparison.getEntityId1();
         entityIds2[currentIndex] = comparison.getEntityId2();
         similarities[currentIndex++] = comparison.getUtilityMeasure();
     }
     
-    public void addComparisons(SimilarityPairs comparisons) {
+    public void addComparisons(SimilarityPairs comparisons) {        
         Iterator<Comparison> compIterator = comparisons.getPairIterator();
         while (compIterator.hasNext()) {
             addComparison(compIterator.next());

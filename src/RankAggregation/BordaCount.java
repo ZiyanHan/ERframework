@@ -25,7 +25,7 @@ public class BordaCount extends AbstractRankAggregation {
 
     @Override
     public void runAggregation() {
-        int rank1 = inQ1.length;
+        int rank1 = inQ1.length; //inQ1 is the biggest list (see initializeQueues())
         
         //add to outQ each comparison that exists in both queues, or only in inQ1
         for (Comparison q1Comparison : inQ1) {

@@ -16,7 +16,9 @@
 
 package DataModel;
 
+import static gr.demokritos.iit.jinsect.utils.splitToWords;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -60,6 +62,29 @@ public class EntityProfile implements Serializable {
         });
         return values;
     }    
+    
+    /**
+     * Get the set of all values in a string
+     * @return 
+     */
+    public String getValuesAsString() {
+        StringBuilder valuesString = new StringBuilder();        
+        attributes.stream().forEach((attribute) -> {valuesString.append(attribute.getValue()).append(" ");});
+        return valuesString.toString();
+    }
+    
+    public String getTokensSetAsString() {
+        StringBuilder tokensString = new StringBuilder();
+        getAllTokens().stream().forEach((value) -> {tokensString.append(value).append(" ");});
+        return tokensString.toString();
+    }
+    
+    public Set<String> getAllTokens() {
+        Set<String> tokens = new HashSet<>();
+        attributes.stream().forEach(attribute -> tokens.addAll(Arrays.asList(splitToWords(attribute.getValue()))));
+        return tokens;
+    }
+    
     
     @Override
     public String toString() {

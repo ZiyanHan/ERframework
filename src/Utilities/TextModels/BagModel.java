@@ -17,6 +17,7 @@ package Utilities.TextModels;
 
 import Utilities.Enumerations.RepresentationModel;
 import Utilities.Enumerations.SimilarityMetric;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -116,6 +117,63 @@ public abstract class BagModel extends AbstractModel {
 
         return numerator / denominator;
     }
+    
+    
+    /**
+     * vefthym
+     * Returns the weighted Jaccard similarity of two entities:
+     * = (sum_{t common} w1(t) + w2(t)) / (sum_{t in E1} w1(t) + sum_{t in E2} w2(t) ), where  
+     * weight of token t in entity collection E w(t) = log_10 (|E|/|E_t|), 
+     * where |E_t| is the number of entities in E that contain the token t
+     * @param oModel represents a whole entity collection (not a single entity)
+     * @return 
+     */
+    public double getWeightedJaccardSimilarity(Set<String> tokens1, Set<String> tokens2, BagModel oModel) {
+        Map<String, Integer> itemVector1 = itemsFrequency;
+        Map<String, Integer> itemVector2 = oModel.getItemsFrequency();
+        double noOfDocuments1 = noOfDocuments;        
+        double noOfDocuments2 = oModel.getNoOfDocuments(); //this should be the number of entities (check when updateModel is called)
+        
+        if (itemVector2.size() < itemVector1.size()) {
+            itemVector1 = oModel.getItemsFrequency();
+            itemVector2 = itemsFrequency;
+            noOfDocuments1 = noOfDocuments2;
+            noOfDocuments2 = noOfDocuments;
+            Set<String> tmp = new HashSet<>(tokens1);            
+            tokens1 = tokens2;
+            tokens2 = tmp;
+        }
+                
+        double numerator = 0.0;
+        double denominator = Double.MIN_NORMAL; //the smallest positive constant, to avoid 0/0
+        for (String key1 : tokens1) {
+            Integer frequency1 = itemVector1.get(key1);
+            Integer frequency2 = itemVector2.get(key1);            
+            double weight1 = Math.log10(noOfDocuments1/frequency1);            
+//            System.out.println("weight1("+key1+")="+weight1);
+            if (frequency2 != null) {                
+                double weight2 = Math.log10(noOfDocuments2/frequency2);
+//                System.out.println("weight2("+key1+")="+weight2);
+                numerator += weight1 + weight2;
+            } else {
+                denominator += weight1; //this is the case that a word belongs to E1 only
+            }
+        }        
+        
+        denominator += numerator; //weight of common words + weight of words belonging only to E1
+        //now, we need to cover the words that belong only to E2 for the denominator
+        for (String key2 : tokens2) {
+            if (!itemVector1.containsKey(key2)) {
+                Integer frequency2 = itemVector2.get(key2);
+                double weight2 = Math.log10(noOfDocuments2/frequency2);
+//                System.out.println("weight2("+key2+")="+weight2);
+                denominator += weight2;
+            }
+        }        
+        
+        return Math.min(numerator / denominator, 1);
+    }    
+    
 
     public Map<String, Integer> getItemsFrequency() {
         return itemsFrequency;

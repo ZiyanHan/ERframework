@@ -49,13 +49,14 @@ public class SimilarityDistributions extends DatasetStatistics {
     
     public void getMatchNeighborSimDistribution() {
         System.out.println("\nNeighbor similarity of matches distribution:");
-        Map<String,Set<String>> profilesURLs = getAllValuesFromProfileURLs();        
+        Map<String,Set<String>> profilesURLs1 = getAllValuesFromProfileURLs(profiles1);
+        Map<String,Set<String>> profilesURLs2 = getAllValuesFromProfileURLs(profiles2);
         
         Set<IdDuplicates> duplicates = groundTruth.getDuplicates();
         double[] neighborSims = new double[duplicates.size()];
         int i = 0; 
         for (IdDuplicates duplicate : duplicates) {            
-            double neighborSim = getNeighborSimAvg(profiles1.get(duplicate.getEntityId1()),profiles2.get(duplicate.getEntityId2()), profilesURLs);            
+            double neighborSim = getNeighborSimAvg(profiles1.get(duplicate.getEntityId1()),profiles2.get(duplicate.getEntityId2()), profilesURLs1, profilesURLs2);            
             neighborSims[i++] = neighborSim;
         }
         Arrays.sort(neighborSims);
@@ -114,7 +115,8 @@ public class SimilarityDistributions extends DatasetStatistics {
     
     
     public void getNumberOfNeighborPairsPerMatch() {
-        Map<String,Set<String>> profilesURLs = getAllValuesFromProfileURLs();               
+        Map<String,Set<String>> profilesURLs1 = getAllValuesFromProfileURLs(profiles1);
+        Map<String,Set<String>> profilesURLs2 = getAllValuesFromProfileURLs(profiles2);             
         Set<IdDuplicates> duplicates = groundTruth.getDuplicates();
         double[] neighborPairs = new double[duplicates.size()];        
         
@@ -125,7 +127,7 @@ public class SimilarityDistributions extends DatasetStatistics {
             
             int e1Neighbors = 0;
             for (String neighbor: e1.getAllValues()) {
-                Set<String> values = profilesURLs.get(neighbor);
+                Set<String> values = profilesURLs1.get(neighbor);
                 if (values != null) { //then this value is an entity id
                     e1Neighbors++;
                 }
@@ -138,7 +140,7 @@ public class SimilarityDistributions extends DatasetStatistics {
             
             int e2Neighbors = 0;
             for (String neighbor: e2.getAllValues()) {
-                Set<String> values = profilesURLs.get(neighbor);
+                Set<String> values = profilesURLs2.get(neighbor);
                 if (values != null) { //then this value is an entity id
                     e2Neighbors++;
                 }
@@ -153,7 +155,8 @@ public class SimilarityDistributions extends DatasetStatistics {
     
     
     public void getRelationshipsBetweenMatchesAndNeighbors() {
-        Map<String,Set<String>> profilesURLs = getAllValuesFromProfileURLs();               
+        Map<String,Set<String>> profilesURLs1 = getAllValuesFromProfileURLs(profiles1);
+        Map<String,Set<String>> profilesURLs2 = getAllValuesFromProfileURLs(profiles2);
         Set<IdDuplicates> duplicates = groundTruth.getDuplicates();
         
         Multiset<String> relationPairsCount = HashMultiset.create();
@@ -166,7 +169,7 @@ public class SimilarityDistributions extends DatasetStatistics {
             Set<Attribute> e1Relations = new HashSet<>();            
             for (Attribute att: e1.getAttributes()) {
                 String value = att.getValue();
-                Set<String> values = profilesURLs.get(value);
+                Set<String> values = profilesURLs1.get(value);
                 if (values != null) { //then this value is an entity id
                     e1Relations.add(att);
                 }
@@ -179,7 +182,7 @@ public class SimilarityDistributions extends DatasetStatistics {
             Set<Attribute> e2Relations = new HashSet<>();            
             for (Attribute att: e2.getAttributes()) {                
                 String value = att.getValue();
-                Set<String> values = profilesURLs.get(value);
+                Set<String> values = profilesURLs2.get(value);
                 if (values != null) { //then this value is an entity id
                     e2Relations.add(att);
                 }
@@ -202,7 +205,8 @@ public class SimilarityDistributions extends DatasetStatistics {
     
     public void getValueAndNeighborSimOfMatches(AGGREGATION aggregation) {
         System.out.println("\nValuesim:NeighborSim");
-        Map<String,Set<String>> profilesURLs = getAllValuesFromProfileURLs();   
+        Map<String,Set<String>> profilesURLs1 = getAllValuesFromProfileURLs(profiles1);
+        Map<String,Set<String>> profilesURLs2 = getAllValuesFromProfileURLs(profiles2);
         
         Set<IdDuplicates> duplicates = groundTruth.getDuplicates();        
         for (IdDuplicates duplicate : duplicates) {       
@@ -211,13 +215,13 @@ public class SimilarityDistributions extends DatasetStatistics {
             double neighborSim;
             switch (aggregation) {
                 case MAX:
-                    neighborSim = getNeighborSimMax(e1,e2, profilesURLs);      
+                    neighborSim = getNeighborSimMax(e1,e2, profilesURLs1, profilesURLs2);      
                     break;
                 case AVERAGE:
-                    neighborSim = getNeighborSimAvg(e1, e2, profilesURLs);
+                    neighborSim = getNeighborSimAvg(e1, e2, profilesURLs1, profilesURLs2);
                     break;
                 default:
-                    neighborSim = getNeighborSimMax(e1,e2, profilesURLs);
+                    neighborSim = getNeighborSimMax(e1,e2, profilesURLs1, profilesURLs2);
             }            
             if (neighborSim > 1) { //could be slightly above 1 due to imprecision of doubles (slgihtly below 0 is not a problem, as it gets mapped to 0)
                 neighborSim = 1; 
@@ -231,7 +235,8 @@ public class SimilarityDistributions extends DatasetStatistics {
     
     public void getValueAndNeighborSimCorrelation(AGGREGATION aggregation) {
         System.out.println("\nValue similarity distribution per neighbor similarity group of matches:");
-        Map<String,Set<String>> profilesURLs = getAllValuesFromProfileURLs();   
+        Map<String,Set<String>> profilesURLs1 = getAllValuesFromProfileURLs(profiles1);
+        Map<String,Set<String>> profilesURLs2 = getAllValuesFromProfileURLs(profiles2);
         
         List<Double>[] neighborSimBands = new List[10]; 
         //element 0 is the band of matches with neighbor sim [0-0.1), element 1 for neighbor sim [0.1-0.2), ..., element 9 for neighbor sim [0.9-1]
@@ -247,13 +252,13 @@ public class SimilarityDistributions extends DatasetStatistics {
             double neighborSim;
             switch (aggregation) {
                 case MAX:
-                    neighborSim = getNeighborSimMax(e1,e2, profilesURLs);      
+                    neighborSim = getNeighborSimMax(e1,e2, profilesURLs1, profilesURLs2);      
                     break;
                 case AVERAGE:
-                    neighborSim = getNeighborSimAvg(e1, e2, profilesURLs);
+                    neighborSim = getNeighborSimAvg(e1, e2, profilesURLs1, profilesURLs2);
                     break;
                 default:
-                    neighborSim = getNeighborSimMax(e1,e2, profilesURLs);
+                    neighborSim = getNeighborSimMax(e1,e2, profilesURLs1, profilesURLs2);
             }            
             if (neighborSim >= 1) { //could be slightly above 1 due to imprecision of doubles (slgihtly below 0 is not a problem, as it gets mapped to 0)
                 neighborSim = 0.9999; //just to end in the last bucket 

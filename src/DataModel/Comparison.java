@@ -47,14 +47,8 @@ public class Comparison implements Serializable {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final Comparison other = (Comparison) obj;
-        if (this.entityId1 != other.getEntityId1()) {
-            return false;
-        }
-        if (this.entityId2 != other.getEntityId2()) {
-            return false;
-        }
-        return true;
+        final Comparison other = (Comparison) obj;        
+        return (this.entityId1 == other.getEntityId1()) && (this.entityId2 == other.getEntityId2());
     }
     
     public int getEntityId1() {

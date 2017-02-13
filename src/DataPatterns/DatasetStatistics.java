@@ -93,7 +93,8 @@ public class DatasetStatistics {
     
     
     public double getAverageNeighborSimMatch() {
-        Map<String,Set<String>> profilesURLs = getAllValuesFromProfileURLs();        
+        Map<String,Set<String>> profilesURLs1 = getAllValuesFromProfileURLs(profiles1);
+        Map<String,Set<String>> profilesURLs2 = getAllValuesFromProfileURLs(profiles2);
         
         Set<IdDuplicates> duplicates = groundTruth.getDuplicates();
         double sumSimilarity = 0;
@@ -101,7 +102,7 @@ public class DatasetStatistics {
             EntityProfile e1 = profiles1.get(duplicate.getEntityId1());
             EntityProfile e2 = profiles2.get(duplicate.getEntityId2());
             
-            sumSimilarity += getNeighborSimAvg(e1, e2, profilesURLs);
+            sumSimilarity += getNeighborSimAvg(e1, e2, profilesURLs1, profilesURLs2);
         }
         
         return sumSimilarity / duplicates.size();
@@ -110,7 +111,8 @@ public class DatasetStatistics {
     
     
     public double getAverageNumberOfNeighborsWithCommonTokens() {
-        Map<String,Set<String>> profilesURLs = getAllValuesFromProfileURLs();
+        Map<String,Set<String>> profilesURLs1 = getAllValuesFromProfileURLs(profiles1);
+        Map<String,Set<String>> profilesURLs2 = getAllValuesFromProfileURLs(profiles2);
         
         int neighborsWithCommonTokens = 0;
         
@@ -122,17 +124,17 @@ public class DatasetStatistics {
             Set<String> neighbors1 = new HashSet<>();
             
             for (String neighbor: e1.getAllValues()) {
-                Set<String> values = profilesURLs.get(neighbor);                
+                Set<String> values = profilesURLs1.get(neighbor);                
                 if (values != null) { //then this value is an entity id
                     neighbors1.add(neighbor);                    
                 }
             }
             
             for (String neighbor: e2.getAllValues()) {
-                Set<String> values = profilesURLs.get(neighbor);
+                Set<String> values = profilesURLs2.get(neighbor);
                 if (values != null) { //then this value is an entity id
                     for (String neighbor1 : neighbors1) {
-                        Set<String> neighbor1Values = new HashSet<>(profilesURLs.get(neighbor1));
+                        Set<String> neighbor1Values = new HashSet<>(profilesURLs1.get(neighbor1));
                         Set<String> neighbor1Tokens = getAllTokensFromStrings(neighbor1Values);
                         Set<String> neighbor2Tokens = getAllTokensFromStrings(values);
                         if (neighbor1Tokens.removeAll(neighbor2Tokens)) {
@@ -160,7 +162,8 @@ public class DatasetStatistics {
     }
     
     public int getMatchValueVsNeighborSim() {
-        Map<String,Set<String>> profilesURLs = getAllValuesFromProfileURLs();
+        Map<String,Set<String>> profilesURLs1 = getAllValuesFromProfileURLs(profiles1);
+        Map<String,Set<String>> profilesURLs2 = getAllValuesFromProfileURLs(profiles2);
         
         int numPairsWithHigherNeighborSim = 0;
         
@@ -182,7 +185,7 @@ public class DatasetStatistics {
             }
                         
             //get the neighbor similarity
-            double neighborSim = getNeighborSimAvg(e1, e2, profilesURLs);
+            double neighborSim = getNeighborSimAvg(e1, e2, profilesURLs1, profilesURLs2);
             
             if (neighborSim < minNeighborSim) {
                 minNeighborSim = neighborSim;
@@ -206,7 +209,8 @@ public class DatasetStatistics {
     
     
     public int getMatchVsNonMatchNeighborSim() {
-        Map<String,Set<String>> profilesURLs = getAllValuesFromProfileURLs();
+        Map<String,Set<String>> profilesURLs1 = getAllValuesFromProfileURLs(profiles1);
+        Map<String,Set<String>> profilesURLs2 = getAllValuesFromProfileURLs(profiles2);
         
         int numMatchesWithHigherNeighborSim = 0;
         
@@ -218,14 +222,14 @@ public class DatasetStatistics {
             EntityProfile e1 = profiles1.get(duplicate.getEntityId1());
             EntityProfile e2 = profiles2.get(duplicate.getEntityId2());         
                        
-            double neighborSim = getNeighborSimAvg(e1, e2, profilesURLs);    
+            double neighborSim = getNeighborSimAvg(e1, e2, profilesURLs1, profilesURLs2);    
             
             if (e3 == null) { //only for the first iteration
                 e3 = e2;
                 continue;
             }
             
-            double nonMatchNeighborSim = getNeighborSimAvg(e1, e3, profilesURLs);
+            double nonMatchNeighborSim = getNeighborSimAvg(e1, e3, profilesURLs1, profilesURLs2);
             if (neighborSim > nonMatchNeighborSim) {
                 numMatchesWithHigherNeighborSim++;
             }
@@ -243,12 +247,9 @@ public class DatasetStatistics {
      * The resulting keys are stored in random order (HashMap implementation).
      * @return 
      */
-    protected Map<String,Set<String>> getAllValuesFromProfileURLs() {
-        Map<String,Set<String>> profilesURLs = new HashMap<>(profiles1.size()+profiles2.size()); //key: entityURL, value: entity values
-        profiles1.stream().forEach((profile) -> {
-            profilesURLs.put(profile.getEntityUrl(), profile.getAllValues());
-        });
-        profiles2.stream().forEach((profile) -> {
+    protected Map<String,Set<String>> getAllValuesFromProfileURLs(List<EntityProfile> profiles) {
+        Map<String,Set<String>> profilesURLs = new HashMap<>(profiles.size()); //key: entityURL, value: entity values
+        profiles.stream().forEach((profile) -> {
             profilesURLs.put(profile.getEntityUrl(), profile.getAllValues());
         });
         return profilesURLs;
@@ -283,12 +284,13 @@ public class DatasetStatistics {
      * Get the average neighbor similarity (Jaccard on neighbors' tokens) of two entity profiles
      * @param e1
      * @param e2
-     * @param profilesURLs
+     * @param profilesURLs1
+     * @param profilesURLs2
      * @return the neighbor similarity (Jaccard on neighbors' tokens) of two entity profiles
      */
-    protected double getNeighborSimAvg(EntityProfile e1, EntityProfile e2, Map<String, Set<String>> profilesURLs) {
-        Set<Set<String>> neighbor1values = getAllNeighborValues(e1, profilesURLs);
-        Set<Set<String>> neighbor2values = getAllNeighborValues(e2, profilesURLs);
+    protected double getNeighborSimAvg(EntityProfile e1, EntityProfile e2, Map<String, Set<String>> profilesURLs1, Map<String, Set<String>> profilesURLs2) {
+        Set<Set<String>> neighbor1values = getAllNeighborValues(e1, profilesURLs1);
+        Set<Set<String>> neighbor2values = getAllNeighborValues(e2, profilesURLs2);
         
         double sum = 0;
         //get the similarity of each pair of neighbors and add it to the sum
@@ -304,12 +306,13 @@ public class DatasetStatistics {
      * Get the max neighbor similarity (Jaccard on neighbors' tokens) of two entity profiles
      * @param e1
      * @param e2
-     * @param profilesURLs
+     * @param profilesURLs1
+     * @param profilesURLs2
      * @return the neighbor similarity (Jaccard on neighbors' tokens) of two entity profiles
      */
-    protected double getNeighborSimMax(EntityProfile e1, EntityProfile e2, Map<String, Set<String>> profilesURLs) {
-        Set<Set<String>> neighbor1values = getAllNeighborValues(e1, profilesURLs);
-        Set<Set<String>> neighbor2values = getAllNeighborValues(e2, profilesURLs);
+    protected double getNeighborSimMax(EntityProfile e1, EntityProfile e2, Map<String, Set<String>> profilesURLs1, Map<String, Set<String>> profilesURLs2) {
+        Set<Set<String>> neighbor1values = getAllNeighborValues(e1, profilesURLs1);
+        Set<Set<String>> neighbor2values = getAllNeighborValues(e2, profilesURLs2);
         
         double max = 0;
         //get the similarity of each pair of neighbors and add it to the sum

@@ -40,7 +40,7 @@ public class TokenNGrams extends BagModel {
         
         int noOfTokens = tokens.length;
         noOfTotalTerms += noOfTokens;
-        for (int j = 0; j <= noOfTokens-nSize; j++) { //this missed the last token without <=
+        for (int j = 0; j <= noOfTokens-nSize; j++) { //this missed the last token without "<="
             final StringBuilder sb = new StringBuilder();
             for (int k = 0; k < nSize; k++) {
                 sb.append(tokens[j+k]).append(" ");

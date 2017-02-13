@@ -147,7 +147,9 @@ public abstract class BagModel extends AbstractModel {
         double numerator = 0.0;
         double denominator = Double.MIN_NORMAL; //the smallest positive constant, to avoid 0/0
         for (String key1 : tokens1) {
+//            System.out.print("frequency of "+key1);
             Integer frequency1 = itemVector1.get(key1);
+//            System.out.println(": "+frequency1);
             Integer frequency2 = itemVector2.get(key1);            
             double weight1 = Math.log10(noOfDocuments1/frequency1);            
 //            System.out.println("weight1("+key1+")="+weight1);

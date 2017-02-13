@@ -152,7 +152,7 @@ public class BlocksPerformance {
                 }
             }
             noOfD1Entities = entitiesD1.size();
-        }
+        }        
     }
 
     public int getDetectedDuplicates() {
@@ -166,7 +166,7 @@ public class BlocksPerformance {
                 abstractDP.isSuperfluous(iterator.next());
             }
         }
-
+        
         detectedDuplicates = abstractDP.getNoOfDuplicates();
         pc = ((double) abstractDP.getNoOfDuplicates()) / abstractDP.getExistingDuplicates();
         pq = abstractDP.getNoOfDuplicates() / aggregateCardinality;

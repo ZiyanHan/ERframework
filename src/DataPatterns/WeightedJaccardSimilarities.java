@@ -58,13 +58,14 @@ public class WeightedJaccardSimilarities extends DatasetStatistics {
     
     public void getMatchNeighborSimDistribution() {
         System.out.println("\nNeighbor similarity of matches distribution:");
-        Map<String,Set<String>> profilesURLs = getAllValuesFromProfileURLs();        
+        Map<String,Set<String>> profilesURLs1 = getAllValuesFromProfileURLs(profiles1);
+        Map<String,Set<String>> profilesURLs2 = getAllValuesFromProfileURLs(profiles2);       
         
         Set<IdDuplicates> duplicates = groundTruth.getDuplicates();
         double[] neighborSims = new double[duplicates.size()];
         int i = 0; 
         for (IdDuplicates duplicate : duplicates) {            
-            double neighborSim = getNeighborSimAvg(profiles1.get(duplicate.getEntityId1()),profiles2.get(duplicate.getEntityId2()), profilesURLs);            
+            double neighborSim = getNeighborSimAvg(profiles1.get(duplicate.getEntityId1()),profiles2.get(duplicate.getEntityId2()), profilesURLs1, profilesURLs2);            
             neighborSims[i++] = neighborSim;
         }
         Arrays.sort(neighborSims);
@@ -123,7 +124,8 @@ public class WeightedJaccardSimilarities extends DatasetStatistics {
     
     
     public void getNumberOfNeighborPairsPerMatch() {
-        Map<String,Set<String>> profilesURLs = getAllValuesFromProfileURLs();               
+        Map<String,Set<String>> profilesURLs1 = getAllValuesFromProfileURLs(profiles1);
+        Map<String,Set<String>> profilesURLs2 = getAllValuesFromProfileURLs(profiles2);            
         Set<IdDuplicates> duplicates = groundTruth.getDuplicates();
         double[] neighborPairs = new double[duplicates.size()];        
         
@@ -134,7 +136,7 @@ public class WeightedJaccardSimilarities extends DatasetStatistics {
             
             int e1Neighbors = 0;
             for (String neighbor: e1.getAllValues()) {
-                Set<String> values = profilesURLs.get(neighbor);
+                Set<String> values = profilesURLs1.get(neighbor);
                 if (values != null) { //then this value is an entity id
                     e1Neighbors++;
                 }
@@ -147,7 +149,7 @@ public class WeightedJaccardSimilarities extends DatasetStatistics {
             
             int e2Neighbors = 0;
             for (String neighbor: e2.getAllValues()) {
-                Set<String> values = profilesURLs.get(neighbor);
+                Set<String> values = profilesURLs2.get(neighbor);
                 if (values != null) { //then this value is an entity id
                     e2Neighbors++;
                 }
@@ -162,7 +164,8 @@ public class WeightedJaccardSimilarities extends DatasetStatistics {
     
     
     public void getRelationshipsBetweenMatchesAndNeighbors() {
-        Map<String,Set<String>> profilesURLs = getAllValuesFromProfileURLs();               
+        Map<String,Set<String>> profilesURLs1 = getAllValuesFromProfileURLs(profiles1);
+        Map<String,Set<String>> profilesURLs2 = getAllValuesFromProfileURLs(profiles2);              
         Set<IdDuplicates> duplicates = groundTruth.getDuplicates();
         
         Multiset<String> relationPairsCount = HashMultiset.create();
@@ -175,7 +178,7 @@ public class WeightedJaccardSimilarities extends DatasetStatistics {
             Set<Attribute> e1Relations = new HashSet<>();            
             for (Attribute att: e1.getAttributes()) {
                 String value = att.getValue();
-                Set<String> values = profilesURLs.get(value);
+                Set<String> values = profilesURLs1.get(value);
                 if (values != null) { //then this value is an entity id
                     e1Relations.add(att);
                 }
@@ -188,7 +191,7 @@ public class WeightedJaccardSimilarities extends DatasetStatistics {
             Set<Attribute> e2Relations = new HashSet<>();            
             for (Attribute att: e2.getAttributes()) {                
                 String value = att.getValue();
-                Set<String> values = profilesURLs.get(value);
+                Set<String> values = profilesURLs2.get(value);
                 if (values != null) { //then this value is an entity id
                     e2Relations.add(att);
                 }
@@ -211,7 +214,8 @@ public class WeightedJaccardSimilarities extends DatasetStatistics {
     
     public void getValueAndNeighborSimOfMatches(AGGREGATION aggregation) {
         System.out.println("\nValuesim:NeighborSim");
-        Map<String,Set<String>> profilesURLs = getAllValuesFromProfileURLs();  
+        Map<String,Set<String>> profilesURLs1 = getAllValuesFromProfileURLs(profiles1);
+        Map<String,Set<String>> profilesURLs2 = getAllValuesFromProfileURLs(profiles2); 
         
         createModels();
         
@@ -222,13 +226,13 @@ public class WeightedJaccardSimilarities extends DatasetStatistics {
             double neighborSim;
             switch (aggregation) {
                 case MAX:
-                    neighborSim = getNeighborSimMax(e1,e2, profilesURLs);      
+                    neighborSim = getNeighborSimMax(e1,e2, profilesURLs1, profilesURLs2);      
                     break;
                 case AVERAGE:
-                    neighborSim = getNeighborSimAvg(e1, e2, profilesURLs);
+                    neighborSim = getNeighborSimAvg(e1, e2, profilesURLs1, profilesURLs2);
                     break;
                 default:
-                    neighborSim = getNeighborSimMax(e1,e2, profilesURLs);
+                    neighborSim = getNeighborSimMax(e1,e2, profilesURLs1, profilesURLs2);
             }            
             if (neighborSim > 1) { //could be slightly above 1 due to imprecision of doubles (slgihtly below 0 is not a problem, as it gets mapped to 0)
                 neighborSim = 1; 
@@ -239,6 +243,45 @@ public class WeightedJaccardSimilarities extends DatasetStatistics {
         }        
     }
     
+    
+    /**
+     * Get the max neighbor similarity (weighted Jaccard on neighbors' tokens) of two entity profiles
+     * @param e1
+     * @param e2
+     * @param profilesURLs
+     * @return the neighbor similarity (weighted Jaccard on neighbors' tokens) of two entity profiles
+     */
+    protected double getNeighborSimMax(EntityProfile e1, EntityProfile e2, Map<String, Set<String>> profilesURLs1, Map<String, Set<String>> profilesURLs2) {
+        Set<Set<String>> neighbor1values = getAllNeighborValues(e1, profilesURLs1);
+        Set<Set<String>> neighbor2values = getAllNeighborValues(e2, profilesURLs2);
+        
+        double max = 0;
+        //get the similarity of each pair of neighbors and add it to the sum
+        for (Set<String> neighbor1 : neighbor1values) {      
+//            System.out.println("The neighbor of e1 contains the values: "+Arrays.toString(neighbor1.toArray()));
+            for (Set<String> neighbor2 : neighbor2values) {
+//                System.out.println("The neighbor of e2 contains the values: "+Arrays.toString(neighbor2.toArray()));
+                double sim = getWeightedJaccardSim(neighbor1, neighbor2);
+                if (sim > max) {
+                    max = sim;
+                }
+            }
+        }
+        return max;
+    }
+    
+    private Set<Set<String>> getAllNeighborValues(EntityProfile e, Map<String, Set<String>> profilesURLs) {
+        Set<Set<String>> neighborValues = new HashSet<>();
+        e.getAllValues().stream()
+                .map((neighbor) -> profilesURLs.get(neighbor)) //for each value, check if it exists in the profileURLs
+                .filter((values) -> (values != null)) //if it exists, then this value is an entity id (i.e., a neighbor)
+                .forEach((values) -> {         //for each *set* of values of this neighbor  
+                    Set<String> tokensOfValues = new HashSet<>(); //create a set of tokens and add it to the result
+                    values.stream().forEach(value -> tokensOfValues.addAll(Arrays.asList(splitToWords(value))));
+                    neighborValues.add(tokensOfValues);  
+                });
+        return neighborValues;
+    }
     
     /////////////////////
     //UTILITY FUNCTIONS//
@@ -252,10 +295,10 @@ public class WeightedJaccardSimilarities extends DatasetStatistics {
      */
     @Override
     protected double getValueSim(EntityProfile e1, EntityProfile e2) {
-        return getWeightedJaccardSim(e1.getAllTokens(), e2.getAllTokens(), model1, model2);
+        return getWeightedJaccardSim(e1.getAllTokens(), e2.getAllTokens());
     }
     
-    private double getWeightedJaccardSim(Set<String> strings1, Set<String> strings2, BagModel model1, BagModel model2) {
+    private double getWeightedJaccardSim(Set<String> strings1, Set<String> strings2) {
         double result = model1.getWeightedJaccardSimilarity(strings1, strings2, model2);
         return result != result ? 0 : result; // replace NaN with 0 (if result is NaN, then result has the property result != result)
     }
@@ -308,10 +351,10 @@ public class WeightedJaccardSimilarities extends DatasetStatistics {
 //        String datasetGroundtruth = basePath+"restaurantIdDuplicates";
         
         //Rexa-DBLP dataset
-//        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\rexa-dblp\\";
-//        String dataset1 = basePath+"rexaProfiles";
-//        String dataset2 = basePath+"swetodblp_april_2008Profiles";
-//        String datasetGroundtruth = basePath+"rexa_dblp_goldstandardIdDuplicates";
+        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\rexa-dblp\\";
+        String dataset1 = basePath+"rexaProfiles";
+        String dataset2 = basePath+"swetodblp_april_2008Profiles";
+        String datasetGroundtruth = basePath+"rexa_dblp_goldstandardIdDuplicates";
         
         //YAGO-IMDb dataset (cannot be loaded in laptop ~60GB RAM used)
 //        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\imdb-yago\\";
@@ -320,10 +363,10 @@ public class WeightedJaccardSimilarities extends DatasetStatistics {
 //        String datasetGroundtruth = basePath+"imdbgoldFinalIdDuplicates";
         
         //BBCmusic-DBpedia dataset
-        final String basePath = "G:\\VASILIS\\bbcMusic\\";
-        String dataset1 = basePath+"bbc-musicNewProfiles";
-        String dataset2 = basePath+"dbpedia37NewProfiles";
-        String datasetGroundtruth = basePath+"bbc-music_groundTruthUTF8IdDuplicates";
+//        final String basePath = "G:\\VASILIS\\bbcMusic\\";
+//        String dataset1 = basePath+"bbc-musicNewProfiles";
+//        String dataset2 = basePath+"dbpedia37NewProfiles";
+//        String datasetGroundtruth = basePath+"bbc-music_groundTruthUTF8IdDuplicates";
 
         //        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\imdb-yago\\";
         

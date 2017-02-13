@@ -20,6 +20,7 @@ public class Preprocessing {
     
     private final String inputPath1;
     private final String inputPath2;
+    private int datasetLimit;
     
     public Preprocessing(String inPath1, String inPath2) {
         inputPath1 = inPath1;
@@ -30,6 +31,7 @@ public class Preprocessing {
         IEntityReader eReader1 = new EntitySerializationReader(inputPath1);
         List<EntityProfile> profiles1 = eReader1.getEntityProfiles();
         System.out.println("Input Entity Profiles1\t:\t" + profiles1.size());
+        datasetLimit = profiles1.size();
 
         IEntityReader eReader2 = new EntitySerializationReader(inputPath2);
         List<EntityProfile> profiles2 = eReader2.getEntityProfiles();
@@ -48,5 +50,9 @@ public class Preprocessing {
         System.out.println("Filtered blocks\t:\t" + blocks.size());
         
         return blocks;
+    }
+
+    int getDatasetLimit() {
+        return datasetLimit;
     }
 }

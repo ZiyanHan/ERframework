@@ -30,5 +30,4 @@ public class ReverseComparisonWeightComparator implements Comparator<Comparison>
     public int compare(Comparison o1, Comparison o2) {
         return -1 * new ComparisonWeightComparator().compare(o1, o2);
     }
-    
 }

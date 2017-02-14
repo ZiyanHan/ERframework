@@ -18,6 +18,7 @@ package BlockProcessing.ComparisonRefinement;
 
 import Utilities.DataStructures.AbstractDuplicatePropagation;
 import DataModel.AbstractBlock;
+import DataModel.BilateralBlock;
 import Utilities.Enumerations.WeightingScheme;
 import java.util.ArrayList;
 import java.util.List;
@@ -73,6 +74,41 @@ public class WeightedEdgePruning extends AbstractMetablocking {
             }
         }
     }
+    
+    protected void processWjsEntity(int entityId) {
+        validEntities.clear();
+        final int[] associatedBlocks = entityIndex.getEntityBlocks(entityId, 0);
+        if (associatedBlocks.length == 0) {
+            return;
+        }
+        if (!cleanCleanER) {
+            throw new UnsupportedOperationException("WJS weighting not supported for Dirty ER yet...");
+        }
+
+        for (int blockIndex : associatedBlocks) {            
+            BilateralBlock block = bBlocks[blockIndex];      
+            int[] d1EntitiesInBlock = block.getIndex1Entities();
+            int[] d2EntitiesInBlock = block.getIndex2Entities();
+            double weight1 = 0, weight2 = 0;
+            if (d1EntitiesInBlock != null) {
+                weight1 = Math.log10((double)datasetLimit/block.getIndex1Entities().length);
+            }
+            if (d2EntitiesInBlock != null) {
+                weight2 = Math.log10((double)(noOfEntities-datasetLimit)/block.getIndex2Entities().length);
+            }
+            
+            setNormalizedNeighborEntities(blockIndex, entityId);
+            for (int neighborId : neighbors) {
+                if (flags[neighborId] != entityId) {
+                    counters[neighborId] = 0;
+                    flags[neighborId] = entityId;
+                }
+
+                counters[neighborId] += weight1 + weight2; //this creates only the numerator
+                validEntities.add(neighborId);
+            }
+        }
+    }
 
     protected void processEntity(int entityId) {
         validEntities.clear();
@@ -102,6 +138,11 @@ public class WeightedEdgePruning extends AbstractMetablocking {
         if (weightingScheme.equals(WeightingScheme.ARCS)) {
             for (int i = 0; i < limit; i++) {
                 processArcsEntity(i);
+                verifyValidEntities(i, newBlocks);
+            }
+        } else if (weightingScheme.equals(WeightingScheme.WJS)) {
+            for (int i = 0; i < limit; i++) {
+                processWjsEntity(i);
                 verifyValidEntities(i, newBlocks);
             }
         } else {

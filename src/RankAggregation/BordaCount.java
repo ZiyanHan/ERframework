@@ -30,10 +30,13 @@ public class BordaCount extends AbstractRankAggregation {
         //add to outQ each comparison that exists in both queues, or only in inQ1
         for (Comparison q1Comparison : inQ1) {
             Comparison newComparison = new Comparison(q1Comparison.isCleanCleanER(),q1Comparison.getEntityId1(), q1Comparison.getEntityId2());            
-            int rank2 = searchComparisonInArray(inQ2, q1Comparison, inQ1.length);
-            //System.out.println("The new rank of comparison "+q1Comparison.getEntityId1()+","+q1Comparison.getEntityId2()+" is "+rank1+"+"+rank2+"="+(rank1+rank2));
+            int rank2 = searchComparisonInArray(inQ2, q1Comparison, inQ1.length);            
             newComparison.setUtilityMeasure(rank1+rank2); //if it does not exist in inQ2, rank2 is the the lowest possible rank of inQ2
+//            if (rank1 != rank2) {
+//                System.out.println("Rank 1:"+rank1+", rank2:"+rank2);
+//            }
             outQ.add(newComparison); 
+//            System.out.println("The new rank of comparison "+newComparison.getEntityId1()+","+newComparison.getEntityId2()+" is "+newComparison.getUtilityMeasure());
             rank1--;
         }
         
@@ -41,10 +44,11 @@ public class BordaCount extends AbstractRankAggregation {
         int rank2 = inQ1.length;
         for (Comparison q2Comparison : inQ2) {
             if (!outQ.contains(q2Comparison)) {
+//                if (!outQ.isEmpty())
+//                    System.out.println("outQ contains first:"+outQ.first().getEntityId1()+", "+outQ.first().getEntityId2());
                 Comparison newComparison = new Comparison(q2Comparison.isCleanCleanER(),q2Comparison.getEntityId1(), q2Comparison.getEntityId2());
                 newComparison.setUtilityMeasure(rank2);
-                outQ.add(newComparison);
-                //System.out.println("Adding the comparison "+q2Comparison.getEntityId1()+","+q2Comparison.getEntityId2()+" only from q2 at rank:"+rank2);
+                outQ.add(newComparison);                
             }
             rank2--;
         }
@@ -65,13 +69,13 @@ public class BordaCount extends AbstractRankAggregation {
      * @param comparison
      * @return 
      */
-    private int searchComparisonInArray(Comparison[] cArray, Comparison comparison, int topRank) {        
+    private int searchComparisonInArray(Comparison[] cArray, Comparison comparison, int topRank) {   
         for (Comparison q2Comparison : cArray) {
             if (comparison.equals(q2Comparison)) {                    
                 break;
             }
             topRank--;
-        }
+        }        
         return topRank;
     }
     

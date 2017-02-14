@@ -5,17 +5,14 @@ import BlockProcessing.ComparisonRefinement.NewNeighborCardinalityNodePruning;
 import DataModel.AbstractBlock;
 import DataModel.Comparison;
 import DataModel.DecomposedBlock;
-import DataModel.EquivalenceCluster;
+import DataModel.PairIterator;
 import DataModel.SimilarityPairs;
 import DataReader.AbstractReader;
 import DataReader.GroundTruthReader.GtSerializationReader;
 import DataReader.GroundTruthReader.IGroundTruthReader;
-import EntityClustering.IEntityClustering;
-import EntityClustering.UniqueMappingClustering;
 import RankAggregation.AbstractRankAggregation;
 import RankAggregation.BordaCount;
 import Utilities.BlocksPerformance;
-import Utilities.ClustersPerformance;
 import Utilities.DataStructures.AbstractDuplicatePropagation;
 import Utilities.DataStructures.BilateralDuplicatePropagation;
 import Utilities.Enumerations.WeightingScheme;
@@ -25,11 +22,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.TreeSet;
 
 /**
  *
- * @author G.A.P. II
+ * @author vefthym
  */
 public class LocalRankAggregation {
 
@@ -79,73 +75,89 @@ public class LocalRankAggregation {
         final AbstractDuplicatePropagation duplicatePropagation = new BilateralDuplicatePropagation(gtReader.getDuplicatePairs(null));
         System.out.println("Existing Duplicates\t:\t" + duplicatePropagation.getDuplicates().size());
 
-        for (WeightingScheme wScheme : WeightingScheme.values()) {
+        for (WeightingScheme valueWScheme : WeightingScheme.values()) {
+            System.out.println("\n\nMeta-blocking value weighting scheme: "+valueWScheme);
             List<AbstractBlock> copyOfVBlocks1 = new ArrayList<>(valueBlocks);
-            NewCardinalityNodePruning cnpVB = new NewCardinalityNodePruning(wScheme);
+            NewCardinalityNodePruning cnpVB = new NewCardinalityNodePruning(valueWScheme);
             cnpVB.refineBlocks(copyOfVBlocks1);
             Comparison[][] valueComparisons = cnpVB.getNearestEntities();
             
-            List<AbstractBlock> copyOfVBlocks2 = new ArrayList<>(valueBlocks);
-            NewNeighborCardinalityNodePruning ncnpVB = new NewNeighborCardinalityNodePruning(neighborIds, wScheme);
-            ncnpVB.refineBlocks(copyOfVBlocks2);
-            Comparison[][] neighborComparisons = ncnpVB.getNearestEntities();
-            
-            
-            // rank aggregation
-            int valueComparisonsCounter = 0;
-            for (Comparison[] comparisonArray : valueComparisons) {
-                if (comparisonArray != null) {
-                    valueComparisonsCounter += comparisonArray.length;
+            for (WeightingScheme neighborWScheme : WeightingScheme.values()) {
+                System.out.println("\nMeta-blocking neighbor weighting scheme: "+neighborWScheme);
+                List<AbstractBlock> copyOfVBlocks2 = new ArrayList<>(valueBlocks);
+                NewNeighborCardinalityNodePruning ncnpVB = new NewNeighborCardinalityNodePruning(neighborIds, neighborWScheme);
+                ncnpVB.refineBlocks(copyOfVBlocks2);
+                Comparison[][] neighborComparisons = ncnpVB.getNearestEntities();
+
+
+                // rank aggregation
+                int valueComparisonsCounter = 0;
+                for (Comparison[] comparisonArray : valueComparisons) {
+                    if (comparisonArray != null) {
+                        valueComparisonsCounter += comparisonArray.length;
+                    }
+                }            
+                int neighborComparisonsCounter = 0;
+                for (Comparison[] comparisonArray : neighborComparisons) {
+                    if (comparisonArray != null) {
+                        neighborComparisonsCounter += comparisonArray.length;
+                    }
+                }     
+                int comparisonsCounter = Math.max(valueComparisonsCounter, neighborComparisonsCounter);  
+                int maxEntities = Math.max(valueComparisons.length, neighborComparisons.length);
+
+                Comparison[] topComparisons = new Comparison[maxEntities]; //keeps the top comparison for each entity
+                System.out.println("Found "+comparisonsCounter+" total comparisons");
+                for (int i = 0; i < maxEntities; ++i) { //for each entity i   
+    //                neighborComparisons[i] = null; //REMOVE!!!! only for testing reasons to check value-/neighbor-only reciprocity
+                    AbstractRankAggregation ra = new BordaCount(valueComparisons[i], neighborComparisons[i]);                
+                    //System.out.println("Adding the top aggr. comparison for entity "+i);
+                    SimilarityPairs aggr = ra.getAggregation();
+                    if (aggr.getNoOfComparisons() > 0) {              
+                        topComparisons[i] = aggr.getPairIterator().next(); //add the first (top) aggr. comparison for entity i
+    //                    
+    //                    if (neighborComparisons[i] != null && neighborComparisons[i].length > 0) {
+    //                        if (!valueComparisons[i][0].equals(neighborComparisons[i][0])) {
+    //                            System.out.println("The top value comparison for entity "+i+" is "+valueComparisons[i][0].getEntityId1()+", "+valueComparisons[i][0].getEntityId2());
+    //                            System.out.println("The top neihgbor comparison for entity "+i+" is "+neighborComparisons[i][0].getEntityId1()+", "+neighborComparisons[i][0].getEntityId2());
+    //                        }
+    //                    } else {
+    //                        System.out.println("No comparison for this entity from neighbors.");
+    //                    }
+    //                    System.out.println("The top comparison for entity "+i+" is "+topComparisons[i].getEntityId1()+", "+topComparisons[i].getEntityId2());
+    //                    System.out.println("The top comparisons for entity "+i+" are:"); 
+    //                    PairIterator pairs = aggr.getPairIterator();
+    //                    while (pairs.hasNext()) {
+    //                        Comparison next = pairs.next();
+    //                        System.out.println(next.getEntityId1()+","+next.getEntityId2()+":"+next.getUtilityMeasure());
+    //                    }
+                    }
                 }
-            }            
-            int neighborComparisonsCounter = 0;
-            for (Comparison[] comparisonArray : neighborComparisons) {
-                if (comparisonArray != null) {
-                    neighborComparisonsCounter += comparisonArray.length;
+
+                //get the reciprocal comparisons only
+                List<Comparison> finalComparisons = new ArrayList<>();
+                List<AbstractBlock> finalMatchesAsBlocks = new ArrayList<>();
+                for (int i = 0; i < datasetLimit; ++i) {
+                    Comparison curr = topComparisons[i];
+                    if (curr == null)  {
+                        continue;
+                    }
+    //                int j = (curr.getEntityId1() == i) ? curr.getEntityId2() : curr.getEntityId1();
+                    int j = curr.getEntityId2() + datasetLimit;
+    //                System.out.println("Checking if the comparison:("+curr.getEntityId1()+","+curr.getEntityId2()+") is the same for entity "+j);
+    //                System.out.println("...the top copmarison of entity "+j+" is ("+topComparisons[j].getEntityId1()+", "+topComparisons[j].getEntityId2()+")");
+                    if (curr.equals(topComparisons[j])) {
+    //                    System.out.println("Found a reciprocal comparison!");
+                        finalComparisons.add(curr);
+                        topComparisons[j] = null; //do not check this again
+                    }
                 }
-            }     
-            int comparisonsCounter = Math.max(valueComparisonsCounter, neighborComparisonsCounter);  
-            int maxEntities = Math.max(valueComparisons.length, neighborComparisons.length);
-            
-            Comparison[] topComparisons = new Comparison[maxEntities]; //keeps the top comparison for each entity
-            System.out.println("Found "+comparisonsCounter+" total comparisons");
-            for (int i = 0; i < maxEntities; ++i) { //for each entity i                
-                AbstractRankAggregation ra = new BordaCount(valueComparisons[i], neighborComparisons[i]);                
-               // System.out.println("Adding the top aggr. comparison for entity "+i);
-                SimilarityPairs aggr = ra.getAggregation();
-                if (aggr.getNoOfComparisons() > 0) {              
-                    SimilarityPairs localPairs = ra.getAggregation();
-                    if (localPairs.getNoOfComparisons() > 0) {        
-                        topComparisons[i] = localPairs.getPairIterator().next(); //add the first (top) aggr. comparison for entity i
-//                        System.out.println("The top comparison for entity "+i+" is "+topComparisons[i].getEntityId1()+", "+topComparisons[i].getEntityId2());
-                    }                    
-                }
+                addDecomposedBlock(finalComparisons, finalMatchesAsBlocks);
+
+                BlocksPerformance bPer = new BlocksPerformance(finalMatchesAsBlocks, duplicatePropagation);
+                bPer.setStatistics();
+                bPer.printStatistics();
             }
-            
-            //get the reciprocal comparisons only
-            List<Comparison> finalComparisons = new ArrayList<>();
-            List<AbstractBlock> finalMatchesAsBlocks = new ArrayList<>();
-            for (int i = 0; i < datasetLimit; ++i) {
-                Comparison curr = topComparisons[i];
-                if (curr == null)  {
-                    continue;
-                }
-//                int j = (curr.getEntityId1() == i) ? curr.getEntityId2() : curr.getEntityId1();
-                int j = curr.getEntityId2() + datasetLimit;
-//                System.out.println("Checking if the comparison:("+curr.getEntityId1()+","+curr.getEntityId2()+") is the same for entity "+j);
-//                System.out.println("...the top copmarison of entity "+j+" is ("+topComparisons[j].getEntityId1()+", "+topComparisons[j].getEntityId2()+")");
-                if (curr.equals(topComparisons[j])) {
-//                    System.out.println("Found a reciprocal comparison!");
-                    finalComparisons.add(curr);
-                    topComparisons[j] = null; //do not check this again
-                }
-            }
-            addDecomposedBlock(finalComparisons, finalMatchesAsBlocks);
-            
-            BlocksPerformance bPer = new BlocksPerformance(finalMatchesAsBlocks, duplicatePropagation);
-            bPer.setStatistics();
-            bPer.printStatistics();
-            
         }
     }
             

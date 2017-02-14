@@ -21,5 +21,6 @@ public enum WeightingScheme {
         CBS,
         ECBS,
         JS,
-        EJS
+        EJS,
+        WJS //Weighted Jaccard Scheme
 }

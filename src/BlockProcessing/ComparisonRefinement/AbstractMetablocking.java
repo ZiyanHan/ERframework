@@ -39,6 +39,7 @@ public abstract class AbstractMetablocking extends AbstractComparisonRefinementM
     protected double distinctComparisons;
     protected double[] comparisonsPerEntity;
     protected double[] counters;
+    protected double[] totalWeights; //used for WJS
 
     protected final List<Integer> neighbors;
     protected final List<Integer> retainedNeighbors;
@@ -74,8 +75,12 @@ public abstract class AbstractMetablocking extends AbstractComparisonRefinementM
             }
         }
 
-        if (weightingScheme != null && weightingScheme.equals(WeightingScheme.EJS)) {
-            setStatistics();
+        if (weightingScheme != null) {            
+            if (weightingScheme.equals(WeightingScheme.EJS)) {
+                setStatistics();
+            } else if (weightingScheme.equals(WeightingScheme.WJS)) {
+                setWjsStatistics();
+            }
         }
 
         setThreshold();
@@ -129,6 +134,8 @@ public abstract class AbstractMetablocking extends AbstractComparisonRefinementM
             case EJS:
                 double probability = counters[neighborId] / (entityIndex.getNoOfEntityBlocks(entityId, 0) + entityIndex.getNoOfEntityBlocks(neighborId, 0) - counters[neighborId]);
                 return probability * Math.log10(distinctComparisons / comparisonsPerEntity[entityId]) * Math.log10(distinctComparisons / comparisonsPerEntity[neighborId]);
+            case WJS:
+                return counters[neighborId] / (Double.MIN_NORMAL + totalWeights[entityId] + totalWeights[neighborId]);
         }
         return -1;
     }
@@ -157,6 +164,29 @@ public abstract class AbstractMetablocking extends AbstractComparisonRefinementM
                     if (neighborId != entityId) {
                         neighbors.add(neighborId);
                     }
+                }
+            }
+        }
+    }
+    
+    protected void setWjsStatistics() {
+        totalWeights = new double[noOfEntities];
+        for (int entityId = 0; entityId < noOfEntities; ++entityId) {            
+            if (entityId < datasetLimit) {
+                totalWeights[entityId] = 0;
+                final int[] associatedBlocks = entityIndex.getEntityBlocks(entityId, 0);                
+                for (int blockId : associatedBlocks) {
+                    BilateralBlock block = bBlocks[blockId];      
+                    double weight1 = Math.log10((double)datasetLimit/block.getIndex1Entities().length);
+                    totalWeights[entityId] += weight1;
+                }
+            } else {
+                totalWeights[entityId] = 0;
+                final int[] associatedBlocks = entityIndex.getEntityBlocks(entityId, 0);
+                for (int blockId : associatedBlocks) {
+                    BilateralBlock block = bBlocks[blockId];      
+                    double weight2 = Math.log10((double)(noOfEntities-datasetLimit)/block.getIndex2Entities().length);
+                    totalWeights[entityId] += weight2;
                 }
             }
         }

@@ -17,7 +17,9 @@ import Utilities.Enumerations.WeightingScheme;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -26,6 +28,7 @@ import java.util.List;
 public class Slide8 {
 
     public static void main(String[] args) {
+        Set<String> acceptableTypes = new HashSet<>();
 //        String mainDirectory = "/home/gpapadakis/data/newBibliographicalRecords/";
         String mainDirectory = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\OAEI2010\\restaurant\\";
 
@@ -43,7 +46,7 @@ public class Slide8 {
         }
 
         Preprocessing valueBlocking = new Preprocessing(entitiesPath1, entitiesPath2);
-        final List<AbstractBlock> valueBlocks = valueBlocking.getBlocks();
+        final List<AbstractBlock> valueBlocks = valueBlocking.getTokenBlockingBlocks();
 
         String neighborProfilesPath1 = entitiesPath1.replaceAll("Profiles$", "NeighborProfiles");
         String neighborProfilesPath2 = entitiesPath2.replaceAll("Profiles$", "NeighborProfiles");
@@ -56,7 +59,7 @@ public class Slide8 {
         }
         
         Preprocessing neighborBlocking = new Preprocessing(neighborProfilesPath1, neighborProfilesPath2);
-        final List<AbstractBlock> neighborBlocks = neighborBlocking.getBlocks();
+        final List<AbstractBlock> neighborBlocks = neighborBlocking.getTokenBlockingBlocks();
 
         IGroundTruthReader gtReader = new GtSerializationReader(gtPath);
         final AbstractDuplicatePropagation duplicatePropagation = new BilateralDuplicatePropagation(gtReader.getDuplicatePairs(null));

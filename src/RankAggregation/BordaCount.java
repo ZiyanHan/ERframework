@@ -8,6 +8,7 @@ package RankAggregation;
 import DataModel.AbstractBlock;
 import DataModel.Comparison;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -21,6 +22,10 @@ public class BordaCount extends AbstractRankAggregation {
     
     public BordaCount(List<AbstractBlock> blocking1, List<AbstractBlock> blocking2) {
         super(blocking1,blocking2);
+    }
+
+    public BordaCount(List<AbstractBlock> blocking1, List<AbstractBlock> blocking2, Set<Integer> acceptableIds1, Set<Integer> acceptableIds2) {
+        super(blocking1,blocking2, acceptableIds1, acceptableIds2);
     }
 
     @Override

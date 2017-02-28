@@ -12,7 +12,9 @@ import Utilities.Enumerations.WeightingScheme;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -21,6 +23,7 @@ import java.util.List;
 public class GetNeighborCnpPerformance {
 
     public static void main(String[] args) {
+        Set<String> acceptableTypes = new HashSet<>();
         String mainDirectory = "/home/gpapadakis/data/newBibliographicalRecords/";
 
         String entitiesPath1 = mainDirectory + "rexaProfiles";
@@ -44,7 +47,7 @@ public class GetNeighborCnpPerformance {
         int[][] neighborIds = (int[][]) AbstractReader.loadSerializedObject(neighborIdsPath);
         
         Preprocessing valueBlocking = new Preprocessing(entitiesPath1, entitiesPath2);
-        final List<AbstractBlock> valueBlocks = valueBlocking.getBlocks();
+        final List<AbstractBlock> valueBlocks = valueBlocking.getTokenBlockingBlocks();
 
         IGroundTruthReader gtReader = new GtSerializationReader(gtPath);
         final AbstractDuplicatePropagation duplicatePropagation = new BilateralDuplicatePropagation(gtReader.getDuplicatePairs(null));

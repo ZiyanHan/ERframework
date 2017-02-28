@@ -291,7 +291,7 @@ public class NewNeighborCardinalityNodePruning extends CardinalityEdgePruning {
 
             for (int blockIndex : associatedBlocks) {
                 setNormalizedNeighborEntities(blockIndex, entityId);
-                distinctNeighbors.addAll(neighbors);
+                distinctNeighbors.addAll(neighbors); //entities appearing in a common block with this entity (candidate matches)
             }
 
             int[] entityAssociates = associatedEntities[entityId]; //rdf neighbors
@@ -301,7 +301,7 @@ public class NewNeighborCardinalityNodePruning extends CardinalityEdgePruning {
 
             for (int neighborId : distinctNeighbors) { //for each candidate match of this entity
                 double degreeOfCooccurrence = 0;
-                int[] neighborAssociates = associatedEntities[neighborId];
+                int[] neighborAssociates = associatedEntities[neighborId]; //rdf neighbors of the candidate match
                 if (neighborAssociates == null) {
                     continue;
                 }
@@ -339,7 +339,7 @@ public class NewNeighborCardinalityNodePruning extends CardinalityEdgePruning {
 
     @Override
     protected void setThreshold() {
-        threshold = Math.max(1, blockAssingments / noOfEntities);
+        threshold = Math.max(1, blockAssignments / noOfEntities);
     }
     
     public Comparison[][] getNearestEntities() {

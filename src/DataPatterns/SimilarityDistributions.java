@@ -166,12 +166,12 @@ public class SimilarityDistributions extends DatasetStatistics {
             EntityProfile e1 = profiles1.get(duplicate.getEntityId1());
             EntityProfile e2 = profiles2.get(duplicate.getEntityId2());
             
-            Set<Attribute> e1Relations = new HashSet<>();            
+            Set<String> e1Relations = new HashSet<>();            
             for (Attribute att: e1.getAttributes()) {
                 String value = att.getValue();
                 Set<String> values = profilesURLs1.get(value);
                 if (values != null) { //then this value is an entity id
-                    e1Relations.add(att);
+                    e1Relations.add(att.getName());
                 }
             }
             
@@ -179,18 +179,18 @@ public class SimilarityDistributions extends DatasetStatistics {
                 continue;
             }
             
-            Set<Attribute> e2Relations = new HashSet<>();            
+            Set<String> e2Relations = new HashSet<>();            
             for (Attribute att: e2.getAttributes()) {                
                 String value = att.getValue();
                 Set<String> values = profilesURLs2.get(value);
                 if (values != null) { //then this value is an entity id
-                    e2Relations.add(att);
+                    e2Relations.add(att.getName());
                 }
             }
                         
-            for (Attribute att1 : e1Relations) {
-                for (Attribute att2 : e2Relations) {
-                    relationPairsCount.add("("+att1.getName()+", "+att2.getName()+")");
+            for (String att1 : e1Relations) {
+                for (String att2 : e2Relations) {
+                    relationPairsCount.add("("+att1+", "+att2+")");
                 }
             }
         }

@@ -19,11 +19,11 @@ public class ComparisonWeightComparator implements Comparator<Comparison> {
             return 0;
         }
         double test = o2.getUtilityMeasure()-o1.getUtilityMeasure(); 
-        if (0 < test) {
+        if (0 < test) { //if (o1 < o2)
             return -1;
         }
 
-        if (test < 0) {
+        if (test < 0) { //if (o1 > o2)
             return 1;
         }
 

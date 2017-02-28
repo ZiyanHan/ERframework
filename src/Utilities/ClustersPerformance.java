@@ -45,13 +45,16 @@ public class ClustersPerformance {
     
     private Set<IdDuplicates> falseMatches;
     private Set<IdDuplicates> missedMatches;
+    
+    private Set<Integer> acceptableIds1;
+    private Set<Integer> acceptableIds2;
 
     public ClustersPerformance(List<EquivalenceCluster> clusters, AbstractDuplicatePropagation adp) {
         abstractDP = adp;
         abstractDP.resetDuplicates();
         entityClusters = clusters;
         falseMatches = new HashSet<>();
-        missedMatches = new HashSet<>();
+        missedMatches = new HashSet<>();        
     }
 
     public int getDetectedDuplicates() {
@@ -108,6 +111,12 @@ public class ClustersPerformance {
         System.out.println("Recall\t:\t" + recall);
         System.out.println("F-Measure\t:\t" + fMeasure);
     }
+    
+    public void setStatistics(Set<Integer> acceptableIds1, Set<Integer> acceptableIds2) {
+        this.acceptableIds1 = acceptableIds1;
+        this.acceptableIds2 = acceptableIds2;
+        setStatistics();
+    }
 
     public void setStatistics() {
         if (entityClusters.isEmpty()) {
@@ -120,7 +129,13 @@ public class ClustersPerformance {
         if (abstractDP instanceof BilateralDuplicatePropagation) { // Clean-Clean ER
             for (EquivalenceCluster cluster : entityClusters) {
                 for (int entityId1 : cluster.getEntityIdsD1()) {
+                    if (acceptableIds1 != null && !acceptableIds1.contains(entityId1)) {
+                        continue;
+                    }
                     for (int entityId2 : cluster.getEntityIdsD2()) {
+//                        if (acceptableIds2 != null && !acceptableIds2.contains(entityId2)) {
+//                            continue;
+//                        }
                         totalMatches++;
                         Comparison comparison = new Comparison(true, entityId1, entityId2);
                         abstractDP.isSuperfluous(comparison); //isSuperfluous is a transformer, not an accessor!

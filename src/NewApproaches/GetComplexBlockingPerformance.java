@@ -9,7 +9,9 @@ import Utilities.DataStructures.AbstractDuplicatePropagation;
 import Utilities.DataStructures.BilateralDuplicatePropagation;
 import Utilities.Enumerations.WeightingScheme;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -18,6 +20,7 @@ import java.util.List;
 public class GetComplexBlockingPerformance {
 
     public static void main(String[] args) {
+        Set<String> acceptableTypes = new HashSet<>();
         String mainDirectory = "/home/gpapadakis/data/newBibliographicalRecords/";
 
         String entitiesPath1 = mainDirectory + "rexaProfiles";
@@ -31,13 +34,13 @@ public class GetComplexBlockingPerformance {
         }
 
         Preprocessing valueBlocking = new Preprocessing(entitiesPath1, entitiesPath2);
-        final List<AbstractBlock> valueBlocks = valueBlocking.getBlocks();
+        final List<AbstractBlock> valueBlocks = valueBlocking.getTokenBlockingBlocks();
 
         String neighborProfilesPath1 = entitiesPath1.replaceAll("Profiles$", "NeighborProfiles");
         String neighborProfilesPath2 = entitiesPath2.replaceAll("Profiles$", "NeighborProfiles");
 
         Preprocessing neighborBlocking = new Preprocessing(neighborProfilesPath1, neighborProfilesPath2);
-        final List<AbstractBlock> neighborBlocks = neighborBlocking.getBlocks();
+        final List<AbstractBlock> neighborBlocks = neighborBlocking.getTokenBlockingBlocks();
 
         IGroundTruthReader gtReader = new GtSerializationReader(gtPath);
         final AbstractDuplicatePropagation duplicatePropagation = new BilateralDuplicatePropagation(gtReader.getDuplicatePairs(null));

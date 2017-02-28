@@ -102,7 +102,7 @@ public class CardinalityEdgePruning extends WeightedEdgePruning {
 
     @Override
     protected void setThreshold() {
-        threshold = blockAssingments / 2;
+        threshold = blockAssignments / 2;
     }
 
     protected void verifyValidEntities(int entityId) {

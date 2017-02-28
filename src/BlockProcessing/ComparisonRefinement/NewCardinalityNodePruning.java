@@ -60,6 +60,11 @@ public class NewCardinalityNodePruning extends CardinalityEdgePruning {
                 processArcsEntity(i);
                 verifyValidEntities(i);
             }
+        } else if (weightingScheme.equals(WeightingScheme.WJS)) {
+            for (int i = 0; i < noOfEntities; i++) {
+                processWjsEntity(i);
+                verifyValidEntities(i);
+            }
         } else {
             for (int i = 0; i < noOfEntities; i++) {
                 processEntity(i);
@@ -76,7 +81,7 @@ public class NewCardinalityNodePruning extends CardinalityEdgePruning {
     
     @Override
     protected void setThreshold() {
-        threshold = Math.max(1, blockAssingments / noOfEntities);
+        threshold = Math.max(1, blockAssignments / noOfEntities);
     }
     
     @Override
@@ -86,7 +91,7 @@ public class NewCardinalityNodePruning extends CardinalityEdgePruning {
         }
 
         topKEdges.clear();
-        minimumWeight = Double.MIN_VALUE;
+        minimumWeight = Double.MIN_VALUE;        
         for (int neighborId : validEntities) {
             double weight = getWeight(entityId, neighborId);
             if (weight < minimumWeight) {
@@ -98,7 +103,7 @@ public class NewCardinalityNodePruning extends CardinalityEdgePruning {
 
             topKEdges.add(comparison);
             if (threshold < topKEdges.size()) {
-                Comparison lastComparison = topKEdges.poll();
+                Comparison lastComparison = topKEdges.poll(); //the first comparison in topKEdges is the one with the lowest weight
                 minimumWeight = lastComparison.getUtilityMeasure();
             }
         }

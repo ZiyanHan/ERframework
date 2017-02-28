@@ -30,17 +30,24 @@ import java.util.Set;
 public class EntityProfile implements Serializable {
 
     private static final long serialVersionUID = 122354534453243447L;
+    private final String RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
 
     private final Set<Attribute> attributes;
     private final String entityUrl;
+    
+    private Set<String> types;
 
     public EntityProfile(String url) {
         entityUrl = url;
         attributes = new HashSet();
+        types = new HashSet<>();
     }
 
     public void addAttribute(String propertyName, String propertyValue) {
         attributes.add(new Attribute(propertyName, propertyValue));
+        if (propertyName.equals(RDF_TYPE)) {
+            types.add(propertyValue);
+        }
     }
 
     public String getEntityUrl() {
@@ -55,6 +62,12 @@ public class EntityProfile implements Serializable {
         return attributes;
     }
     
+    public Set<String> getAllAttributeNames() {
+        Set<String> attributeNames = new HashSet<>();
+        attributes.stream().forEach((attribute) -> attributeNames.add(attribute.getName()));
+        return attributeNames;
+    }
+    
     public Set<String> getAllValues() {
         Set<String> values = new HashSet<>();
         attributes.stream().forEach((attribute) -> {
@@ -62,6 +75,56 @@ public class EntityProfile implements Serializable {
         });
         return values;
     }    
+    
+    public Set<String> getTypes() {
+        if (types == null) {
+            types = new HashSet<>();
+            for (Attribute attribute : attributes) {
+                if (attribute.getName().equals(RDF_TYPE)) {
+                    String type = attribute.getValue();                    
+                    if (type != null && !type.isEmpty()) {
+                        types.add(type);
+                    }
+                }
+            }
+        }
+        return types;
+    }
+    
+    /**
+     * Returns the *first* value found for the given attribute, or null, if the 
+     * attribute does not exist for this entity.
+     * @param attributeName the attribute whose value is asked
+     * @return the *first* value found for the given attribute, or null, if the 
+     * attribute does not exist for this entity
+     */
+    public String getValueOf(String attributeName) {
+        for (Attribute attribute : attributes) {
+            if (attributeName.equals(attribute.getName())) {
+                return attribute.getValue();
+            }
+        }
+        return null;
+    }
+        
+    public boolean isOfType(String type) {
+        if (types ==  null) {
+            getTypes();
+        }
+        return types.contains(type);
+    }
+    
+    public boolean hasOneOfTheTypes(Set<String> acceptableTypes) {
+        if (types == null)  {
+            getTypes();
+        }
+        for (String acceptableType : acceptableTypes) {
+            if (types.contains(acceptableType)) {                
+                return true;
+            }
+        }
+        return false;
+    }
     
     /**
      * Get the set of all values in a string

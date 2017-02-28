@@ -21,9 +21,8 @@ import java.util.Comparator;
 
 /**
  *
- * @author G.A.P. II
+ * @author vefthym
  */
-
 public class ReverseComparisonWeightComparator implements Comparator<Comparison> {
 
     @Override

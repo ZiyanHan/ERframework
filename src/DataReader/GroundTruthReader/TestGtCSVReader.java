@@ -17,8 +17,8 @@ public class TestGtCSVReader {
         //default input
         String basePath = "G:\\VASILIS\\bbcMusic\\";
 //        String basePath = "/home/vassilis/datasets/imdb_yago/";        
-    	String entityFilePath1 = basePath+"bbc-musicNewProfiles";
-    	String entityFilePath2 = basePath+"dbpedia37NewProfiles";
+    	String entityFilePath1 = basePath+"bbc-musicNewNoRdfProfiles";
+    	String entityFilePath2 = basePath+"dbpedia37NewNoSameAsNoWikipediaProfiles";
         String gtFilePath = basePath+"bbc-music_groundTruthUTF8.txt";
         //custom input
         if (args.length == 3) {

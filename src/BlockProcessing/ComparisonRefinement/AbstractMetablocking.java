@@ -35,7 +35,7 @@ public abstract class AbstractMetablocking extends AbstractComparisonRefinementM
     protected int[] flags;
 
     protected double threshold;
-    protected double blockAssingments;
+    protected double blockAssignments;
     protected double distinctComparisons;
     protected double[] comparisonsPerEntity;
     protected double[] counters;
@@ -64,14 +64,14 @@ public abstract class AbstractMetablocking extends AbstractComparisonRefinementM
             flags[i] = -1;
         }
 
-        blockAssingments = 0;
+        blockAssignments = 0;
         if (cleanCleanER) {
             for (BilateralBlock bBlock : bBlocks) {
-                blockAssingments += bBlock.getTotalBlockAssignments();
+                blockAssignments += bBlock.getTotalBlockAssignments();
             }
         } else {
             for (UnilateralBlock uBlock : uBlocks) {
-                blockAssingments += uBlock.getTotalBlockAssignments();
+                blockAssignments += uBlock.getTotalBlockAssignments();
             }
         }
 

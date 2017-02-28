@@ -10,7 +10,9 @@ import Utilities.DataStructures.AbstractDuplicatePropagation;
 import Utilities.DataStructures.BilateralDuplicatePropagation;
 import Utilities.Enumerations.WeightingScheme;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -19,6 +21,7 @@ import java.util.List;
 public class TestNewMetablocking {
 
     public static void main(String[] args) {
+        Set<String> acceptableTypes = new HashSet<>();
         String mainDirectory = "E:\\Data\\newRestaurant\\";
 
         String entitiesPath1 = mainDirectory + "restaurant1Profiles";
@@ -28,7 +31,7 @@ public class TestNewMetablocking {
         int[][] neighborIds = (int[][]) AbstractReader.loadSerializedObject(neighborIdsPath);
 
         Preprocessing valueBlocking = new Preprocessing(entitiesPath1, entitiesPath2);
-        final List<AbstractBlock> valueBlocks = valueBlocking.getBlocks();
+        final List<AbstractBlock> valueBlocks = valueBlocking.getTokenBlockingBlocks();
 
         IGroundTruthReader gtReader = new GtSerializationReader(mainDirectory + "restaurantIdDuplicates");
         final AbstractDuplicatePropagation duplicatePropagation = new BilateralDuplicatePropagation(gtReader.getDuplicatePairs(null));

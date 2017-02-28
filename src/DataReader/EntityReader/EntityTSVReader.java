@@ -56,7 +56,7 @@ public class EntityTSVReader extends AbstractEntityReader {
 
             int entityCounter = 0;
             //read entity profiles                       
-            String[] nextLine; //a line of the form subject\tpredicate\tobject
+            String[] nextLine; //a line of the form subjectSEPARATORpredicateSEPARATORobject
             String previousEntityURL = ""; //check if this line is about the same entity as the previous line
             String currentEntityURL = " "; //check if this line is about the same entity as the previous line
             EntityProfile e = null; //keep the last entity profile in memory and add it when a new profile appears

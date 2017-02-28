@@ -5,7 +5,8 @@ import BlockProcessing.ComparisonRefinement.NewNeighborCardinalityNodePruning;
 import DataModel.AbstractBlock;
 import DataModel.Comparison;
 import DataModel.DecomposedBlock;
-import DataModel.PairIterator;
+import DataModel.EntityProfile;
+import DataModel.IdDuplicates;
 import DataModel.SimilarityPairs;
 import DataReader.AbstractReader;
 import DataReader.GroundTruthReader.GtSerializationReader;
@@ -20,8 +21,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -30,11 +33,15 @@ import java.util.List;
 public class LocalRankAggregation {
 
     public static void main(String[] args) {
+        Set<String> acceptableTypes = new HashSet<>();
+        
         //Restaurant
         String mainDirectory = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\OAEI2010\\restaurant\\";
         String entitiesPath1 = mainDirectory + "restaurant1Profiles";
         String entitiesPath2 = mainDirectory + "restaurant2Profiles";
         String gtPath = mainDirectory + "restaurantIdDuplicates";        
+        acceptableTypes.add("http://www.okkam.org/ontology_restaurant2.owl#Restaurant");
+        acceptableTypes.add("http://www.okkam.org/ontology_restaurant1.owl#Restaurant");
         
         //Rexa-DBLP
 //        String mainDirectory = "/home/gpapadakis/data/newBibliographicalRecords/";
@@ -67,12 +74,12 @@ public class LocalRankAggregation {
         
         int[][] neighborIds = (int[][]) AbstractReader.loadSerializedObject(neighborIdsPath);
         
-        Preprocessing valueBlocking = new Preprocessing(entitiesPath1, entitiesPath2);        
-        final List<AbstractBlock> valueBlocks = valueBlocking.getBlocks();
-        int datasetLimit = valueBlocking.getDatasetLimit();
+        Preprocessing preprocessing = new Preprocessing(entitiesPath1, entitiesPath2, acceptableTypes);        
+        final List<AbstractBlock> valueBlocks = preprocessing.getTokenBlockingBlocks();
+        int datasetLimit = preprocessing.getDatasetLimit();
 
         IGroundTruthReader gtReader = new GtSerializationReader(gtPath);
-        final AbstractDuplicatePropagation duplicatePropagation = new BilateralDuplicatePropagation(gtReader.getDuplicatePairs(null));
+        final BilateralDuplicatePropagation duplicatePropagation = new BilateralDuplicatePropagation(gtReader.getDuplicatePairs(null));
         System.out.println("Existing Duplicates\t:\t" + duplicatePropagation.getDuplicates().size());
 
         for (WeightingScheme valueWScheme : WeightingScheme.values()) {
@@ -82,13 +89,22 @@ public class LocalRankAggregation {
             cnpVB.refineBlocks(copyOfVBlocks1);
             Comparison[][] valueComparisons = cnpVB.getNearestEntities();
             
-            for (WeightingScheme neighborWScheme : WeightingScheme.values()) {
+//            for (WeightingScheme neighborWScheme : WeightingScheme.values()) {
+            WeightingScheme neighborWScheme = valueWScheme; //TODO: comment out when the line above is not in comments
                 System.out.println("\nMeta-blocking neighbor weighting scheme: "+neighborWScheme);
+                
+                //Option 1: Co-occuring neighbors
                 List<AbstractBlock> copyOfVBlocks2 = new ArrayList<>(valueBlocks);
                 NewNeighborCardinalityNodePruning ncnpVB = new NewNeighborCardinalityNodePruning(neighborIds, neighborWScheme);
                 ncnpVB.refineBlocks(copyOfVBlocks2);
                 Comparison[][] neighborComparisons = ncnpVB.getNearestEntities();
-
+                
+                
+                //Option 2: Neighbor Blocking
+               /* final List<AbstractBlock> neighborBlocks = preprocessing.getNeighborBlockingBlocks();                
+                NewCardinalityNodePruning cnpNB = new NewCardinalityNodePruning(valueWScheme);
+                cnpNB.refineBlocks(neighborBlocks);
+                Comparison[][] neighborComparisons = cnpNB.getNearestEntities();*/
 
                 // rank aggregation
                 int valueComparisonsCounter = 0;
@@ -108,12 +124,18 @@ public class LocalRankAggregation {
 
                 Comparison[] topComparisons = new Comparison[maxEntities]; //keeps the top comparison for each entity
                 System.out.println("Found "+comparisonsCounter+" total comparisons");
-                for (int i = 0; i < maxEntities; ++i) { //for each entity i   
-    //                neighborComparisons[i] = null; //REMOVE!!!! only for testing reasons to check value-/neighbor-only reciprocity
-                    AbstractRankAggregation ra = new BordaCount(valueComparisons[i], neighborComparisons[i]);                
+                Set<Integer> acceptableIds1 = preprocessing.getAcceptableIds1();
+                Set<Integer> acceptableIds2 = preprocessing.getAcceptableIds2();                                
+                for (int i = 0; i < maxEntities; ++i) { //for each entity i 
+                    if (!acceptableIds1.contains(i) && !acceptableIds2.contains(i-datasetLimit)) {
+                        continue;
+                    }
+//                    valueComparisons[i] = null; //REMOVE!!!! only for testing reasons to check value-/neighbor-only reciprocity
+                    AbstractRankAggregation ra = new BordaCount(valueComparisons[i], neighborComparisons[i]);
+//                    AbstractRankAggregation ra = new BordaCount(neighborComparisons[i], valueComparisons[i]);
                     //System.out.println("Adding the top aggr. comparison for entity "+i);
                     SimilarityPairs aggr = ra.getAggregation();
-                    if (aggr.getNoOfComparisons() > 0) {              
+                    if (aggr.getNoOfComparisons() > 0) {                            
                         topComparisons[i] = aggr.getPairIterator().next(); //add the first (top) aggr. comparison for entity i
     //                    
     //                    if (neighborComparisons[i] != null && neighborComparisons[i].length > 0) {
@@ -142,14 +164,10 @@ public class LocalRankAggregation {
                     if (curr == null)  {
                         continue;
                     }
-    //                int j = (curr.getEntityId1() == i) ? curr.getEntityId2() : curr.getEntityId1();
                     int j = curr.getEntityId2() + datasetLimit;
-    //                System.out.println("Checking if the comparison:("+curr.getEntityId1()+","+curr.getEntityId2()+") is the same for entity "+j);
-    //                System.out.println("...the top copmarison of entity "+j+" is ("+topComparisons[j].getEntityId1()+", "+topComparisons[j].getEntityId2()+")");
-                    if (curr.equals(topComparisons[j])) {
-    //                    System.out.println("Found a reciprocal comparison!");
+                    if (curr.equals(topComparisons[j])) { //then this is a reciprocal comparison                        
                         finalComparisons.add(curr);
-                        topComparisons[j] = null; //do not check this again
+                        topComparisons[j] = null; //do not check this entity again
                     }
                 }
                 addDecomposedBlock(finalComparisons, finalMatchesAsBlocks);
@@ -157,7 +175,23 @@ public class LocalRankAggregation {
                 BlocksPerformance bPer = new BlocksPerformance(finalMatchesAsBlocks, duplicatePropagation);
                 bPer.setStatistics();
                 bPer.printStatistics();
-            }
+                //debugging follows:
+                /*
+                Set<IdDuplicates> fps = duplicatePropagation.getFalseMatches();
+                List<EntityProfile> profiles1 = preprocessing.getProfiles1();
+                List<EntityProfile> profiles2 = preprocessing.getProfiles2();
+                for (IdDuplicates fp : fps) {                    
+                    System.out.println(fp);
+                    int entityId1 = fp.getEntityId1();
+                    int entityId2 = fp.getEntityId2();
+                    System.out.println("Entity1: "+entityId1);
+                    System.out.println(profiles1.get(entityId1));
+                    System.out.println("Entity2: "+entityId2);
+                    System.out.println(profiles2.get(entityId2));
+                }
+                */
+                
+//            } //end of for all meta-blocking weighting schemes for neighbors
         }
     }
             

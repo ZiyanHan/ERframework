@@ -7,10 +7,12 @@ package RankAggregation;
 
 import DataModel.AbstractBlock;
 import DataModel.Comparison;
+import DataModel.ComparisonIterator;
 import DataModel.SimilarityPairs;
 import Utilities.Comparators.ReverseComparisonWeightComparator;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 /**
@@ -26,8 +28,8 @@ public abstract class AbstractRankAggregation {
     /**
      * Store the input lists as two sorted array instances. 
      * Also, initialize the output as a sorted list, based on the aggregate score.
- Pre-condition: inQ1 and inQ2 must be sorted in descending order
- Post-condition: inQ2 stores the smallest list (for search purposes)
+     * Pre-condition: inQ1 and inQ2 must be sorted in descending order
+     * Post-condition: inQ2 stores the smallest list (for search purposes)
      * @param in1
      * @param in2 
      */
@@ -48,20 +50,40 @@ public abstract class AbstractRankAggregation {
         initializeQueues(comparisonsFromValues, comparisonsFromNeighbors);
     }
     
+    /**
+     * Alternative constructor, to get the input queues from two input blocking collections.
+     * @param blocking1
+     * @param blocking2 
+     */
+    public AbstractRankAggregation(List<AbstractBlock> blocking1, List<AbstractBlock> blocking2, Set<Integer> acceptableIds1, Set<Integer> acceptableIds2) {
+        System.out.println("Running rank aggregation...");        
+        Comparison[] comparisonsFromValues = getSortedComparisonsFromBlocks(blocking1, acceptableIds1, acceptableIds2);
+        Comparison[] comparisonsFromNeighbors = getSortedComparisonsFromBlocks(blocking2, acceptableIds1, acceptableIds2);        
+        
+        initializeQueues(comparisonsFromValues, comparisonsFromNeighbors);
+    }
+    
     private Comparison[] getSortedComparisonsFromBlocks(List<AbstractBlock> blocks) {
         TreeSet<Comparison> valueQ = new TreeSet<>(new ReverseComparisonWeightComparator());           
         blocks.stream().forEach((block) -> valueQ.addAll(block.getComparisons()));
+        Comparison[] valuesArray = new Comparison[valueQ.size()];        
+        valuesArray = valueQ.toArray(valuesArray);        
+        return valuesArray;
+    }
+    
+    private Comparison[] getSortedComparisonsFromBlocks(List<AbstractBlock> blocks, Set<Integer> acceptableIds1, Set<Integer> acceptableIds2) {
+        TreeSet<Comparison> valueQ = new TreeSet<>(new ReverseComparisonWeightComparator());                   
         
-        //streaming verion (less memory required, as the comparisons are not kept in memory)
-        /* 
-        blocks.stream()
-                .map((block) -> block.getComparisonIterator()) //for (block: blocks) iterator = block.getComparisonIterator();
-                .forEach((iterator) -> {           //for every block's iterator
-                    while (iterator.hasNext()) {                        
-                        valueQ.add(iterator.next()); //add the next Comparison to valueQ
-                    }
-                });
-        */
+        for (AbstractBlock block : blocks) {
+            ComparisonIterator it = block.getComparisonIterator();
+            while (it.hasNext()) {
+                Comparison comparison = it.next();
+                if (acceptableIds1.contains(comparison.getEntityId1()) && acceptableIds2.contains(comparison.getEntityId2())) {
+                    valueQ.add(comparison);
+                }
+            }
+        }
+        
         
         Comparison[] valuesArray = new Comparison[valueQ.size()];        
         valuesArray = valueQ.toArray(valuesArray);        
@@ -73,7 +95,7 @@ public abstract class AbstractRankAggregation {
         
         if (in1 == null && in2 == null) {
             outQ = null; 
-            out = new SimilarityPairs(true, 0); //return an emtpy list of pairs
+            out = new SimilarityPairs(true, 0); //return an empty list of pairs
         } else if (in1 == null) {
             addComparisonsToQueue(in2); //just copy the non-null input comparisons to the output
             queueToSimilarityPairs(); //the process ends here

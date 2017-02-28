@@ -140,7 +140,7 @@ public class CardinalityNodePruningWithMatching extends CardinalityEdgePruning {
     
     @Override
     protected void setThreshold() {
-//        threshold = Math.max(1, blockAssingments / noOfEntities);
+//        threshold = Math.max(1, blockAssignments / noOfEntities);
         threshold = 1; //vefthym : to get only top-1
     }
     

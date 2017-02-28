@@ -172,7 +172,7 @@ public class CardinalityNodePruningReWeighting extends CardinalityEdgePruning {
     
     @Override
     protected void setThreshold() {
-        threshold = Math.max(1, blockAssingments / noOfEntities);
+        threshold = Math.max(1, blockAssignments / noOfEntities);
     }
     
     @Override

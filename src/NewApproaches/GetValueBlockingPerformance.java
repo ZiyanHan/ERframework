@@ -9,7 +9,9 @@ import Utilities.DataStructures.AbstractDuplicatePropagation;
 import Utilities.DataStructures.BilateralDuplicatePropagation;
 import Utilities.Enumerations.WeightingScheme;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -18,6 +20,7 @@ import java.util.List;
 public class GetValueBlockingPerformance {
 
     public static void main(String[] args) {
+        Set<String> acceptableTypes = new HashSet<>();
         String mainDirectory = "/home/gpapadakis/data/newBibliographicalRecords/";
 
         String neighborProfilesPath1 = mainDirectory + "rexaNeighborProfile";
@@ -31,7 +34,7 @@ public class GetValueBlockingPerformance {
         }
 
         Preprocessing neighborBlocking = new Preprocessing(neighborProfilesPath1, neighborProfilesPath2);
-        final List<AbstractBlock> neighborBlocks = neighborBlocking.getBlocks();
+        final List<AbstractBlock> neighborBlocks = neighborBlocking.getTokenBlockingBlocks();
 
         IGroundTruthReader gtReader = new GtSerializationReader(gtPath);
         final AbstractDuplicatePropagation duplicatePropagation = new BilateralDuplicatePropagation(gtReader.getDuplicatePairs(null));

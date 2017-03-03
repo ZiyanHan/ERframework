@@ -25,7 +25,7 @@ public class ExportDatasets {
         String mainDirectory = "/home/gpapadakis/newData/";
         String[] datasetsPaths = { mainDirectory + "restaurant/",
                                    mainDirectory + "rexa_dblp/",
-                                   mainDirectory + "imdb_yago/",
+                                   mainDirectory + "yago_imdb/",
                                    mainDirectory + "bbcMusic/"
         };
         

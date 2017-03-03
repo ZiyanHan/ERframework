@@ -92,7 +92,37 @@ public class Preprocessing {
         return blocks;
     }
     
-    
+    public List<AbstractBlock> getPurgedBlocks(IBlockBuilding blockBuildingMethod) {
+        IEntityReader eReader1 = new EntitySerializationReader(inputPath1);
+        /*List<EntityProfile>*/ profiles1 = eReader1.getEntityProfiles();
+        System.out.println("Input Entity Profiles1\t:\t" + profiles1.size());
+        datasetLimit = profiles1.size();
+        for (int i = 0; i < profiles1.size(); i++) {
+            EntityProfile profile1 = profiles1.get(i);
+            if (profile1.hasOneOfTheTypes(acceptableTypes)) {
+                acceptableIds1.add(i);
+            }
+        }
+
+        IEntityReader eReader2 = new EntitySerializationReader(inputPath2);
+        /*List<EntityProfile>*/ profiles2 = eReader2.getEntityProfiles();
+        System.out.println("Input Entity Profiles2\t:\t" + profiles2.size());
+        for (int i = 0; i < profiles2.size(); i++) {
+            EntityProfile profile2 = profiles2.get(i);
+            if (profile2.hasOneOfTheTypes(acceptableTypes)) {
+                acceptableIds2.add(i);
+            }
+        }
+                 
+        List<AbstractBlock> blocks = blockBuildingMethod.getBlocks(profiles1, profiles2);
+        System.out.println("Original blocks\t:\t" + blocks.size());
+
+        IBlockProcessing blockPurging = new ComparisonsBasedBlockPurging();
+        blocks = blockPurging.refineBlocks(blocks);
+        System.out.println("Purging blocks\t:\t" + blocks.size());
+        
+        return blocks;
+    }
 
     int getDatasetLimit() {
         return datasetLimit;

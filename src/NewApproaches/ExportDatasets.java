@@ -29,7 +29,7 @@ public class ExportDatasets {
                                    mainDirectory + "bbcMusic/"
         };
         
-        String[] d1Datasets = { "restaurant1Profiles ",
+        String[] d1Datasets = { "restaurant1Profiles",
             "rexaProfiles",
             "yagoProfiles",
             "bbc-musicNewNoRdfProfiles"
@@ -58,7 +58,7 @@ public class ExportDatasets {
                     out.write(entityId + VALUE_DELIMITER);
                 }
                 
-                System.out.print(SEGMENT_DELIMITER);
+                out.write(SEGMENT_DELIMITER);
                 for (int entityId : bBlock.getIndex2Entities()) {
                     int newId = -entityId;
                     out.write(newId + VALUE_DELIMITER);

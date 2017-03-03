@@ -42,10 +42,10 @@ public class ExportDatasets {
         };
 
         for (int datasetIndex = 0; datasetIndex < d1Datasets.length; datasetIndex++) {
-            Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(mainDirectory+datasetsPaths[datasetIndex]+"blocks.txt"), "UTF-8"));
+            Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(datasetsPaths[datasetIndex]+"blocks.txt"), "UTF-8"));
             
-            Preprocessing preprocessing = new Preprocessing(mainDirectory+datasetsPaths[datasetIndex]+d1Datasets[datasetIndex], 
-                    mainDirectory+datasetsPaths[datasetIndex]+d2Datasets[datasetIndex]);
+            Preprocessing preprocessing = new Preprocessing(datasetsPaths[datasetIndex]+d1Datasets[datasetIndex], 
+                    datasetsPaths[datasetIndex]+d2Datasets[datasetIndex]);
             
             final List<AbstractBlock> valueBlocks = preprocessing.getPurgedBlocks(new StandardBlocking());
             int index = 0;

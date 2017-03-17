@@ -11,7 +11,6 @@ import DataReader.EntityReader.EntitySerializationReader;
 import DataReader.GroundTruthReader.GtSerializationReader;
 import DataReader.GroundTruthReader.IGroundTruthReader;
 import EntityMatching.IEntityMatching;
-import EntityMatching.ProfileMatcher;
 import NewApproaches.Preprocessing;
 import Utilities.BlocksPerformance;
 import Utilities.Comparators.ComparisonWeightComparator;
@@ -46,17 +45,19 @@ public class BaselineParallelization extends CardinalityNodePruning {
     protected Queue<Comparison>[] globallyNearestEntities;
     protected Set<Comparison> totalComparisons;
     protected SimilarityMetric simMetric;
-
-    public BaselineParallelization(int nodes, List<EntityProfile> profilesD1, List<EntityProfile> profilesD2,
+    protected List<EntityProfile> profilesD1;
+    protected List<EntityProfile> profilesD2;
+    
+    public BaselineParallelization(int nodes, List<EntityProfile> pd1, List<EntityProfile> pd2,
             RepresentationModel model, SimilarityMetric metric) {
         super(WeightingScheme.ARCS);
         noOfNodes = nodes;
         nodeCentric = true;
+        profilesD1 = pd1;
+        profilesD2 = pd2;
         representationModel = model;
         simMetric = metric;
         threads = new RandomThread[noOfNodes];
-        
-        buildModels(profilesD1, profilesD2);
     }
 
     @Override
@@ -64,7 +65,8 @@ public class BaselineParallelization extends CardinalityNodePruning {
         setLimits();
         setThreshold();
         sortEntities();
-
+        buildModels(profilesD1, profilesD2);
+        
         entityCounter = 0;
         for (int i = 0; i < noOfNodes; i++) {
             threads[i] = new RandomThread();
@@ -103,16 +105,7 @@ public class BaselineParallelization extends CardinalityNodePruning {
 
     protected void buildModels(List<EntityProfile> profilesD1, List<EntityProfile> profilesD2) {
         int counter = 0;
-        if (!cleanCleanER) {
-            entityModels = new AbstractModel[profilesD1.size()];
-            for (EntityProfile profile : profilesD1) {
-                entityModels[counter] = RepresentationModel.getModel(representationModel, simMetric, profile.getEntityUrl());
-                for (Attribute attribute : profile.getAttributes()) {
-                    entityModels[counter].updateModel(attribute.getValue());
-                }
-                counter++;
-            }
-        } else {
+        if (cleanCleanER) {
             entityModels = new AbstractModel[profilesD1.size()+profilesD2.size()];
             for (EntityProfile profile : profilesD1) {
                 entityModels[counter] = RepresentationModel.getModel(representationModel, simMetric, profile.getEntityUrl());
@@ -122,6 +115,15 @@ public class BaselineParallelization extends CardinalityNodePruning {
                 counter++;
             }
             for (EntityProfile profile : profilesD2) {
+                entityModels[counter] = RepresentationModel.getModel(representationModel, simMetric, profile.getEntityUrl());
+                for (Attribute attribute : profile.getAttributes()) {
+                    entityModels[counter].updateModel(attribute.getValue());
+                }
+                counter++;
+            }
+        } else {
+            entityModels = new AbstractModel[profilesD1.size()];
+            for (EntityProfile profile : profilesD1) {
                 entityModels[counter] = RepresentationModel.getModel(representationModel, simMetric, profile.getEntityUrl());
                 for (Attribute attribute : profile.getAttributes()) {
                     entityModels[counter].updateModel(attribute.getValue());
@@ -162,9 +164,10 @@ public class BaselineParallelization extends CardinalityNodePruning {
 
         protected double[] minimumWeights;
 
+        protected final List<Integer> neighbors;
         protected Queue<Comparison>[] locallyNearestEntities;
         protected final Set<Integer> validEntities;
-
+        
         public RandomThread() {
             minimumWeights = new double[noOfEntities];
             locallyNearestEntities = new PriorityQueue[noOfEntities];
@@ -172,6 +175,7 @@ public class BaselineParallelization extends CardinalityNodePruning {
                 locallyNearestEntities[i] = new PriorityQueue<Comparison>((int) (2 * threshold), new ComparisonWeightComparator());
             }
 
+            neighbors = new ArrayList<>();
             validEntities = new HashSet<>();
         }
 
@@ -215,12 +219,6 @@ public class BaselineParallelization extends CardinalityNodePruning {
                         neighbors.add(originalId);
                     }
                 }
-            } else if (!nodeCentric) {
-                for (int neighborId : uBlocks[blockIndex].getEntities()) {
-                    if (neighborId < entityId) {
-                        neighbors.add(neighborId);
-                    }
-                }
             } else {
                 for (int neighborId : uBlocks[blockIndex].getEntities()) {
                     if (neighborId != entityId) {
@@ -228,6 +226,7 @@ public class BaselineParallelization extends CardinalityNodePruning {
                     }
                 }
             }
+            
             return neighbors;
         }
 
@@ -290,7 +289,7 @@ public class BaselineParallelization extends CardinalityNodePruning {
                     datasetsPaths[datasetIndex] + d2Datasets[datasetIndex]);
 
             List<AbstractBlock> valueBlocks = preprocessing.getBlocks(new StandardBlocking());
-
+            
             IGroundTruthReader gtReader = new GtSerializationReader(datasetsPaths[datasetIndex] + duplicates[datasetIndex]);
             Set<IdDuplicates> duplicatePairs = gtReader.getDuplicatePairs(null);
             System.out.println("Pairs of duplicates\t:\t" + duplicatePairs.size());
@@ -314,7 +313,7 @@ public class BaselineParallelization extends CardinalityNodePruning {
                     final List<AbstractBlock> newBlocks = rp.refineBlocks(copyOfBlocks);
 
                     EntitySerializationReader esr = new EntitySerializationReader(mainDirectory);
-                    esr.storeSerializedObject(newBlocks, datasetsPaths + "entities" + repModel + "_" + simMetric);
+                    esr.storeSerializedObject(newBlocks, datasetsPaths[datasetIndex] + "entities" + repModel + "_" + simMetric);
                 }
             }
         }

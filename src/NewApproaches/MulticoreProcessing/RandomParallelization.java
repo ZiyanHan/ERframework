@@ -411,7 +411,7 @@ public class RandomParallelization extends CardinalityNodePruning {
             System.out.println("Overhead time\t:\t" + (time2-time1));
             
             EntitySerializationReader esr = new EntitySerializationReader(mainDirectory);
-            esr.storeSerializedObject(newBlocks, datasetsPaths + "blocks");
+            esr.storeSerializedObject(newBlocks, datasetsPaths[datasetIndex] + "blocks");
             
             blpe = new BlocksPerformance(newBlocks, new BilateralDuplicatePropagation(duplicatePairs));
             blpe.setStatistics();

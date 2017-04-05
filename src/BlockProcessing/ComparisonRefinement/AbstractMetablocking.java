@@ -169,23 +169,52 @@ public abstract class AbstractMetablocking extends AbstractComparisonRefinementM
         }
     }
     
+    
+    protected List<Integer> getNormalizedNeighborEntities(int blockIndex, int entityId) {
+        List<Integer> neighbors = new ArrayList<>(); //on-purpose shadowing
+        if (cleanCleanER) {
+            if (entityId < datasetLimit) {
+                for (int originalId : bBlocks[blockIndex].getIndex2Entities()) {
+                    neighbors.add(originalId + datasetLimit);
+                }
+            } else {
+                for (int originalId : bBlocks[blockIndex].getIndex1Entities()) {
+                    neighbors.add(originalId);
+                }
+            }
+        } else {
+            if (!nodeCentric) {
+                for (int neighborId : uBlocks[blockIndex].getEntities()) {
+                    if (neighborId < entityId) {
+                        neighbors.add(neighborId);
+                    }
+                }
+            } else {
+                for (int neighborId : uBlocks[blockIndex].getEntities()) {
+                    if (neighborId != entityId) {
+                        neighbors.add(neighborId);
+                    }
+                }
+            }
+        }
+        return neighbors;
+    }
+    
     protected void setWjsStatistics() {
         totalWeights = new double[noOfEntities];
         for (int entityId = 0; entityId < noOfEntities; ++entityId) {            
-            if (entityId < datasetLimit) {
-                totalWeights[entityId] = 0;
-                final int[] associatedBlocks = entityIndex.getEntityBlocks(entityId, 0);                
+            totalWeights[entityId] = 0;
+            final int[] associatedBlocks = entityIndex.getEntityBlocks(entityId, 0);                
+            if (entityId < datasetLimit) {                                
                 for (int blockId : associatedBlocks) {
-                    BilateralBlock block = bBlocks[blockId];      
-                    double weight1 = Math.log10((double)datasetLimit/block.getIndex1Entities().length);
+                    int df1t = bBlocks[blockId].getIndex1Entities().length; //"document frequency" of token t, defining this block, for D1
+                    double weight1 = Math.log10((double)datasetLimit/df1t); //weight_1(t) = IDF_1(t) = log(|D1|/ |df_1(t)|)
                     totalWeights[entityId] += weight1;
                 }
-            } else {
-                totalWeights[entityId] = 0;
-                final int[] associatedBlocks = entityIndex.getEntityBlocks(entityId, 0);
+            } else {                                
                 for (int blockId : associatedBlocks) {
-                    BilateralBlock block = bBlocks[blockId];      
-                    double weight2 = Math.log10((double)(noOfEntities-datasetLimit)/block.getIndex2Entities().length);
+                    int df2t = bBlocks[blockId].getIndex2Entities().length;    //"document frequency" of token t, defining this block, for D2
+                    double weight2 = Math.log10((double)(noOfEntities-datasetLimit)/df2t); //weight_2(t) = IDF_2(t) = log(|D2|/ |df_2(t)|)
                     totalWeights[entityId] += weight2;
                 }
             }

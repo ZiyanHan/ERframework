@@ -45,9 +45,9 @@ public class WriteEntityIdsMapping {
     
     public static void main(String[] args) {
         
-        String mainPath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\OAEI2010\\restaurant\\";
-        String inputPath1 = mainPath+"restaurant1Profiles";
-        String inputPath2 = mainPath+"restaurant2Profiles";
+        //String mainPath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\OAEI2010\\restaurant\\";
+        //String inputPath1 = mainPath+"restaurant1Profiles";
+        //String inputPath2 = mainPath+"restaurant2Profiles";
         
         //String mainPath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\rexa-dblp\\";
         //String inputPath1 = mainPath+"rexaProfiles";
@@ -57,9 +57,9 @@ public class WriteEntityIdsMapping {
         //String inputPath1 = mainPath+"yagoProfiles";
         //String inputPath2 = mainPath+"imdbProfiles";
         
-        //String mainPath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\bbcMusic\\";
-        //String inputPath1 = mainPath+"bbc-musicNewNoRdfProfiles";
-        //String inputPath2 = mainPath+"dbpedia37NewNoSameAsNoWikipediaProfiles";
+        String mainPath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\bbcMusic\\";
+        String inputPath1 = mainPath+"bbc-musicNewNoRdfProfiles";
+        String inputPath2 = mainPath+"dbpedia37processedNewNoSameAsNoWikipediaSortedProfiles";
         
         if (args.length == 2) {
             inputPath1 = args[0];

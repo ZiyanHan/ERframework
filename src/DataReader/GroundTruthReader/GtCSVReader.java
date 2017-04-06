@@ -22,11 +22,14 @@ import com.opencsv.CSVReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.jgrapht.alg.ConnectivityInspector;
 
 /**
@@ -117,6 +120,9 @@ public class GtCSVReader extends AbstractGtReader {
                     }
                     nextLine[1] = nextLine[nextLine.length-1];
                 }
+                
+                nextLine[0] = nextLine[0].toLowerCase();
+                nextLine[1] = nextLine[1].toLowerCase();
 
                 // add a new edge for every pair of duplicate entities
                 if (urlToEntityId1.containsKey(nextLine[0])) {
@@ -185,11 +191,11 @@ public class GtCSVReader extends AbstractGtReader {
         // build inverted index from URL to entity id
         int counter = 0;
         for (EntityProfile profile : profilesD1) {
-            urlToEntityId1.put(profile.getEntityUrl(), counter++);
+            urlToEntityId1.put(encodeURIinUTF8(profile.getEntityUrl().toLowerCase()), counter++);
         }
         if (profilesD2 != null) {
             for (EntityProfile profile : profilesD2) {
-                urlToEntityId2.put(profile.getEntityUrl(), counter++);
+                urlToEntityId2.put(encodeURIinUTF8(profile.getEntityUrl().toLowerCase()), counter++);
             }
         }
 
@@ -206,5 +212,24 @@ public class GtCSVReader extends AbstractGtReader {
     
     public void setSeparator(char separator) {
         this.separator = separator;
+    }
+    
+    private String encodeURIinUTF8(String uri) {
+        if (uri.startsWith("<http://dbpedia.org/resource/")) {            
+            int splitPoint = uri.lastIndexOf("/")+1;
+            String infix = uri.substring(splitPoint, uri.length()-1);
+            if (infix.contains("%")) {
+                return uri;
+            }
+            try {
+                infix = infix.replace("\\\\", "\\");
+                infix = StringEscapeUtils.unescapeJava(infix);
+                infix = URLEncoder.encode(infix, "UTF-8");            
+            } catch (UnsupportedEncodingException ex) {
+                System.err.println("Encoding exception: "+ex);
+            }
+            uri = uri.substring(0, splitPoint) + infix + ">";            
+        }
+        return uri;
     }
 }

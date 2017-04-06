@@ -10,7 +10,8 @@ import java.util.List;
 
 public class TestEntityTSVReader {
     public static void main(String[] args) {
-        String filePath = "G:\\VASILIS\\bbcMusic\\bbc-musicNewNoRdf.nt";
+        //String filePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\bbcMusic\\dbpedia37processedNewNoSameAsNoWikipediaSorted.nt";
+        String filePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\yago-imdb\\imdb.tsv";
         if (args.length == 1) {
             filePath = args[0];
         }

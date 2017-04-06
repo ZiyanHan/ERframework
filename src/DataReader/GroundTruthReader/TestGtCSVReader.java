@@ -15,10 +15,10 @@ import java.util.Set;
 public class TestGtCSVReader {
     public static void main(String[] args) {
         //default input
-        String basePath = "G:\\VASILIS\\bbcMusic\\";
+        String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\bbcMusic\\";
 //        String basePath = "/home/vassilis/datasets/imdb_yago/";        
     	String entityFilePath1 = basePath+"bbc-musicNewNoRdfProfiles";
-    	String entityFilePath2 = basePath+"dbpedia37NewNoSameAsNoWikipediaProfiles";
+    	String entityFilePath2 = basePath+"dbpedia37processedNewNoSameAsNoWikipediaSortedProfiles";
         String gtFilePath = basePath+"bbc-music_groundTruthUTF8.txt";
         //custom input
         if (args.length == 3) {

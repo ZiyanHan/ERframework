@@ -33,7 +33,7 @@ import java.util.logging.Logger;
 public class EntityTSVReader extends AbstractEntityReader {
 
     private static final Logger LOGGER = Logger.getLogger(EntityTSVReader.class.getName());    
-    private final String SEPARATOR = " ";
+    private final String SEPARATOR = "\t";
 
     public EntityTSVReader(String filePath) {
         super(filePath);
@@ -62,7 +62,7 @@ public class EntityTSVReader extends AbstractEntityReader {
             EntityProfile e = null; //keep the last entity profile in memory and add it when a new profile appears
             while ((line = br.readLine()) != null) {
                 nextLine = line.split(SEPARATOR);
-                currentEntityURL = nextLine[0];
+                currentEntityURL = nextLine[0].toLowerCase();
                 if (!currentEntityURL.equals(previousEntityURL)) {
                     if (e != null) {
                         entityProfiles.add(e);
@@ -82,7 +82,7 @@ public class EntityTSVReader extends AbstractEntityReader {
                 readEntity(e, nextLine);
             }
             
-            if (currentEntityURL.equals(previousEntityURL) && e != null) { //for the case the last  line was about the same entity as the line before
+            if (currentEntityURL.equalsIgnoreCase(previousEntityURL) && e != null) { //for the case the last  line was about the same entity as the line before
                 entityProfiles.add(e);
             }
 
@@ -109,7 +109,7 @@ public class EntityTSVReader extends AbstractEntityReader {
         if (e == null) {
             e = new EntityProfile(entityId);
         }
-        if (!entityId.equals(e.getEntityUrl())) {
+        if (!entityId.equalsIgnoreCase(e.getEntityUrl())) {
             LOGGER.log(Level.WARNING, "Entity profile and current line subjects should match! Skipping...");
             return;
         }

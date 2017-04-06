@@ -41,7 +41,7 @@ public class StandardBlocking extends AbstractBlockBuilding {
     }
     
     protected String[] getTokens (String attributeValue) {
-        return attributeValue.split("[\\W_]");
+        return attributeValue.toLowerCase().split("[\\W_]");
     }
 
     @Override

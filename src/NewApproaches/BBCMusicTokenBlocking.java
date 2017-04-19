@@ -21,31 +21,25 @@ import org.apache.lucene.index.IndexWriter;
  *
  * @author G.A.P. II
  */
-public class BBCMusingTokenBlocking extends StandardBlocking {
+public class BBCMusicTokenBlocking extends StandardBlocking {
 
-    private static final Logger LOGGER = Logger.getLogger(BBCMusingTokenBlocking.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(BBCMusicTokenBlocking.class.getName());
     
     protected boolean bbc;
 
     protected Set<String> bbcPredicates;
     protected Set<String> dbpediaredicates;
 
-    protected List<EntityProfile> bbcProfiles;
-    protected List<EntityProfile> DBPediaProfiles;
-
-    public BBCMusingTokenBlocking(List<EntityProfile> bbc, List<EntityProfile> dbpedia) {
-        bbcProfiles = bbc;
-        DBPediaProfiles = dbpedia;
-
+    public BBCMusicTokenBlocking() {
         bbcPredicates = new HashSet<>();
-        bbcPredicates.add("http://purl.org/dc/elements/1.1/title");
-        bbcPredicates.add("http://open.vocab.org/terms/sortLabel");
-        bbcPredicates.add("http://xmlns.com/foaf/0.1/name");
+        bbcPredicates.add("<http://purl.org/dc/elements/1.1/title>");
+        bbcPredicates.add("<http://open.vocab.org/terms/sortLabel>");
+        bbcPredicates.add("<http://xmlns.com/foaf/0.1/name>");
 
         dbpediaredicates = new HashSet<>();
-        dbpediaredicates.add("http://www.w3.org/2000/01/rdf-schema#label");
-        dbpediaredicates.add("http://dbpedia.org/property/name");
-        dbpediaredicates.add("http://xmlns.com/foaf/0.1/name");
+        dbpediaredicates.add("<http://www.w3.org/2000/01/rdf-schema#label>");
+        dbpediaredicates.add("<http://dbpedia.org/property/name>");
+        dbpediaredicates.add("<http://xmlns.com/foaf/0.1/name>");
     }
 
     @Override
@@ -66,9 +60,8 @@ public class BBCMusingTokenBlocking extends StandardBlocking {
     @Override
     protected void indexEntities(IndexWriter index, List<EntityProfile> entities) {
         try {
-            final Suffix suffix = new Suffix();
-            
             int counter = 0;
+            final Suffix suffix = new Suffix();
             for (EntityProfile profile : entities) {
                 Document doc = new Document();
                 doc.add(new StoredField(DOC_ID, counter++));
@@ -76,10 +69,14 @@ public class BBCMusingTokenBlocking extends StandardBlocking {
                     if (bbc) {
                         if (bbcPredicates.contains(attribute.getName())) {
                             suffix.setValue("BBC_LP");
+                        } else {
+                            suffix.setValue("");
                         }
                     } else {
                         if (dbpediaredicates.contains(attribute.getName())) {
                             suffix.setValue("DBP_LP");
+                        } else {
+                            suffix.setValue("");
                         }
                     }
                     getBlockingKeys(attribute.getValue()).stream().filter((key) -> (0 < key.trim().length())).forEach((key) -> {

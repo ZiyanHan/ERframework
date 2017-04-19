@@ -24,7 +24,7 @@ import org.apache.lucene.index.IndexWriter;
 public class BBCMusicTokenBlocking extends StandardBlocking {
 
     private static final Logger LOGGER = Logger.getLogger(BBCMusicTokenBlocking.class.getName());
-    
+
     protected boolean bbc;
 
     protected Set<String> bbcPredicates;
@@ -61,39 +61,31 @@ public class BBCMusicTokenBlocking extends StandardBlocking {
     protected void indexEntities(IndexWriter index, List<EntityProfile> entities) {
         try {
             int counter = 0;
-            final Suffix suffix = new Suffix();
             for (EntityProfile profile : entities) {
                 Document doc = new Document();
                 doc.add(new StoredField(DOC_ID, counter++));
                 for (Attribute attribute : profile.getAttributes()) {
+                    getBlockingKeys(attribute.getValue()).stream().filter((key) -> (0 < key.trim().length())).forEach((key) -> {
+                        doc.add(new StringField(VALUE_LABEL, key.trim(), Field.Store.YES));
+                    });
                     if (bbc) {
                         if (bbcPredicates.contains(attribute.getName())) {
-                            suffix.setValue("BBC_LP");
-                        } else {
-                            suffix.setValue("");
+                            getBlockingKeys(attribute.getValue()).stream().filter((key) -> (0 < key.trim().length())).forEach((key) -> {
+                                doc.add(new StringField(VALUE_LABEL, key.trim() + "_LP", Field.Store.YES));
+                            });
                         }
                     } else {
                         if (dbpediaredicates.contains(attribute.getName())) {
-                            suffix.setValue("DBP_LP");
-                        } else {
-                            suffix.setValue("");
+                            getBlockingKeys(attribute.getValue()).stream().filter((key) -> (0 < key.trim().length())).forEach((key) -> {
+                                doc.add(new StringField(VALUE_LABEL, key.trim() + "_LP", Field.Store.YES));
+                            });
                         }
                     }
-                    getBlockingKeys(attribute.getValue()).stream().filter((key) -> (0 < key.trim().length())).forEach((key) -> {
-                        doc.add(new StringField(VALUE_LABEL, key.trim()+suffix.getValue(), Field.Store.YES));
-                    });
                 }
                 index.addDocument(doc);
             }
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, null, ex);
         }
-    }
-    
-    class Suffix {
-        private String tokenSuffix = "";
-        
-        String getValue() { return tokenSuffix; }
-        void setValue(String newValue) { tokenSuffix = newValue; }
     }
 }

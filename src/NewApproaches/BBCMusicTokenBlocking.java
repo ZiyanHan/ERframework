@@ -81,7 +81,16 @@ public class BBCMusicTokenBlocking extends StandardBlocking {
                             });
                         }
                     }
+                }                
+                //add infix blocks for dbpedia
+                if (!bbc) {
+                    String dbpediaInfix = profile.getEntityUrl();
+                    dbpediaInfix = dbpediaInfix.substring(dbpediaInfix.indexOf("/resource/")+10, dbpediaInfix.length()-1);
+                    getBlockingKeys(dbpediaInfix).stream().filter((key) -> (0 < key.trim().length())).forEach((key) -> {
+                        doc.add(new StringField(VALUE_LABEL, key.trim(), Field.Store.YES));
+                    });
                 }
+                
                 index.addDocument(doc);
             }
         } catch (IOException ex) {

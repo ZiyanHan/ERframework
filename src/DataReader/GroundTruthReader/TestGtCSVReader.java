@@ -31,7 +31,7 @@ public class TestGtCSVReader {
         EntitySerializationReader esr2 = new EntitySerializationReader(entityFilePath2);
         System.out.println("Loading "+gtFilePath);
         GtCSVReader gtCSVReader = new GtCSVReader(gtFilePath);
-        gtCSVReader.setSeparator(' ');
+        gtCSVReader.setSeparator(',');
         System.out.println("Loading "+entityFilePath1);
         List<EntityProfile> profiles1 = esr1.getEntityProfiles();
         System.out.println("Loading "+entityFilePath2);

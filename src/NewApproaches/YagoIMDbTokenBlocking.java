@@ -71,14 +71,15 @@ public class YagoIMDbTokenBlocking extends StandardBlocking {
                     }
                     
                 }  
-                //add infix blocks for dbpedia
+                /*
+                //add infix blocks for yago
                 if (yago) {
                     String yagoInfix = profile.getEntityUrl();
                     yagoInfix = yagoInfix.substring(1, yagoInfix.length()-1);
                     getBlockingKeys(yagoInfix).stream().filter((key) -> (0 < key.trim().length())).forEach((key) -> {
                         doc.add(new StringField(VALUE_LABEL, key.trim() + "_LP", Field.Store.YES));
                     });
-                }
+                }*/
                 index.addDocument(doc);
             }
         } catch (IOException ex) {

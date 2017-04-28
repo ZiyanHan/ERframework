@@ -64,10 +64,9 @@ public class YagoIMDbTokenBlocking extends StandardBlocking {
                     getBlockingKeys(attribute.getValue()).stream().filter((key) -> (0 < key.trim().length())).forEach((key) -> {
                         doc.add(new StringField(VALUE_LABEL, key.trim(), Field.Store.YES));
                     });                    
+                    //exact match on labels
                     if (labelPredicates.contains(attribute.getName())) {
-                        getBlockingKeys(attribute.getValue()).stream().filter((key) -> (0 < key.trim().length())).forEach((key) -> {
-                            doc.add(new StringField(VALUE_LABEL, key.trim() + "_LP", Field.Store.YES));
-                        });
+                        doc.add(new StringField(VALUE_LABEL, attribute.getValue().toLowerCase().trim() + "_LP", Field.Store.YES));                        
                     }
                     
                 }  

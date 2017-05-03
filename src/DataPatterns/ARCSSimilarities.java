@@ -10,15 +10,12 @@ import DataModel.EntityProfile;
 import DataModel.IdDuplicates;
 import Utilities.Enumerations.RepresentationModel;
 import Utilities.Enumerations.SimilarityMetric;
-import Utilities.TextModels.AbstractModel;
 import Utilities.TextModels.BagModel;
 import Utilities.TextModels.TokenNGrams;
 import static gr.demokritos.iit.jinsect.utils.splitToWords;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.jena.ext.com.google.common.collect.HashMultiset;
@@ -29,14 +26,14 @@ import org.apache.jena.ext.com.google.common.collect.Multisets;
  *
  * @author vefthym
  */
-public class WeightedJaccardSimilarities extends DatasetStatistics {
+public class ARCSSimilarities extends DatasetStatistics {
     
     public enum AGGREGATION {MAX, AVERAGE};
     
     BagModel model1;
     BagModel model2;
 
-    public WeightedJaccardSimilarities(String data1Path, String data2Path, String groundTruthPath) {
+    public ARCSSimilarities(String data1Path, String data2Path, String groundTruthPath) {
         super(data1Path, data2Path, groundTruthPath);
     }
     
@@ -233,10 +230,12 @@ public class WeightedJaccardSimilarities extends DatasetStatistics {
                     break;
                 default:
                     neighborSim = getNeighborSimMax(e1,e2, profilesURLs1, profilesURLs2);
-            }            
+            }  
+            
             if (neighborSim > 1) { //could be slightly above 1 due to imprecision of doubles (slgihtly below 0 is not a problem, as it gets mapped to 0)
                 neighborSim = 1; 
             }
+            
 //            System.out.println("Getting the value sim of "+e1.getEntityUrl()+", "+e2.getEntityUrl());
             double valueSim = getValueSim(e1, e2);            
             System.out.println(valueSim+":"+neighborSim);
@@ -262,7 +261,7 @@ public class WeightedJaccardSimilarities extends DatasetStatistics {
 //            System.out.println("The neighbor of e1 contains the values: "+Arrays.toString(neighbor1.toArray()));
             for (Set<String> neighbor2 : neighbor2values) {
 //                System.out.println("The neighbor of e2 contains the values: "+Arrays.toString(neighbor2.toArray()));
-                double sim = getWeightedJaccardSim(neighbor1, neighbor2);
+                double sim = getARCSSim(neighbor1, neighbor2);
                 if (sim > max) {
                     max = sim;
                 }
@@ -291,7 +290,7 @@ public class WeightedJaccardSimilarities extends DatasetStatistics {
 //            System.out.println("The neighbor of e1 contains the values: "+Arrays.toString(neighbor1.toArray()));
             for (Set<String> neighbor2 : neighbor2values) {
 //                System.out.println("The neighbor of e2 contains the values: "+Arrays.toString(neighbor2.toArray()));
-                double sim = getWeightedJaccardSim(neighbor1, neighbor2);
+                double sim = getARCSSim(neighbor1, neighbor2);
                 sum += sim;
                 numNeighborPairs++;
             }
@@ -328,12 +327,54 @@ public class WeightedJaccardSimilarities extends DatasetStatistics {
      */
     @Override
     protected double getValueSim(EntityProfile e1, EntityProfile e2) {
-        return getWeightedJaccardSim(e1.getAllTokens(), e2.getAllTokens());
+        double scoreFromTokens = getARCSSim(e1.getAllTokens(), e2.getAllTokens());        
+        
+        Set<String> labels1 = new HashSet<>();
+        String label1 = e1.getValueOf("<http://purl.org/dc/elements/1.1/title>");
+        if (label1 != null) {
+            labels1.add(label1.toLowerCase().replaceAll("[^a-z0-9 ]", ""));
+        }
+        label1 = e1.getValueOf("<http://open.vocab.org/terms/sortLabel>");
+        if (label1 != null) {
+            labels1.add(label1.toLowerCase().replaceAll("[^a-z0-9 ]", ""));
+        }
+        label1 = e1.getValueOf("<http://xmlns.com/foaf/0.1/name>");
+        if (label1 != null) {
+            labels1.add(label1.toLowerCase().replaceAll("[^a-z0-9 ]", ""));
+        }        
+        
+        Set<String> labels2 = new HashSet<>();
+        String label2 = e2.getValueOf("<http://www.w3.org/2000/01/rdf-schema#label>");
+        if (label2 != null) {
+            labels2.add(label2.toLowerCase().replaceAll("[^a-z0-9 ]", ""));
+        }
+        label2 = e2.getValueOf("<http://dbpedia.org/property/name>");
+        if (label2 != null) {
+            labels2.add(label2.toLowerCase().replaceAll("[^a-z0-9 ]", ""));
+        }
+        label2 = e2.getValueOf("<http://xmlns.com/foaf/0.1/name>");
+        if (label2 != null) {
+            labels2.add(label2.toLowerCase().replaceAll("[^a-z0-9 ]", ""));
+        }
+        
+        
+        double scoreFromLabels = getARCSSimExact(labels1, labels2);
+        return scoreFromLabels == 0 ? scoreFromTokens : (scoreFromTokens + scoreFromLabels) / 2.0;    
+        
     }
     
-    private double getWeightedJaccardSim(Set<String> strings1, Set<String> strings2) {
-        double result = model1.getWeightedJaccardSimilarity(strings1, strings2, model2);
+    private double getARCSSim(Set<String> strings1, Set<String> strings2) {
+        double result = model1.getWeightedARCSSimilarity(strings1, strings2, model2);
         return result != result ? 0 : result; // replace NaN with 0 (if result is NaN, then result has the property result != result)
+    }
+    
+    private double getARCSSimExact(Set<String> labels1, Set<String> labels2) {     
+        for (String label1 : labels1) {
+            if (labels2.contains(label1)) {
+                return 1;
+            }
+        }
+        return 0;      
     }
     
     protected void createModels() {
@@ -384,10 +425,10 @@ public class WeightedJaccardSimilarities extends DatasetStatistics {
 //        String datasetGroundtruth = basePath+"restaurantIdDuplicates";
         
         //Rexa-DBLP dataset
-//        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\rexa-dblp\\";
-//        String dataset1 = basePath+"rexaProfiles";
-//        String dataset2 = basePath+"swetodblp_april_2008Profiles";
-//        String datasetGroundtruth = basePath+"rexa_dblp_goldstandardIdDuplicates";
+        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\rexa-dblp\\";
+        String dataset1 = basePath+"rexaProfiles";
+        String dataset2 = basePath+"swetodblp_april_2008Profiles";
+        String datasetGroundtruth = basePath+"rexa_dblp_goldstandardIdDuplicates";
         
         //YAGO-IMDb dataset (cannot be loaded in laptop ~60GB RAM used)
 //        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\imdb-yago\\";
@@ -396,10 +437,10 @@ public class WeightedJaccardSimilarities extends DatasetStatistics {
 //        String datasetGroundtruth = basePath+"imdbgoldFinalIdDuplicates";
         
         //BBCmusic-DBpedia dataset
-        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\bbcMusic\\";
-        String dataset1 = basePath+"bbc-musicNewNoRdfProfiles";
-        String dataset2 = basePath+"dbpedia37processedNewNoSameAsNoWikipediaSortedProfiles";
-        String datasetGroundtruth = basePath+"bbc-music_groundTruthUTF8IdDuplicates";
+//        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\bbcMusic\\";
+//        String dataset1 = basePath+"bbc-musicNewNoRdfProfiles";
+//        String dataset2 = basePath+"dbpedia37processedNewNoSameAsNoWikipediaSortedProfiles";
+//        String datasetGroundtruth = basePath+"bbc-music_groundTruthUTF8IdDuplicates";
         
         if (args.length == 3) { //override default values with user input
             dataset1 = args[0];
@@ -407,14 +448,14 @@ public class WeightedJaccardSimilarities extends DatasetStatistics {
             datasetGroundtruth = args[2];
         }       
         
-        WeightedJaccardSimilarities dists = new WeightedJaccardSimilarities(dataset1, dataset2, datasetGroundtruth);
+        ARCSSimilarities dists = new ARCSSimilarities(dataset1, dataset2, datasetGroundtruth);
 //        dists.getMatchValueSimDistribution();
 //        dists.getMatchNeighborSimDistribution();        
 //        dists.getNeighborMatchesOfMatches();
 //        dists.getNumberOfNeighborPairsPerMatch();
 //        dists.getValueAndNeighborSimCorrelation(AGGREGATION.MAX);
 //        dists.getRelationshipsBetweenMatchesAndNeighbors();
-        dists.getValueAndNeighborSimOfMatches(AGGREGATION.AVERAGE);
+        dists.getValueAndNeighborSimOfMatches(AGGREGATION.MAX);
     }
     
 }

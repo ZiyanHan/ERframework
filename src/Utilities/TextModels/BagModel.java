@@ -176,6 +176,85 @@ public abstract class BagModel extends AbstractModel {
         return Math.min(numerator / denominator, 1);
     }    
     
+    
+    /**
+     * vefthym
+     * Returns the weighted ARCS similarity of two entities.     
+     * @param tokens1
+     * @param tokens2
+     * @param oModel represents a whole entity collection (not a single entity)
+     * @return 
+     */
+    public double getARCSSimilarity(Set<String> tokens1, Set<String> tokens2, BagModel oModel) {
+        Map<String, Integer> itemVector1 = itemsFrequency;
+        Map<String, Integer> itemVector2 = oModel.getItemsFrequency();        
+        
+        if (itemVector2.size() < itemVector1.size()) {
+            itemVector1 = oModel.getItemsFrequency();
+            itemVector2 = itemsFrequency;            
+            Set<String> tmp = new HashSet<>(tokens1);            
+            tokens1 = tokens2;
+        }
+                
+        double similarity = 0;        
+        for (String key1 : tokens1) {
+            long frequency1 = itemVector1.getOrDefault(key1, 0);
+            long frequency2 = itemVector2.getOrDefault(key1, 0);
+            if (frequency2 != 0) {                                       
+                similarity += 1.0 / (Math.log1p(frequency1*frequency2) / Math.log(2));                
+            } 
+        }            
+        
+        return similarity;
+    }   
+    
+    
+    /**
+     * vefthym
+     * Returns the weighted ARCS similarity of two entities.     
+     * @param tokens1
+     * @param tokens2
+     * @param oModel represents a whole entity collection (not a single entity)
+     * @return 
+     */
+    public double getWeightedARCSSimilarity(Set<String> tokens1, Set<String> tokens2, BagModel oModel) {
+        Map<String, Integer> itemVector1 = itemsFrequency;
+        Map<String, Integer> itemVector2 = oModel.getItemsFrequency();        
+        
+        if (itemVector2.size() < itemVector1.size()) {
+            itemVector1 = oModel.getItemsFrequency();
+            itemVector2 = itemsFrequency;            
+            Set<String> tmp = new HashSet<>(tokens1);            
+            tokens1 = tokens2;
+        }
+                
+        double numerator = 0;
+        double denominator = 0; 
+        for (String key1 : tokens1) {
+            long frequency1 = itemVector1.getOrDefault(key1, 0);
+            long frequency2 = itemVector2.getOrDefault(key1, 0);
+            if (frequency2 != 0) {                                       
+                numerator += 1.0 / (Math.log1p(frequency1*frequency2) / Math.log(2));                                
+            } else {
+                //System.out.println("Word "+key1+" appears only in E1 and it adds "+1.0 / (Math.log1p(frequency1) / Math.log(2))+ " to the denom.");
+                denominator += 1.0 / (Math.log1p(frequency1) / Math.log(2));
+            }            
+        }     
+        /*
+        for (String key2 : tokens2) {
+            long frequency1 = itemVector1.getOrDefault(key2, 0);
+            long frequency2 = itemVector2.getOrDefault(key2, 0);
+            if (frequency1 == 0) {                                                       
+                //System.out.println("Word "+key2+" appears only in E2 and it adds "+1.0 / (Math.log1p(frequency2) / Math.log(2))+ " to the denom.");
+                denominator += 1.0 / (Math.log1p(frequency2) / Math.log(2));
+            }            
+        }    
+        */
+        denominator += numerator;
+        
+        return denominator == 0 ? 0 : Math.min(numerator / denominator, 1); //in case the precision of the result is not very good and it exceeds 1
+    }    
+    
 
     public Map<String, Integer> getItemsFrequency() {
         return itemsFrequency;

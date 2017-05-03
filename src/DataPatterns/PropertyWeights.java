@@ -25,7 +25,7 @@ import org.apache.jena.ext.com.google.common.collect.Multiset;
  *
  * @author vefthym
  */
-public class PropertyWeights extends WeightedJaccardSimilarities {
+public class PropertyWeights extends MatchingLabels {
     
     protected Map<String, Integer> urlToEntityIds1;
     protected Map<String, Integer> urlToEntityIds2;
@@ -404,6 +404,40 @@ public class PropertyWeights extends WeightedJaccardSimilarities {
     
     
     
+    private double getAvgNeighborSimilarityForRelations(EntityProfile e1, EntityProfile e2, String[] relations1, String[] relations2) {        
+        double sumSimilarity = 0;        
+        int numPairs = 0;
+        for (String relation1 : relations1) {
+            String neighbor1URL = e1.getValueOf(relation1);
+            if (neighbor1URL == null) {
+                continue;
+            }
+            for (String relation2 : relations2) {
+                String neighbor2URL = e2.getValueOf(relation2);
+                if (neighbor2URL == null) {
+                    continue;
+                }
+                
+                Integer neighbor1Id = urlToEntityIds1.get(neighbor1URL);
+                if (neighbor1Id == null) {
+                    continue;
+                }
+                EntityProfile neighbor1 = profiles1.get(neighbor1Id);
+                Integer neighbor2Id = urlToEntityIds2.get(neighbor2URL);
+                if (neighbor2Id == null) {
+                    continue;
+                }
+                EntityProfile neighbor2 = profiles2.get(neighbor2Id);
+                double similarity= getValueSim(neighbor1, neighbor2);       
+                sumSimilarity += similarity;
+                numPairs++;                
+            }
+        }
+        
+        return (numPairs == 0) ? 0 : sumSimilarity/numPairs;
+    }
+    
+    
     private double getMaxNeighborSimilarityForRelations(EntityProfile e1, EntityProfile e2, String[] relations1, String[] relations2) {        
         double maxSimilarity = 0;        
         for (String relation1 : relations1) {
@@ -502,6 +536,24 @@ public class PropertyWeights extends WeightedJaccardSimilarities {
         return getMaxNeighborSimilarityForRelations(e1, e2, topKRelations1, topKRelations2);        
     }
     
+    /**
+     * Keep topK e1's relations and topK e2's relations and call getNeighborSimilarityForRelations without K
+     * @param e1
+     * @param e2
+     * @param relations1
+     * @param relations2
+     * @param K
+     * @return 
+     */
+    private double getAvgNeighborSimilarityForRelations(EntityProfile e1, EntityProfile e2, List<String> relations1, List<String> relations2, int K) {                
+        String[] topKRelations1 = getTopKRelationsPerEntity(e1, relations1, K);
+        String[] topKRelations2 = getTopKRelationsPerEntity(e2, relations2, K);
+        
+        //System.out.println("The top relations of "+e1.getEntityUrl()+" are: "+Arrays.toString(topKRelations1));
+        //System.out.println("The top relations of "+e2.getEntityUrl()+" are: "+Arrays.toString(topKRelations2));
+        return getAvgNeighborSimilarityForRelations(e1, e2, topKRelations1, topKRelations2);        
+    }
+    
     
     
     //utility methods
@@ -581,8 +633,8 @@ public class PropertyWeights extends WeightedJaccardSimilarities {
             if (support > MIN_SUPPORT) {                
                 double discrim = getPropertyDiscriminability(relation, profiles);            
                 double fMeasure = 2 * support * discrim / (support + discrim);                
-                System.out.print(relation+": "+fMeasure);
-                System.out.println(". support: "+support+", discriminability: "+discrim);                
+                //System.out.print(relation+": "+fMeasure);
+                //System.out.println(". support: "+support+", discriminability: "+discrim);                
                 scoredRelations.put(relation, fMeasure);
             }
         }
@@ -687,9 +739,9 @@ public class PropertyWeights extends WeightedJaccardSimilarities {
 //        String datasetGroundtruth = basePath+"rexa_dblp_goldstandardIdDuplicates";
         
         //BBCmusic-DBpedia dataset
-        final String basePath = "G:\\VASILIS\\bbcMusic\\";
+        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\bbcMusic\\";
         String dataset1 = basePath+"bbc-musicNewNoRdfProfiles";
-        String dataset2 = basePath+"dbpedia37NewNoSameAsNoWikipediaProfiles";
+        String dataset2 = basePath+"dbpedia37processedNewNoSameAsNoWikipediaSortedProfiles";
         String datasetGroundtruth = basePath+"bbc-music_groundTruthUTF8IdDuplicates";
         
         double MIN_SUPPORT = 0.01;   //TODO: tune those parameters        
@@ -717,33 +769,32 @@ public class PropertyWeights extends WeightedJaccardSimilarities {
         List<EntityProfile> profiles1 = pw.getProfiles1();
         List<EntityProfile> profiles2 = pw.getProfiles2();
                         
-        System.out.println("\n\nDataset 1 relations:\n");        
+        //System.out.println("\n\nDataset 1 relations:\n");        
         List<String> relations1Sorted = pw.getAllRelationsSorted(profiles1, MIN_SUPPORT);
-        System.out.println(Arrays.toString(relations1Sorted.toArray()));
+        //System.out.println(Arrays.toString(relations1Sorted.toArray()));
         
-        System.out.println("\n\nDataset 2 relations:\n");
+        //System.out.println("\n\nDataset 2 relations:\n");
         List <String> relations2Sorted = pw.getAllRelationsSorted(profiles2, MIN_SUPPORT);
-        System.out.println(Arrays.toString(relations2Sorted.toArray()));
+        //System.out.println(Arrays.toString(relations2Sorted.toArray()));
                 
         //now, get the value and neighbor sim of the matches 
         System.out.println("Creating the models for weighted Jaccard sim...");
         pw.createModels(); //used for weighted jaccard value sim
-        System.out.println("valueSim:neighborSim");
+        System.out.println("valueSim:neighborSim:matchingLabels");
         Set<IdDuplicates> duplicates = pw.groundTruth.getDuplicates();
         for (IdDuplicates duplicate : duplicates) {
             EntityProfile e1 = profiles1.get(duplicate.getEntityId1());
             EntityProfile e2 = profiles2.get(duplicate.getEntityId2());
             double valueSimilarity = pw.getValueSim(e1, e2);
             double neighborSimilarity = pw.getMaxNeighborSimilarityForRelations(e1, e2, relations1Sorted, relations2Sorted, K);
+            int matchingLabels = pw.haveSameLabels(e1,e2) ? 1 : 0;
             
-            System.out.println(valueSimilarity+":"+neighborSimilarity);
+            System.out.println(valueSimilarity+":"+neighborSimilarity+":"+matchingLabels);
         }
         
         
     }
-    
-    
-    
+        
     public static void testTopKGlobal (String dataset1, String dataset2, String datasetGroundtruth, int K, double MIN_SUPPORT) {
         PropertyWeights pw = new PropertyWeights(dataset1, dataset2, datasetGroundtruth);
         List<EntityProfile> profiles1 = pw.getProfiles1();

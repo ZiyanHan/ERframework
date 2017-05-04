@@ -68,6 +68,18 @@ public class BBCMusicTokenBlocking extends StandardBlocking {
                     getBlockingKeys(attribute.getValue()).stream().filter((key) -> (0 < key.trim().length())).forEach((key) -> {
                         doc.add(new StringField(VALUE_LABEL, key.trim(), Field.Store.YES));
                     });
+                    //exact match on labels
+                    if (bbc) {
+                        if (bbcPredicates.contains(attribute.getName())) {
+                            doc.add(new StringField(VALUE_LABEL, attribute.getValue().toLowerCase().replaceAll("[^a-z0-9 ]", "").trim() + "_LP", Field.Store.YES));                        
+                        }
+                    } else {
+                        if (dbpediaredicates.contains(attribute.getName())) {
+                            doc.add(new StringField(VALUE_LABEL, attribute.getValue().toLowerCase().replaceAll("[^a-z0-9 ]", "").trim() + "_LP", Field.Store.YES));                        
+                        }
+                    }
+                    
+                    /* token blocking on labels
                     if (bbc) {
                         if (bbcPredicates.contains(attribute.getName())) {
                             getBlockingKeys(attribute.getValue()).stream().filter((key) -> (0 < key.trim().length())).forEach((key) -> {
@@ -80,7 +92,7 @@ public class BBCMusicTokenBlocking extends StandardBlocking {
                                 doc.add(new StringField(VALUE_LABEL, key.trim() + "_LP", Field.Store.YES));
                             });
                         }
-                    }
+                    }*/
                 }                
                 //add infix blocks for dbpedia
                 if (!bbc) {

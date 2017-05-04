@@ -56,12 +56,17 @@ public class RexaDBLPTokenBlocking extends StandardBlocking {
                 for (Attribute attribute : profile.getAttributes()) {
                     getBlockingKeys(attribute.getValue()).stream().filter((key) -> (0 < key.trim().length())).forEach((key) -> {
                         doc.add(new StringField(VALUE_LABEL, key.trim(), Field.Store.YES));
-                    });                    
+                    });
+                    //token blocking on labels
+                    if (labelPredicates.contains(attribute.getName())) {
+                        doc.add(new StringField(VALUE_LABEL, attribute.getValue().toLowerCase().replaceAll("[^a-z0-9 ]", "").trim() + "_LP", Field.Store.YES));                        
+                    }
+                    /*
                     if (labelPredicates.contains(attribute.getName())) {
                         getBlockingKeys(attribute.getValue()).stream().filter((key) -> (0 < key.trim().length())).forEach((key) -> {
                             doc.add(new StringField(VALUE_LABEL, key.trim() + "_LP", Field.Store.YES));
                         });
-                    }
+                    }*/
                     
                 }                 
                 index.addDocument(doc);

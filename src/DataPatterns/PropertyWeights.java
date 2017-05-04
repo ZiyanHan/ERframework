@@ -25,7 +25,7 @@ import org.apache.jena.ext.com.google.common.collect.Multiset;
  *
  * @author vefthym
  */
-public class PropertyWeights extends MatchingLabels {
+public class PropertyWeights extends WeightedJaccardSimilarities {
     
     protected Map<String, Integer> urlToEntityIds1;
     protected Map<String, Integer> urlToEntityIds2;

@@ -333,50 +333,7 @@ public class MatchingLabels extends DatasetStatistics {
     private double getARCSSim(Set<String> strings1, Set<String> strings2) {
         double result = model1.getWeightedARCSSimilarity(strings1, strings2, model2);
         return result != result ? 0 : result; // replace NaN with 0 (if result is NaN, then result has the property result != result)
-    }
-    
-    public boolean haveSameLabels(EntityProfile e1, EntityProfile e2) {
-        //restaurants
-//        String[] labelAtts1 = new String[]{"http://www.okkam.org/ontology_restaurant1.owl#name"};
-//        String[] labelAtts2 = new String[]{"http://www.okkam.org/ontology_restaurant2.owl#name"};
-        
-        //Rexa-DBLP
-//        String[] labelAtts1 = new String[]{"http://www.w3.org/2000/01/rdf-schema#label", "<http://xmlns.com/foaf/0.1/name>"};
-//        String[] labelAtts2 = labelAtts1;
-        
-        //BBCmusic-DBpedia
-//        String[] labelAtts1 = new String[]{"<http://purl.org/dc/elements/1.1/title>", "<http://open.vocab.org/terms/sortLabel>", "<http://xmlns.com/foaf/0.1/name>"};
-//        String[] labelAtts2 = new String[]{"<http://www.w3.org/2000/01/rdf-schema#label>", "<http://dbpedia.org/property/name>", "<http://xmlns.com/foaf/0.1/name>"};
-        
-        //Yago-IMDb
-        String[] labelAtts1 = new String[]{"rdfs:label", "label", "skos:prefLabel"};
-        String[] labelAtts2 = labelAtts1;
-
-        Set<String> labels1 = getLabelValuesOfEntity(e1, labelAtts1);        
-        Set<String> labels2 = getLabelValuesOfEntity(e2, labelAtts2);                
-        
-        return haveIntersectingLabels(labels1, labels2);
-    }
-    
-    private Set<String> getLabelValuesOfEntity (EntityProfile e, String[] labelAtts) {
-        Set<String> labelResults = new HashSet<>();
-        for (String labelAtt : labelAtts) {
-            String label = e.getValueOf(labelAtt);
-            if (label != null) {
-                labelResults.add(label.toLowerCase().replaceAll("[^a-z0-9 ]", ""));
-            }
-        }
-        return labelResults;
-    }
-    
-    private boolean haveIntersectingLabels(Set<String> labels1, Set<String> labels2) {     
-        for (String label1 : labels1) {
-            if (labels2.contains(label1)) {
-                return true;
-            }
-        }
-        return false;      
-    }
+    }    
     
     protected void createModels() {
         model1 = new TokenNGrams(1, RepresentationModel.TOKEN_UNIGRAMS, SimilarityMetric.WEIGHTED_JACCARD_SIMILARITY, "lala");

@@ -223,8 +223,7 @@ public abstract class BagModel extends AbstractModel {
         
         if (itemVector2.size() < itemVector1.size()) {
             itemVector1 = oModel.getItemsFrequency();
-            itemVector2 = itemsFrequency;            
-            Set<String> tmp = new HashSet<>(tokens1);            
+            itemVector2 = itemsFrequency;                                
             tokens1 = tokens2;
         }
                 

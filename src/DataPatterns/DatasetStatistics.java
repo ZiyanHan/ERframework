@@ -367,12 +367,12 @@ public class DatasetStatistics {
 //        String[] labelAtts2 = new String[]{"http://www.okkam.org/ontology_restaurant2.owl#name"};
         
         //Rexa-DBLP
-//        String[] labelAtts1 = new String[]{"http://www.w3.org/2000/01/rdf-schema#label", "<http://xmlns.com/foaf/0.1/name>"};
-//        String[] labelAtts2 = labelAtts1;
+        String[] labelAtts1 = new String[]{"http://www.w3.org/2000/01/rdf-schema#label", "<http://xmlns.com/foaf/0.1/name>"};
+        String[] labelAtts2 = labelAtts1;
         
         //BBCmusic-DBpedia
-        String[] labelAtts1 = new String[]{"<http://purl.org/dc/elements/1.1/title>", "<http://open.vocab.org/terms/sortLabel>", "<http://xmlns.com/foaf/0.1/name>"};
-        String[] labelAtts2 = new String[]{"<http://www.w3.org/2000/01/rdf-schema#label>", "<http://dbpedia.org/property/name>", "<http://xmlns.com/foaf/0.1/name>"};
+//        String[] labelAtts1 = new String[]{"<http://purl.org/dc/elements/1.1/title>", "<http://open.vocab.org/terms/sortLabel>", "<http://xmlns.com/foaf/0.1/name>"};
+//        String[] labelAtts2 = new String[]{"<http://www.w3.org/2000/01/rdf-schema#label>", "<http://dbpedia.org/property/name>", "<http://xmlns.com/foaf/0.1/name>"};
         
         //Yago-IMDb
 //        String[] labelAtts1 = new String[]{"rdfs:label", "label", "skos:prefLabel"};
@@ -386,10 +386,10 @@ public class DatasetStatistics {
     
     private Set<String> getLabelValuesOfEntity (EntityProfile e, String[] labelAtts) {
         Set<String> labelResults = new HashSet<>();
-        for (String labelAtt : labelAtts) {
-            String label = e.getValueOf(labelAtt);
-            if (label != null) {
-                labelResults.add(label.toLowerCase().replaceAll("[^a-z0-9 ]", ""));
+        for (String labelAtt : labelAtts) {            
+            Set<String> labelValues = e.getValuesOf(labelAtt);
+            for (String label : labelValues) {
+                labelResults.add(label.toLowerCase().replaceAll("[^a-z0-9 ]", "").trim());
             }
         }
         return labelResults;

@@ -106,6 +106,23 @@ public class EntityProfile implements Serializable {
         }
         return null;
     }
+    
+    /**
+     * Returns *all* the values found for the given attribute, or null, if the 
+     * attribute does not exist for this entity.
+     * @param attributeName the attribute whose value is asked
+     * @return the *first* value found for the given attribute, or null, if the 
+     * attribute does not exist for this entity
+     */
+    public Set<String> getValuesOf(String attributeName) {
+        Set<String> values = new HashSet<>();
+        for (Attribute attribute : attributes) {
+            if (attributeName.equals(attribute.getName())) {
+                values.add(attribute.getValue());
+            }
+        }
+        return values;
+    }
         
     public boolean isOfType(String type) {
         if (types ==  null) {

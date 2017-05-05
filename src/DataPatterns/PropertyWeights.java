@@ -733,16 +733,16 @@ public class PropertyWeights extends WeightedJaccardSimilarities {
 //        String datasetGroundtruth = basePath+"restaurantIdDuplicates";  
         
         //Rexa-DBLP
-//        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\rexa-dblp\\";
-//        String dataset1 = basePath+"rexaProfiles";
-//        String dataset2 = basePath+"swetodblp_april_2008Profiles";
-//        String datasetGroundtruth = basePath+"rexa_dblp_goldstandardIdDuplicates";
+        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\rexa-dblp\\";
+        String dataset1 = basePath+"rexaProfiles";
+        String dataset2 = basePath+"swetodblp_april_2008Profiles";
+        String datasetGroundtruth = basePath+"rexa_dblp_goldstandardIdDuplicates";
         
         //BBCmusic-DBpedia dataset
-        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\bbcMusic\\";
-        String dataset1 = basePath+"bbc-musicNewNoRdfProfiles";
-        String dataset2 = basePath+"dbpedia37processedNewNoSameAsNoWikipediaSortedProfiles";
-        String datasetGroundtruth = basePath+"bbc-music_groundTruthUTF8IdDuplicates";
+//        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\bbcMusic\\";
+//        String dataset1 = basePath+"bbc-musicNewNoRdfProfiles";
+//        String dataset2 = basePath+"dbpedia37processedNewNoSameAsNoWikipediaSortedProfiles";
+//        String datasetGroundtruth = basePath+"bbc-music_groundTruthUTF8IdDuplicates";
         
         double MIN_SUPPORT = 0.01;   //TODO: tune those parameters        
         int topK = 3; //TODO: test those parameters

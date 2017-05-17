@@ -43,15 +43,20 @@ public class DatasetStatistics {
     private void loadData(String dataset1Path, String dataset2Path, String groundTruthPath) {
         IEntityReader eReader1 = new EntitySerializationReader(dataset1Path);
         profiles1 = eReader1.getEntityProfiles();
-        System.out.println("Input Entity Profiles1\t:\t" + profiles1.size());            
+        System.out.println("Input Entity Profiles1\t:\t" + profiles1.size());         
         
         IEntityReader eReader2 = new EntitySerializationReader(dataset2Path);
         profiles2 = eReader2.getEntityProfiles();
-        System.out.println("Input Entity Profiles2\t:\t" + profiles2.size());            
+        System.out.println("Input Entity Profiles2\t:\t" + profiles2.size());         
 
-        IGroundTruthReader gtReader = new GtSerializationReader(groundTruthPath);
-        groundTruth = new BilateralDuplicatePropagation(gtReader.getDuplicatePairs(profiles1, profiles2));
-        System.out.println("Existing Duplicates\t:\t" + groundTruth.getDuplicates().size());
+        if (groundTruthPath != null) {
+            IGroundTruthReader gtReader = new GtSerializationReader(groundTruthPath);
+            groundTruth = new BilateralDuplicatePropagation(gtReader.getDuplicatePairs(profiles1, profiles2));
+            System.out.println("Existing Duplicates\t:\t" + groundTruth.getDuplicates().size());
+        } else {
+            groundTruth = null;
+            System.out.println("No ground truth provided");
+        }
     }
     
     
@@ -400,12 +405,67 @@ public class DatasetStatistics {
     }
     
     
+    private int getNumberOfEntityTypes(List<EntityProfile> profiles) {
+        Set<String> types = new HashSet<>();            
+        profiles.stream().forEach(profile -> types.addAll(profile.getTypes()));
+        //System.out.println(Arrays.toString(types.toArray()));
+        return types.size();
+    }
+    
+    private int getNumberOfVocabularies(List<EntityProfile> profiles) {
+        Set<String> vocabularies = new HashSet<>();
+        for (EntityProfile profile : profiles) {
+            vocabularies.addAll(getVocabulariesUsedInEntity(profile));
+        }
+        System.out.println(Arrays.toString(vocabularies.toArray()));
+        return vocabularies.size();
+    }
+    
+    private Set<String> getVocabulariesUsedInEntity(EntityProfile profile) {
+        Set<String> vocabularies = new HashSet<>();
+        for (String attName : profile.getAllAttributeNames()) { 
+            attName = attName.replace("<", "");
+            if (attName.startsWith("http://www.")) {
+                attName = attName.substring(11,attName.indexOf(".", 11));
+            } else if (attName.startsWith("http://")) {
+                if (attName.contains(".")) {
+                    attName = attName.substring(7,attName.indexOf(".", 7));
+                } else if (attName.contains("/")) {
+                    attName = attName.substring(7,attName.indexOf("/", 7));
+                } else {
+                    attName = attName.substring(7);
+                }
+            } else if (attName.contains(":")) {
+                attName = attName.substring(0,attName.indexOf(":"));
+            } else {
+                if (attName.contains(".")) {
+                    attName = attName.substring(0,attName.indexOf("."));
+                } 
+            }
+            vocabularies.add(attName);
+        }
+        return vocabularies;
+    }
+    
     public static void main(String[] args) {
         //set data
-        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\OAEI2010\\restaurant\\";
-        String dataset1 = basePath+"restaurant1Profiles";
-        String dataset2 = basePath+"restaurant2Profiles";
-        String datasetGroundtruth = basePath+"restaurantIdDuplicates";
+//        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\OAEI2010\\restaurant\\";
+//        String dataset1 = basePath+"restaurant1Profiles";
+//        String dataset2 = basePath+"restaurant2Profiles";
+//        String datasetGroundtruth = basePath+"restaurantIdDuplicates";
+        
+//        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\rexa-dblp\\";
+//        String dataset1 = basePath+"rexaProfiles";
+//        String dataset2 = basePath+"swetodblp_april_2008Profiles";
+//        String datasetGroundtruth = basePath+"rexa_dblp_goldstandardIdDuplicates";
+        
+        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\bbcMusic\\";
+        String dataset1 = basePath+"bbc-musicNewNoRdfProfiles";
+        String dataset2 = basePath+"dbpedia37processedNewNoSameAsNoWikipediaSortedProfiles";
+        String datasetGroundtruth = basePath+"bbc-music_groundTruthUTF8IdDuplicates";
+        
+        
+        
         String[] acceptableTypes = {
 //                                    "http://www.okkam.org/ontology_person1.owl#Person",
 //                                    "http://www.okkam.org/ontology_person2.owl#Person", 
@@ -431,12 +491,23 @@ public class DatasetStatistics {
 //        double avNeighbs2 = stats.getAverageNeighbors(stats.getProfiles2(), new HashSet<>(Arrays.asList(acceptableTypes)));
 //        System.out.println("Average #neighbors for profiles1: "+avNeighbs1);
 //        System.out.println("Average #neighbors for profiles2: "+avNeighbs2);
-        System.out.println("Average value similarity of matches: "+stats.getAverageValueSimMatch());
-        System.out.println("Average neighbor similarity of matches: "+stats.getAverageNeighborSimMatch());
-        System.out.println("Neighbor sim is greater than value sim "+stats.getMatchValueVsNeighborSim()+"/"
-                    +stats.getGroundTruth().getDuplicates().size()+" times.");
-        System.out.println("Average #neighbor pairs with common tokens per match: "+stats.getAverageNumberOfNeighborsWithCommonTokens());
-        stats.getMatchVsNonMatchNeighborSim();
+//        System.out.println("Average value similarity of matches: "+stats.getAverageValueSimMatch());
+//        System.out.println("Average neighbor similarity of matches: "+stats.getAverageNeighborSimMatch());
+//        System.out.println("Neighbor sim is greater than value sim "+stats.getMatchValueVsNeighborSim()+"/"
+//                    +stats.getGroundTruth().getDuplicates().size()+" times.");
+//        System.out.println("Average #neighbor pairs with common tokens per match: "+stats.getAverageNumberOfNeighborsWithCommonTokens());
+//        stats.getMatchVsNonMatchNeighborSim();
+        
+//        int numTypes1 = stats.getNumberOfEntityTypes(stats.getProfiles1());
+//        int numTypes2 = stats.getNumberOfEntityTypes(stats.getProfiles2());
+//        System.out.println("D1 entity types = "+numTypes1);
+//        System.out.println("D2 entity types = "+numTypes2);
+        
+        int numVocabularies1 = stats.getNumberOfVocabularies(stats.getProfiles1());
+        int numVocabularies2 = stats.getNumberOfVocabularies(stats.getProfiles2());
+        
+        System.out.println("D1 vocabularies = "+numVocabularies1);
+        System.out.println("D2 vocabularies = "+numVocabularies2);
     }
-    
+
 }

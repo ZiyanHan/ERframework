@@ -9,7 +9,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -565,6 +564,13 @@ public class PropertyWeights extends WeightedJaccardSimilarities {
         return attributeNames;
     }
     
+    
+    protected Set<String> getAllDatatypePropertiesFromCollection(List<EntityProfile> profiles) {
+        Set<String> datatypeProperties = getAllPropertiesFromCollection(profiles);
+        datatypeProperties.removeAll(getAllEntityRelationsFromCollection(profiles));
+        return datatypeProperties;
+    }
+    
     /** 
      * Returns the set of all object properties (not datatype properties) in an entity collection. 
      * An object property can be found if at least one of its values is an entityURL in this collection 
@@ -703,6 +709,51 @@ public class PropertyWeights extends WeightedJaccardSimilarities {
         return topRelations;
     }
     
+    private String[] getLabels(List<EntityProfile> profiles, int K, double MIN_SUPPORT){ 
+        double max_support = 0;
+        Map<String, Double> supportOfProperty = new HashMap<>();
+        Set<String> properties = getAllDatatypePropertiesFromCollection(profiles);
+        int numProperties = properties.size();
+        int cnt = 0;
+        for (String relation : properties) {
+            if (++cnt % 10 == 0) {
+                System.out.println("Checking relation "+cnt+"/"+numProperties+": "+relation);                
+            }
+            double support = getRelationSupport(relation, profiles);   
+            if (support > max_support) {
+                max_support = support;
+            }
+            supportOfProperty.put(relation, support);
+        }
+                
+        PriorityQueue<CustomRelation> topKproperties = new PriorityQueue<>(K);        
+
+        for (String property : properties) {
+            double support = supportOfProperty.get(property) / max_support;
+            if (support > MIN_SUPPORT) {                
+                double discrim = getPropertyDiscriminability(property, profiles);            
+                double fMeasure = 2 * support * discrim / (support + discrim);                
+                System.out.print(property+": "+fMeasure);
+                System.out.println(". support: "+support+", discriminability: "+discrim);
+                CustomRelation curr = new CustomRelation(property, fMeasure);
+                topKproperties.add(curr);
+                if (topKproperties.size() > K) {
+                    topKproperties.poll();
+                }
+            }
+        }
+        
+        //System.out.println(Arrays.toString(top3Relations1.toArray(new CustomRelation[top3Relations1.size()])));
+        String[] topProperties = new String[topKproperties.size()];
+        for (int i = 0; i < topProperties.length; ++i) {
+            topProperties[i] = topKproperties.poll().getString();            
+        }
+        Collections.reverse(Arrays.asList(topProperties));
+        System.out.println(Arrays.toString(topProperties));
+        return topProperties;
+        
+    }
+    
     /**
      * Copied from http://stackoverflow.com/a/2581754/2516301
      * @param <K>
@@ -733,19 +784,19 @@ public class PropertyWeights extends WeightedJaccardSimilarities {
 //        String datasetGroundtruth = basePath+"restaurantIdDuplicates";  
         
         //Rexa-DBLP
-        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\rexa-dblp\\";
-        String dataset1 = basePath+"rexaProfiles";
-        String dataset2 = basePath+"swetodblp_april_2008Profiles";
-        String datasetGroundtruth = basePath+"rexa_dblp_goldstandardIdDuplicates";
+//        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\rexa-dblp\\";
+//        String dataset1 = basePath+"rexaProfiles";
+//        String dataset2 = basePath+"swetodblp_april_2008Profiles";
+//        String datasetGroundtruth = basePath+"rexa_dblp_goldstandardIdDuplicates";
         
         //BBCmusic-DBpedia dataset
-//        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\bbcMusic\\";
-//        String dataset1 = basePath+"bbc-musicNewNoRdfProfiles";
-//        String dataset2 = basePath+"dbpedia37processedNewNoSameAsNoWikipediaSortedProfiles";
-//        String datasetGroundtruth = basePath+"bbc-music_groundTruthUTF8IdDuplicates";
+        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\bbcMusic\\";
+        String dataset1 = basePath+"bbc-musicNewNoRdfProfiles";
+        String dataset2 = basePath+"dbpedia37processedNewNoSameAsNoWikipediaSortedProfiles";
+        String datasetGroundtruth = basePath+"bbc-music_groundTruthUTF8IdDuplicates";
         
         double MIN_SUPPORT = 0.01;   //TODO: tune those parameters        
-        int topK = 3; //TODO: test those parameters
+        int topK =3; //TODO: test those parameters
         
         //override input parameters if run in console
         if (args.length >= 3) {
@@ -758,8 +809,28 @@ public class PropertyWeights extends WeightedJaccardSimilarities {
             }
         }
         
-        testTopKLocalRelations(dataset1, dataset2, datasetGroundtruth, topK, MIN_SUPPORT);
+//        testTopKLocalRelations(dataset1, dataset2, datasetGroundtruth, topK, MIN_SUPPORT);
 //        testTopKGlobal(dataset1, dataset2, datasetGroundtruth, topK, MIN_SUPPORT);
+        testLabelDetection(dataset1, dataset2, topK, MIN_SUPPORT);
+    }
+    
+    
+    public static void testLabelDetection (String dataset1, String dataset2, int K, double MIN_SUPPORT) {
+        PropertyWeights pw = new PropertyWeights(dataset1, dataset2, null);
+        List<EntityProfile> profiles1 = pw.getProfiles1();
+        List<EntityProfile> profiles2 = pw.getProfiles2();
+        
+        System.out.println("D1");
+        String[] labels1 = pw.getLabels(profiles1, K, MIN_SUPPORT);
+        System.out.println("D2");
+        String[] labels2 = pw.getLabels(profiles2, K, MIN_SUPPORT);
+        
+        System.out.println("D1");
+        System.out.println(Arrays.toString(labels1));
+        
+        System.out.println("D2");
+        System.out.println(Arrays.toString(labels2));        
+       
     }
     
     

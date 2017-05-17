@@ -44,8 +44,8 @@ public class EntityProfile implements Serializable {
     }
 
     public void addAttribute(String propertyName, String propertyValue) {
-        attributes.add(new Attribute(propertyName, propertyValue));
-        if (propertyName.equals(RDF_TYPE)) {
+        attributes.add(new Attribute(propertyName, propertyValue));        
+        if (propertyName.replaceAll("<", "").replaceAll(">", "").equals(RDF_TYPE)) {
             types.add(propertyValue);
         }
     }
@@ -76,11 +76,11 @@ public class EntityProfile implements Serializable {
         return values;
     }    
     
-    public Set<String> getTypes() {
-        if (types == null) {
+    public Set<String> getTypes() {                        
+        if (types == null || types.isEmpty()) {            
             types = new HashSet<>();
-            for (Attribute attribute : attributes) {
-                if (attribute.getName().equals(RDF_TYPE)) {
+            for (Attribute attribute : attributes) {                
+                if (attribute.getName().replaceAll("<", "").replaceAll(">", "").equals(RDF_TYPE)) {
                     String type = attribute.getValue();                    
                     if (type != null && !type.isEmpty()) {
                         types.add(type);

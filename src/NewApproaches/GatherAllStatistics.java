@@ -8,6 +8,7 @@ import BlockProcessing.ComparisonRefinement.CardinalityNodePruning;
 import BlockProcessing.IBlockProcessing;
 import DataModel.AbstractBlock;
 import DataModel.Attribute;
+import DataModel.BilateralBlock;
 import DataModel.EntityProfile;
 import DataModel.IdDuplicates;
 import DataReader.EntityReader.EntitySerializationReader;
@@ -74,11 +75,17 @@ public class GatherAllStatistics {
             "imdbProfiles"
         };
 
-        String[] duplicates = {
-            "restaurantIdDuplicates",
+        String[] duplicates = { "restaurantIdDuplicates",
             "rexa_dblp_goldstandardIdDuplicates",
             "bbc-music_groundTruthUTF8IdDuplicates",
             "imdbgoldFinalIdDuplicates"
+        };
+        
+        IBlockBuilding[] blockBuildingMethods = { 
+            new StandardBlocking(),
+            new RexaDBLPTokenBlocking(),
+            new BBCMusicTokenBlocking(),
+            new YagoIMDbTokenBlocking()
         };
         
         for (int datasetIndex = 0; datasetIndex < d1Datasets.length; datasetIndex++) {
@@ -100,7 +107,7 @@ public class GatherAllStatistics {
             Set<IdDuplicates> duplicatePairs = gtReader.getDuplicatePairs(null);
             System.out.println("Pairs of duplicates\t:\t" + duplicatePairs.size());
             
-            IBlockBuilding blockBuilding = new StandardBlocking();
+            IBlockBuilding blockBuilding = blockBuildingMethods[datasetIndex];
             List<AbstractBlock> blocks = blockBuilding.getBlocks(profiles1, profiles2);
 
             System.out.println("\n\nToken Blocking Statistics");
@@ -108,8 +115,46 @@ public class GatherAllStatistics {
             blpe.setStatistics();
             blpe.printStatistics();
             
+            double maxBlockSize = 0;
+            double maxBlockSize1 = 0;
+            double maxBlockSize2 = 0;
+            for (AbstractBlock block : blocks) {
+                if (maxBlockSize < block.getTotalBlockAssignments()) {
+                    maxBlockSize = block.getTotalBlockAssignments();
+                }
+                BilateralBlock bBlock = (BilateralBlock) block;
+                if (maxBlockSize1 < bBlock.getIndex1Entities().length) {
+                    maxBlockSize1 = bBlock.getIndex1Entities().length;
+                }
+                if (maxBlockSize2 < bBlock.getIndex2Entities().length) {
+                    maxBlockSize2 = bBlock.getIndex2Entities().length;
+                }
+            }
+            System.out.println("Max block size\t:\t" + maxBlockSize);
+            System.out.println("Max block size 1\t:\t" + maxBlockSize1);
+            System.out.println("Max block size 2\t:\t" + maxBlockSize);
+            
             IBlockProcessing blockPurging = new ComparisonsBasedBlockPurging();
             blocks = blockPurging.refineBlocks(blocks);
+            
+            maxBlockSize = 0;
+            maxBlockSize1 = 0;
+            maxBlockSize2 = 0;
+            for (AbstractBlock block : blocks) {
+                if (maxBlockSize < block.getTotalBlockAssignments()) {
+                    maxBlockSize = block.getTotalBlockAssignments();
+                }
+                BilateralBlock bBlock = (BilateralBlock) block;
+                if (maxBlockSize1 < bBlock.getIndex1Entities().length) {
+                    maxBlockSize1 = bBlock.getIndex1Entities().length;
+                }
+                if (maxBlockSize2 < bBlock.getIndex2Entities().length) {
+                    maxBlockSize2 = bBlock.getIndex2Entities().length;
+                }
+            }
+            System.out.println("Max block size\t:\t" + maxBlockSize);
+            System.out.println("Max block size 1\t:\t" + maxBlockSize1);
+            System.out.println("Max block size 2\t:\t" + maxBlockSize);
             
             System.out.println("\n\nBlock Purging Statistics");
             blpe = new BlocksPerformance(blocks, new BilateralDuplicatePropagation(duplicatePairs));
@@ -120,27 +165,46 @@ public class GatherAllStatistics {
             blocks = blockCleaningMethod.refineBlocks(blocks);
             System.out.println("Filtered blocks\t:\t" + blocks.size());
 
+            maxBlockSize = 0;
+            maxBlockSize1 = 0;
+            maxBlockSize2 = 0;
+            for (AbstractBlock block : blocks) {
+                if (maxBlockSize < block.getTotalBlockAssignments()) {
+                    maxBlockSize = block.getTotalBlockAssignments();
+                }
+                BilateralBlock bBlock = (BilateralBlock) block;
+                if (maxBlockSize1 < bBlock.getIndex1Entities().length) {
+                    maxBlockSize1 = bBlock.getIndex1Entities().length;
+                }
+                if (maxBlockSize2 < bBlock.getIndex2Entities().length) {
+                    maxBlockSize2 = bBlock.getIndex2Entities().length;
+                }
+            }
+            System.out.println("Max block size\t:\t" + maxBlockSize);
+            System.out.println("Max block size 1\t:\t" + maxBlockSize1);
+            System.out.println("Max block size 2\t:\t" + maxBlockSize);
+            
             System.out.println("\n\nBlock Filtering Statistics");
             blpe = new BlocksPerformance(blocks, new BilateralDuplicatePropagation(duplicatePairs));
             blpe.setStatistics();
             blpe.printStatistics();
             
-            List<AbstractBlock> wjsBlocks = new ArrayList<>(blocks);
-            IBlockProcessing cnp = new CardinalityNodePruning(WeightingScheme.WJS);
-            wjsBlocks = cnp.refineBlocks(wjsBlocks);
-            
-            System.out.println("\n\nCNP-WJS Statistics");
-            blpe = new BlocksPerformance(wjsBlocks, new BilateralDuplicatePropagation(duplicatePairs));
-            blpe.setStatistics();
-            blpe.printStatistics();
-            
-            cnp = new CardinalityNodePruning(WeightingScheme.ARCS);
-            blocks = cnp.refineBlocks(blocks);
-            
-            System.out.println("\n\nCNP-ARCS Statistics");
-            blpe = new BlocksPerformance(blocks, new BilateralDuplicatePropagation(duplicatePairs));
-            blpe.setStatistics();
-            blpe.printStatistics();
+//            List<AbstractBlock> wjsBlocks = new ArrayList<>(blocks);
+//            IBlockProcessing cnp = new CardinalityNodePruning(WeightingScheme.WJS);
+//            wjsBlocks = cnp.refineBlocks(wjsBlocks);
+//            
+//            System.out.println("\n\nCNP-WJS Statistics");
+//            blpe = new BlocksPerformance(wjsBlocks, new BilateralDuplicatePropagation(duplicatePairs));
+//            blpe.setStatistics();
+//            blpe.printStatistics();
+//            
+//            cnp = new CardinalityNodePruning(WeightingScheme.ARCS);
+//            blocks = cnp.refineBlocks(blocks);
+//            
+//            System.out.println("\n\nCNP-ARCS Statistics");
+//            blpe = new BlocksPerformance(blocks, new BilateralDuplicatePropagation(duplicatePairs));
+//            blpe.setStatistics();
+//            blpe.printStatistics();
         }
     }
 }   

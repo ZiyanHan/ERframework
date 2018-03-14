@@ -22,25 +22,26 @@ public class ExportDatasets {
     private final static String VALUE_DELIMITER = "#";
 
     public static void main(String[] args) throws UnsupportedEncodingException, FileNotFoundException, IOException {
-        String mainDirectory = "/home/gpapadakis/newData/";
+//        String mainDirectory = "/home/gpapadakis/newData/";
+        String mainDirectory = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\";
         String[] datasetsPaths = {
 //            mainDirectory + "restaurant/",
-//            mainDirectory + "rexa_dblp/",
-            mainDirectory + "yago_imdb/",
-//            mainDirectory + "bbcMusic/"
+            mainDirectory + "rexa-dblp\\",
+//            mainDirectory + "yago_imdb/",
+//            mainDirectory + "bbcMusic\\"
         };
 
         String[] d1Datasets = {
 //            "restaurant1Profiles",
-//            "rexaProfiles",
-            "yagoProfiles",
+            "rexaProfiles",
+//            "yagoProfiles",
 //            "bbc-musicNewNoRdfProfiles"
         };
 
         String[] d2Datasets = {
 //            "restaurant2Profiles",
-//            "swetodblp_april_2008Profiles",
-            "imdbProfiles",
+            "swetodblp_april_2008Profiles",
+//            "imdbProfiles",
 //            "dbpedia37processedNewNoSameAsNoWikipediaSortedProfiles"
         };
 
@@ -50,7 +51,7 @@ public class ExportDatasets {
             Preprocessing preprocessing = new Preprocessing(datasetsPaths[datasetIndex] + d1Datasets[datasetIndex],
                     datasetsPaths[datasetIndex] + d2Datasets[datasetIndex]);
 
-            final List<AbstractBlock> valueBlocks = preprocessing.getPurgedBlocks(new StandardBlocking());
+            final List<AbstractBlock> valueBlocks = preprocessing.getPurgedBlocks(new RexaDBLPTokenBlocking());
             int index = 0;
             for (AbstractBlock block : valueBlocks) {
                 index++;

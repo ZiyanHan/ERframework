@@ -27,11 +27,11 @@ import java.util.Set;
 public class BBCBlocksPerformance {
 
     public static void main(String[] args) throws UnsupportedEncodingException, FileNotFoundException, IOException {
-        String mainDirectory = "/home/gpapadakis/newData/";
+        String mainDirectory = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\";
         String[] datasetsPaths = {mainDirectory + "restaurant/",
             mainDirectory + "rexa_dblp/",
             mainDirectory + "yago_imdb/",
-            mainDirectory + "bbcMusic/"
+            mainDirectory + "bbcMusic\\"
         };
 
         String[] d1Datasets = {"restaurant1Profiles",
@@ -52,7 +52,7 @@ public class BBCBlocksPerformance {
             "imdbgoldFinalIdDuplicates",
             "bbc-music_groundTruthUTF8IdDuplicates"
         };
-
+        
         int datasetIndex = 3;
 //        for (int datasetIndex = 3; datasetIndex < d1Datasets.length; datasetIndex++) {
         IEntityReader eReader1 = new EntitySerializationReader(datasetsPaths[datasetIndex] + d1Datasets[datasetIndex]);

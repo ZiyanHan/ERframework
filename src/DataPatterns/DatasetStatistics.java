@@ -45,9 +45,14 @@ public class DatasetStatistics {
         profiles1 = eReader1.getEntityProfiles();
         System.out.println("Input Entity Profiles1\t:\t" + profiles1.size());         
         
-        IEntityReader eReader2 = new EntitySerializationReader(dataset2Path);
-        profiles2 = eReader2.getEntityProfiles();
-        System.out.println("Input Entity Profiles2\t:\t" + profiles2.size());         
+        if (dataset2Path != null) {
+            IEntityReader eReader2 = new EntitySerializationReader(dataset2Path);
+            profiles2 = eReader2.getEntityProfiles();
+            System.out.println("Input Entity Profiles2\t:\t" + profiles2.size());         
+        } else {
+            profiles2 = null;
+            System.out.println("No dataset2 provided");
+        }
 
         if (groundTruthPath != null) {
             IGroundTruthReader gtReader = new GtSerializationReader(groundTruthPath);

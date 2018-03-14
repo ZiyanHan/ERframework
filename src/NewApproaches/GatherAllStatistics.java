@@ -56,36 +56,37 @@ public class GatherAllStatistics {
     }
     
     public static void main(String[] args) throws UnsupportedEncodingException, FileNotFoundException, IOException {
-        String mainDirectory = "/home/gpapadakis/newData/";
-        String[] datasetsPaths = { mainDirectory + "restaurant/",
-                                   mainDirectory + "rexa_dblp/",
-                                   mainDirectory + "bbcMusic/",
-                                   mainDirectory + "yago_imdb/",
+//        String mainDirectory = "/home/gpapadakis/newData/";
+        String mainDirectory = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\";
+        String[] datasetsPaths = { mainDirectory + "OAEI2010\\restaurant\\",
+//                                   mainDirectory + "rexa_dblp/",
+//                                   mainDirectory + "bbcMusic/",
+//                                   mainDirectory + "yago_imdb/",
         };
         
         String[] d1Datasets = { "restaurant1Profiles",
-            "rexaProfiles",
-            "bbc-musicNewNoRdfProfiles",
-            "yagoProfiles"
+//            "rexaProfiles",
+//            "bbc-musicNewNoRdfProfiles",
+//            "yagoProfiles"
         };
 
         String[] d2Datasets = { "restaurant2Profiles",
-            "swetodblp_april_2008Profiles",
-            "dbpedia37processedNewNoSameAsNoWikipediaSortedProfiles",
-            "imdbProfiles"
+//            "swetodblp_april_2008Profiles",
+//            "dbpedia37processedNewNoSameAsNoWikipediaSortedProfiles",
+//            "imdbProfiles"
         };
 
         String[] duplicates = { "restaurantIdDuplicates",
-            "rexa_dblp_goldstandardIdDuplicates",
-            "bbc-music_groundTruthUTF8IdDuplicates",
-            "imdbgoldFinalIdDuplicates"
+//            "rexa_dblp_goldstandardIdDuplicates",
+//            "bbc-music_groundTruthUTF8IdDuplicates",
+//            "imdbgoldFinalIdDuplicates"
         };
         
         IBlockBuilding[] blockBuildingMethods = { 
-            new StandardBlocking(),
+//            new StandardBlocking(),
             new RexaDBLPTokenBlocking(),
-            new BBCMusicTokenBlocking(),
-            new YagoIMDbTokenBlocking()
+//            new BBCMusicTokenBlocking(),
+//            new YagoIMDbTokenBlocking()
         };
         
         for (int datasetIndex = 0; datasetIndex < d1Datasets.length; datasetIndex++) {
@@ -109,6 +110,7 @@ public class GatherAllStatistics {
             
             IBlockBuilding blockBuilding = blockBuildingMethods[datasetIndex];
             List<AbstractBlock> blocks = blockBuilding.getBlocks(profiles1, profiles2);
+            System.out.println("Blocks:"+blocks.size());
 
             System.out.println("\n\nToken Blocking Statistics");
             BlocksPerformance blpe = new BlocksPerformance(blocks, new BilateralDuplicatePropagation(duplicatePairs));

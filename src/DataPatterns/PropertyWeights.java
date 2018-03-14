@@ -33,7 +33,9 @@ public class PropertyWeights extends WeightedJaccardSimilarities {
     public PropertyWeights(String data1Path, String data2Path, String groundTruthPath) {
         super(data1Path, data2Path, groundTruthPath);
         urlToEntityIds1 = getEntityURLtoEntityID(profiles1);
-        urlToEntityIds2 = getEntityURLtoEntityID(profiles2);
+        if (profiles2 != null) {
+            urlToEntityIds2 = getEntityURLtoEntityID(profiles2);        
+        }
     }
     
     public double getPropertySupport(String property, List<EntityProfile> profiles) {        
@@ -778,10 +780,10 @@ public class PropertyWeights extends WeightedJaccardSimilarities {
     //tests start here
     public static void main (String[] args) {
         //Restaurants dataset
-//        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\OAEI2010\\restaurant\\";
-//        String dataset1 = basePath+"restaurant1Profiles";
-//        String dataset2 = basePath+"restaurant2Profiles";
-//        String datasetGroundtruth = basePath+"restaurantIdDuplicates";  
+        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\OAEI2010\\restaurant\\";
+        String dataset1 = basePath+"restaurant1Profiles";
+        String dataset2 = basePath+"restaurant2Profiles";
+        String datasetGroundtruth = basePath+"restaurantIdDuplicates";  
         
         //Rexa-DBLP
 //        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\rexa-dblp\\";
@@ -790,28 +792,46 @@ public class PropertyWeights extends WeightedJaccardSimilarities {
 //        String datasetGroundtruth = basePath+"rexa_dblp_goldstandardIdDuplicates";
         
         //BBCmusic-DBpedia dataset
-        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\bbcMusic\\";
-        String dataset1 = basePath+"bbc-musicNewNoRdfProfiles";
-        String dataset2 = basePath+"dbpedia37processedNewNoSameAsNoWikipediaSortedProfiles";
-        String datasetGroundtruth = basePath+"bbc-music_groundTruthUTF8IdDuplicates";
+//        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\bbcMusic\\";
+//        String dataset1 = basePath+"bbc-musicNewNoRdfProfiles";
+//        String dataset2 = basePath+"dbpedia37processedNewNoSameAsNoWikipediaSortedProfiles";
+//        String datasetGroundtruth = basePath+"bbc-music_groundTruthUTF8IdDuplicates";
+        
+        //YAGO-IMDb dataset
+//        final String basePath = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\yago-imdb\\";
+//        String dataset1 = basePath+"yagoProfiles";
+//        String dataset2 = basePath+"imdbProfiles";
+//        String datasetGroundtruth = null;
+        
         
         double MIN_SUPPORT = 0.01;   //TODO: tune those parameters        
-        int topK =3; //TODO: test those parameters
+        int topK =4; //TODO: test those parameters
         
         //override input parameters if run in console
-        if (args.length >= 3) {
+        if (args.length >= 1) {
             dataset1 = args[0];
-            dataset2 = args[1];
-            datasetGroundtruth = args[2];
-            if (args.length == 5) {
-                MIN_SUPPORT = Double.parseDouble(args[3]);
-                topK = Integer.parseInt(args[4]);
+            if (args.length ==1) {
+                dataset2 = null;
+                datasetGroundtruth = null;
+            } else {
+                dataset2 = args[1];
+                datasetGroundtruth = args[2];
+                if (args.length == 5) {
+                    MIN_SUPPORT = Double.parseDouble(args[3]);
+                    topK = Integer.parseInt(args[4]);
+
+                }
             }
         }
         
 //        testTopKLocalRelations(dataset1, dataset2, datasetGroundtruth, topK, MIN_SUPPORT);
 //        testTopKGlobal(dataset1, dataset2, datasetGroundtruth, topK, MIN_SUPPORT);
         testLabelDetection(dataset1, dataset2, topK, MIN_SUPPORT);
+//        PropertyWeights pw = new PropertyWeights(dataset1, dataset2, null);
+//        System.out.println(pw.getAllEntityRelationsFromCollection(pw.getProfiles1()).size());
+//        System.out.println(pw.getAllEntityRelationsFromCollection(pw.getProfiles2()).size());
+        //System.out.println(pw.getAllPropertiesFromCollection(pw.getProfiles1()).size());
+//        System.out.println(pw.getAllPropertiesFromCollection(pw.getProfiles2()).size());
     }
     
     

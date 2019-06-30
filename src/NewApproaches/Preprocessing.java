@@ -9,6 +9,7 @@ import BlockProcessing.IBlockProcessing;
 import DataModel.AbstractBlock;
 import DataModel.EntityProfile;
 import DataReader.EntityReader.EntitySerializationReader;
+import DataReader.EntityReader.EntityTSVReader;
 import DataReader.EntityReader.IEntityReader;
 import java.util.HashSet;
 import java.util.List;
@@ -57,7 +58,8 @@ public class Preprocessing {
     }    
     
     public List<AbstractBlock> getBlocks(IBlockBuilding blockBuildingMethod) {
-        IEntityReader eReader1 = new EntitySerializationReader(inputPath1);
+        //IEntityReader eReader1 = new EntitySerializationReader(inputPath1);
+        IEntityReader eReader1 = new EntityTSVReader(inputPath1);
         /*List<EntityProfile>*/ profiles1 = eReader1.getEntityProfiles();
         System.out.println("Input Entity Profiles1\t:\t" + profiles1.size());
         datasetLimit = profiles1.size();
@@ -68,7 +70,8 @@ public class Preprocessing {
             }
         }
 
-        IEntityReader eReader2 = new EntitySerializationReader(inputPath2);
+        //IEntityReader eReader2 = new EntitySerializationReader(inputPath2);
+        IEntityReader eReader2 = new EntityTSVReader(inputPath2);
         /*List<EntityProfile>*/ profiles2 = eReader2.getEntityProfiles();
         System.out.println("Input Entity Profiles2\t:\t" + profiles2.size());
         for (int i = 0; i < profiles2.size(); i++) {
@@ -93,7 +96,8 @@ public class Preprocessing {
     }
     
     public List<AbstractBlock> getPurgedBlocks(IBlockBuilding blockBuildingMethod) {
-        IEntityReader eReader1 = new EntitySerializationReader(inputPath1);
+        //IEntityReader eReader1 = new EntitySerializationReader(inputPath1);
+        IEntityReader eReader1 = new EntityTSVReader(inputPath1);
         /*List<EntityProfile>*/ profiles1 = eReader1.getEntityProfiles();
         System.out.println("Input Entity Profiles1\t:\t" + profiles1.size());
         datasetLimit = profiles1.size();
@@ -104,7 +108,8 @@ public class Preprocessing {
             }
         }
 
-        IEntityReader eReader2 = new EntitySerializationReader(inputPath2);
+        //IEntityReader eReader2 = new EntitySerializationReader(inputPath2);
+        IEntityReader eReader2 = new EntityTSVReader(inputPath2);
         /*List<EntityProfile>*/ profiles2 = eReader2.getEntityProfiles();
         System.out.println("Input Entity Profiles2\t:\t" + profiles2.size());
         for (int i = 0; i < profiles2.size(); i++) {

@@ -23,26 +23,33 @@ public class ExportDatasets {
 
     public static void main(String[] args) throws UnsupportedEncodingException, FileNotFoundException, IOException {
 //        String mainDirectory = "/home/gpapadakis/newData/";
-        String mainDirectory = "C:\\Users\\VASILIS\\Documents\\OAEI_Datasets\\";
+        String mainDirectory = "/home/ubuntu/hanzy/datasets/";
         String[] datasetsPaths = {
 //            mainDirectory + "restaurant/",
-            mainDirectory + "rexa-dblp\\",
+//            mainDirectory + "rexa-dblp/",
 //            mainDirectory + "yago_imdb/",
-//            mainDirectory + "bbcMusic\\"
+            mainDirectory + "bbcMusic/"
+//                mainDirectory + "Movies/"
+
         };
 
         String[] d1Datasets = {
 //            "restaurant1Profiles",
-            "rexaProfiles",
+//            "rexaProfiles",
 //            "yagoProfiles",
 //            "bbc-musicNewNoRdfProfiles"
+//                "dbpediaMovies"
+             "bbc-musicEntityIds.tsv"
         };
 
         String[] d2Datasets = {
 //            "restaurant2Profiles",
-            "swetodblp_april_2008Profiles",
+//            "swetodblp_april_2008Profiles",
 //            "imdbProfiles",
 //            "dbpedia37processedNewNoSameAsNoWikipediaSortedProfiles"
+//            "bbc-musicNewNoRdf2Profiles"
+//                "imdbMovies"
+            "bbc-musicEntityIds.tsv"
         };
 
         for (int datasetIndex = 0; datasetIndex < d1Datasets.length; datasetIndex++) {
